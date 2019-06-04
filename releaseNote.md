@@ -16,6 +16,7 @@
   - Fix running as systemd service when agent name contains spaces #2263
   - Fix env var logging by using global replace #2273
   - Update default artifact names #2225
+  - Fix shallow fetch by commit for two scenarios #2283
 
 ## Misc
   - Prefer logging HelpUrl property over HelpMarkDown #2226
