@@ -6,7 +6,8 @@
   - Update download path so that it's relative to workingDirectory for DPA V2 task #2282
   
 ## Bugs
-  - N/A
+  - Use default values in telemetry records if not available. #2303
+  - Convert loginserver url to lowercase for ACR #2299
   
 ## Misc
   - N/A
