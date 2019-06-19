@@ -1,16 +1,11 @@
 ## Features
-  - Calculate artifact size for build (file container) artifacts #2258
-  - Add jobId as source for artifacts #2278
-  - Capture telemetry from PA/PC tasks #2274
-  - Create publish pipeline artifact v1 task in agent #2279
-  - Update download path so that it's relative to workingDirectory for DPA V2 task #2282
-  
+  - Increase and make configurable dedup parallelism #2284
+
 ## Bugs
-  - Use default values in telemetry records if not available. #2303
-  - Convert loginserver url to lowercase for ACR #2299
+  - N/A
   
 ## Misc
-  - N/A
+  - Consume newer version of tf.exe
 
 ## Agent Downloads  
 
