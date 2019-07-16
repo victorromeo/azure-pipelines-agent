@@ -15,6 +15,7 @@
   - Add retries for fetching github artifact details. #2324
   - Report last time build/release directory times as UTC time #2318
   - Expand env of containers #2335
+  - use same version vstsom with vstshost. #2314
   
 ## Misc
   - N/A
