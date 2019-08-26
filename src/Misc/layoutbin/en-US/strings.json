@@ -296,7 +296,7 @@
   "FileUploadSucceed": "File upload succeed.",
   "FinalizeJob": "Finalize Job",
   "FinishMaintenance": "Maintenance finished: {0}",
-  "FoundErrorInTrace":[
+  "FoundErrorInTrace": [
     "{0} reported in diagnostic logs. Please examine the log for more details.",
     "    - {1}"
   ],
