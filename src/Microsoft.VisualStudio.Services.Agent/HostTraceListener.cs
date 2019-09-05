@@ -72,7 +72,7 @@ namespace Microsoft.VisualStudio.Services.Agent
 
             if (!_diagErrorDetected && !DisableConsoleReporting && eventType < TraceEventType.Warning)
             {
-                Console.WriteLine(StringUtil.Loc("FoundErrorInTrace", eventType.ToString(), _logFilePath)); 
+                Console.WriteLine(StringUtil.Loc("FoundErrorInTrace", eventType.ToString(), _logFilePath));
                 _diagErrorDetected = true;
             }
         }
