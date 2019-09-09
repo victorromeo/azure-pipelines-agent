@@ -160,6 +160,14 @@ function package ()
     agent_ver=$("${LAYOUT_DIR}/bin/Agent.Listener" --version) || failed "version"
     agent_pkg_name="vsts-agent-${RUNTIME_ID}-${agent_ver}"
 
+    # TEMPORARY - need to investigate why Agent.Listener --version is throwing an error on OS X
+    if [ $("${LAYOUT_DIR}/bin/Agent.Listener" --version | wc -l) -gt 1 ]; then 
+        echo "Error thrown during --version call!"
+        log_file=$("${LAYOUT_DIR}/bin/Agent.Listener" --version | head -n 2 | tail -n 1 | cut -d\  -f6)
+        cat "${log_file}"
+    fi
+    # END TEMPORARY
+
     heading "Packaging ${agent_pkg_name}"
 
     rm -Rf "${LAYOUT_DIR:?}/_diag"
