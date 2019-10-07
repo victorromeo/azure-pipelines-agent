@@ -61,7 +61,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
     {
         TrackingConfig PrepareDirectory(
             IExecutionContext executionContext,
-            RepositoryResource repository,
+            IList<RepositoryResource> repositories,
             WorkspaceOptions workspace);
 
         void CreateDirectory(
@@ -81,19 +81,23 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
         public TrackingConfig PrepareDirectory(
             IExecutionContext executionContext,
-            RepositoryResource repository,
+            IList<RepositoryResource> repositories,
             WorkspaceOptions workspace)
         {
             // Validate parameters.
             Trace.Entering();
             ArgUtil.NotNull(executionContext, nameof(executionContext));
             ArgUtil.NotNull(executionContext.Variables, nameof(executionContext.Variables));
-            ArgUtil.NotNull(repository, nameof(repository));
+            ArgUtil.NotNull(repositories, nameof(repositories));
+
+            var selfRepository = executionContext.Repositories.FirstOrDefault(r => string.Equals(r.Alias, "self", StringComparison.OrdinalIgnoreCase));
+            ArgUtil.NotNull(selfRepository, nameof(selfRepository));
+
             var trackingManager = HostContext.GetService<ITrackingManager>();
 
             // Defer to the source provider to calculate the hash key.
             Trace.Verbose("Calculating build directory hash key.");
-            string hashKey = repository.GetSourceDirectoryHashKey(executionContext);
+            string hashKey = selfRepository.GetSourceDirectoryHashKey(executionContext);
             Trace.Verbose($"Hash key: {hashKey}");
 
             // Load the existing tracking file if one already exists.
@@ -128,22 +132,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 var agentSetting = HostContext.GetService<IConfigurationStore>().GetSettings();
                 newConfig = trackingManager.Create(
                     executionContext,
-                    repository,
+                    selfRepository,
                     hashKey,
                     trackingFile,
-                    repository.TestOverrideBuildDirectory(agentSetting));
+                    selfRepository.TestOverrideBuildDirectory(agentSetting));
                 ArgUtil.NotNull(newConfig, nameof(newConfig));
             }
             else
             {
                 // Convert legacy format to the new format if required.
-                newConfig = ConvertToNewFormat(executionContext, repository, existingConfig);
+                newConfig = ConvertToNewFormat(executionContext, selfRepository, existingConfig);
 
                 // Fill out repository type if it's not there.
                 // repository type is a new property introduced for maintenance job
                 if (string.IsNullOrEmpty(newConfig.RepositoryType))
                 {
-                    newConfig.RepositoryType = repository.Type;
+                    newConfig.RepositoryType = selfRepository.Type;
                 }
 
                 // For existing tracking config files, update the job run properties.
@@ -190,9 +194,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 path: Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), newConfig.SourcesDirectory),
                 deleteExisting: cleanOption == BuildCleanOption.Source);
 
-            var repoPath = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), newConfig.SourcesDirectory);
-            Trace.Info($"Set repository path for repository {repository.Alias} to '{repoPath}'");
-            repository.Properties.Set<string>(RepositoryPropertyNames.Path, repoPath);
+            // Set the default clone path for each repository (the Checkout task may override this later)
+            foreach (var repository in repositories)
+            {
+                var repoPath = repositories.Count > 1 ? Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), newConfig.SourcesDirectory, repository.Alias) : Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), newConfig.SourcesDirectory);
+                Trace.Info($"Set repository path for repository {repository.Alias} to '{repoPath}'");
+                repository.Properties.Set<string>(RepositoryPropertyNames.Path, repoPath);
+            }
 
             return newConfig;
         }

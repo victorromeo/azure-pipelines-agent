@@ -16,9 +16,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
         public override Type ExtensionType => typeof(IJobExtension);
         public override HostTypes HostType => HostTypes.Build;
 
-        private Pipelines.RepositoryResource Repository { set; get; }
-        private ISourceProvider SourceProvider { set; get; }
-
         public override IStep GetExtensionPreJobStep(IExecutionContext jobContext)
         {
             return null;
@@ -34,12 +31,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
         public override string GetRootedPath(IExecutionContext context, string path)
         {
             string rootedPath = null;
+            TryGetRepositoryInfo(context, "self", out RepositoryInfo repoInfo);
 
-            if (SourceProvider != null &&
-                Repository != null &&
-                StringUtil.ConvertToBoolean(Repository.Properties.Get<string>("__AZP_READY")))
+            if (repoInfo.SourceProvider != null &&
+                repoInfo?.Repository != null &&
+                StringUtil.ConvertToBoolean(repoInfo.Repository.Properties.Get<string>("__AZP_READY")))
             {
-                path = SourceProvider.GetLocalPath(context, Repository, path) ?? string.Empty;
+                path = repoInfo.SourceProvider.GetLocalPath(context, repoInfo.Repository, path) ?? string.Empty;
                 Trace.Info($"Build JobExtension resolving path use source provide: {path}");
 
                 if (!string.IsNullOrEmpty(path) &&
@@ -61,9 +59,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             }
 
             string defaultPathRoot = null;
-            if (Repository != null)
+            if (repoInfo?.Repository != null)
             {
-                defaultPathRoot = Repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
+                defaultPathRoot = repoInfo.Repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
                 Trace.Info($"The Default Path Root of Build JobExtension is build.sourcesDirectory: {defaultPathRoot}");
             }
 
@@ -95,18 +93,19 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
         public override void ConvertLocalPath(IExecutionContext context, string localPath, out string repoName, out string sourcePath)
         {
             repoName = "";
+            TryGetRepositoryInfo(context, "self", out RepositoryInfo repoInfo);
 
             // If no repo was found, send back an empty repo with original path.
             sourcePath = localPath;
 
             if (!string.IsNullOrEmpty(localPath) &&
                 File.Exists(localPath) &&
-                Repository != null &&
-                SourceProvider != null)
+                repoInfo.Repository != null &&
+                repoInfo.SourceProvider != null)
             {
                 // If we found a repo, calculate the relative path to the file
-                repoName = Repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name);
-                var repoPath = Repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
+                repoName = repoInfo.Repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name);
+                var repoPath = repoInfo.Repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
                 sourcePath = IOUtil.MakeRelative(localPath, repoPath);
             }
         }
@@ -129,24 +128,25 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             }
 
             // We only support checkout one repository at this time.
-            if (!TrySetPrimaryRepositoryAndProviderInfo(executionContext))
+            if (!TryGetRepositoryInfo(executionContext, "self", out RepositoryInfo repoInfo))
             {
                 throw new Exception(StringUtil.Loc("SupportedRepositoryEndpointNotFound"));
             }
 
-            executionContext.Debug($"Primary repository: {Repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name)}. repository type: {Repository.Type}");
+            executionContext.Debug($"Primary repository: {repoInfo.Repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name)}. repository type: {repoInfo.Repository.Type}");
 
             // Set the repo variables.
-            if (!string.IsNullOrEmpty(Repository.Id)) // TODO: Move to const after source artifacts PR is merged.
+            if (!string.IsNullOrEmpty(repoInfo.Repository.Id)) // TODO: Move to const after source artifacts PR is merged.
             {
-                executionContext.Variables.Set(Constants.Variables.Build.RepoId, Repository.Id);
+                executionContext.Variables.Set(Constants.Variables.Build.RepoId, repoInfo.Repository.Id);
             }
 
-            executionContext.Variables.Set(Constants.Variables.Build.RepoName, Repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name));
-            executionContext.Variables.Set(Constants.Variables.Build.RepoProvider, ConvertToLegacyRepositoryType(Repository.Type));
-            executionContext.Variables.Set(Constants.Variables.Build.RepoUri, Repository.Url?.AbsoluteUri);
+            executionContext.Variables.Set(Constants.Variables.Build.RepoName, repoInfo.Repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name));
+            executionContext.Variables.Set(Constants.Variables.Build.RepoProvider, ConvertToLegacyRepositoryType(repoInfo.Repository.Type));
+            executionContext.Variables.Set(Constants.Variables.Build.RepoUri, repoInfo.Repository.Url?.AbsoluteUri);
 
-            var checkoutTask = steps.SingleOrDefault(x => x.IsCheckoutTask()) as Pipelines.TaskStep;
+            // TODO - should this be just the checkout associated with 'self'?
+            var checkoutTask = steps.FirstOrDefault(x => x.IsCheckoutTask()) as Pipelines.TaskStep;
             if (checkoutTask != null)
             {
                 if (checkoutTask.Inputs.ContainsKey(Pipelines.PipelineConstants.CheckoutTaskInputs.Submodules))
@@ -177,12 +177,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 }
             }
 
+
             // Prepare the build directory.
             executionContext.Output(StringUtil.Loc("PrepareBuildDir"));
             var directoryManager = HostContext.GetService<IBuildDirectoryManager>();
             TrackingConfig trackingConfig = directoryManager.PrepareDirectory(
                 executionContext,
-                Repository,
+                executionContext.Repositories,
                 workspace);
 
             // Set the directory variables.
@@ -200,19 +201,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             executionContext.SetVariable(Constants.Variables.Pipeline.Workspace, Path.Combine(_workDirectory, trackingConfig.BuildDirectory), isFilePath: true);
         }
 
-        private bool TrySetPrimaryRepositoryAndProviderInfo(IExecutionContext executionContext)
+        private bool TryGetRepositoryInfo(IExecutionContext executionContext, string repoAlias, out RepositoryInfo repoInfo)
         {
-            // Return the first repository resource and its source provider.
+            // Return the matching repository resource and its source provider.
             Trace.Entering();
+            repoInfo = new RepositoryInfo();
             var extensionManager = HostContext.GetService<IExtensionManager>();
             List<ISourceProvider> sourceProviders = extensionManager.GetExtensions<ISourceProvider>();
-            Repository = executionContext.Repositories.SingleOrDefault();
-            if (Repository != null)
+            var repository = executionContext.Repositories.FirstOrDefault(r => string.Equals(r.Alias, repoAlias, StringComparison.OrdinalIgnoreCase));
+            if (repository != null)
             {
-                SourceProvider = sourceProviders.FirstOrDefault(x => string.Equals(x.RepositoryType, Repository.Type, StringComparison.OrdinalIgnoreCase));
+                var sourceProvider = sourceProviders.FirstOrDefault(x => string.Equals(x.RepositoryType, repository.Type, StringComparison.OrdinalIgnoreCase));
 
-                if (SourceProvider != null)
+                if (sourceProvider != null)
                 {
+                    repoInfo.Repository = repository;
+                    repoInfo.SourceProvider = sourceProvider;
                     return true;
                 }
             }
@@ -254,6 +258,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             {
                 throw new NotSupportedException(pipelineRepositoryType);
             }
+        }
+
+        private class RepositoryInfo
+        {
+            public Pipelines.RepositoryResource Repository { set; get; }
+            public ISourceProvider SourceProvider { set; get; }
         }
     }
 }
