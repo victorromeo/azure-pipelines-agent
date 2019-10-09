@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Agent.Sdk;
-using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Newtonsoft.Json.Linq;
@@ -85,6 +84,11 @@ namespace Agent.Plugins.Repository
                 }
             }
         }
+
+        protected bool HasMultipleCheckouts(AgentTaskPluginExecutionContext executionContext)
+        {
+            return executionContext != null && RepositoryUtil.HasMultipleCheckouts(executionContext.JobSettings);
+        }
     }
 
     public class CheckoutTask : RepositoryTask
@@ -133,13 +137,22 @@ namespace Agent.Plugins.Repository
                     throw new ArgumentException($"Input path '{path}' should resolve to a directory under '{buildDirectory}', current resolved path '{expectRepoPath}'.");
                 }
             }
+            else if (HasMultipleCheckouts(executionContext))
+            {
+                // When repository doesn't has path set, default to directory 1/<repoName>
+                expectRepoPath = Path.Combine(buildDirectory, RepositoryUtil.GetCloneDirectory(repo));
+            }
             else
             {
-                // When repository doesn't has path set, default to sources directory 1/s
+                // When there's a single checkout task that doesn't has path set, default to sources directory 1/s
                 expectRepoPath = Path.Combine(buildDirectory, "s");
             }
 
-            executionContext.UpdateRepositoryPath(repoAlias, expectRepoPath);
+            // Only update the repo path variables if there is a single checkout task
+            if (!HasMultipleCheckouts(executionContext))
+            {
+                executionContext.UpdateRepositoryPath(repoAlias, expectRepoPath);
+            }
 
             executionContext.Debug($"Repository requires to be placed at '{expectRepoPath}', current location is '{currentRepoPath}'");
             if (!string.Equals(currentRepoPath.Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), expectRepoPath.Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), IOUtil.FilePathStringComparison))

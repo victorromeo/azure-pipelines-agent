@@ -127,7 +127,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 return;
             }
 
-            // We only support checkout one repository at this time.
+            // We set the variables based on the 'self' repository
             if (!TryGetRepositoryInfo(executionContext, "self", out RepositoryInfo repoInfo))
             {
                 throw new Exception(StringUtil.Loc("SupportedRepositoryEndpointNotFound"));
@@ -145,7 +145,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             executionContext.Variables.Set(Constants.Variables.Build.RepoProvider, ConvertToLegacyRepositoryType(repoInfo.Repository.Type));
             executionContext.Variables.Set(Constants.Variables.Build.RepoUri, repoInfo.Repository.Url?.AbsoluteUri);
 
-            // TODO - should this be just the checkout associated with 'self'?
+            // There may be more than one Checkout task, but for back compat we will simply pay attention to the first checkout task here
             var checkoutTask = steps.FirstOrDefault(x => x.IsCheckoutTask()) as Pipelines.TaskStep;
             if (checkoutTask != null)
             {

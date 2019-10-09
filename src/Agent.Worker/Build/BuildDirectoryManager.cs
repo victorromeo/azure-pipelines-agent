@@ -93,6 +93,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             var selfRepository = executionContext.Repositories.FirstOrDefault(r => string.Equals(r.Alias, "self", StringComparison.OrdinalIgnoreCase));
             ArgUtil.NotNull(selfRepository, nameof(selfRepository));
 
+            // TODO (next PR): We need to modify the Tracking file to handle multiple repositories (currently we are only tracking the self repo)
             var trackingManager = HostContext.GetService<ITrackingManager>();
 
             // Defer to the source provider to calculate the hash key.
@@ -197,12 +198,29 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             // Set the default clone path for each repository (the Checkout task may override this later)
             foreach (var repository in repositories)
             {
-                var repoPath = repositories.Count > 1 ? Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), newConfig.SourcesDirectory, repository.Alias) : Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), newConfig.SourcesDirectory);
+                var repoPath = GetDefaultRepositoryPath(executionContext, repository, newConfig.SourcesDirectory);
                 Trace.Info($"Set repository path for repository {repository.Alias} to '{repoPath}'");
                 repository.Properties.Set<string>(RepositoryPropertyNames.Path, repoPath);
             }
 
             return newConfig;
+        }
+
+        public string GetDefaultRepositoryPath(
+            IExecutionContext executionContext, 
+            RepositoryResource repository,
+            string defaultSourcesDirectory)
+        {
+            if (RepositoryUtil.HasMultipleCheckouts(executionContext.JobSettings))
+            {
+                // If we have multiple checkouts they should all be rooted to the work directory
+                return Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), RepositoryUtil.GetCloneDirectory(repository));
+            }
+            else
+            {
+                // For single checkouts, the repository is rooted to the sources folder
+                return Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), defaultSourcesDirectory);
+            }
         }
 
         public TrackingConfig UpdateDirectory(
