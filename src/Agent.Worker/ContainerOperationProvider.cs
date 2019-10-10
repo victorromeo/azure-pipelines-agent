@@ -269,7 +269,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     }
                 }
 
-                if (PlatformUtil.RunningOnOS != PlatformUtil.OS.Windows)
+                if (!PlatformUtil.RunningOnWindows)
                 {
                     string defaultWorkingDirectory = executionContext.Variables.Get(Constants.Variables.System.DefaultWorkingDirectory);
                     if (string.IsNullOrEmpty(defaultWorkingDirectory))
@@ -289,7 +289,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
 
                 container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Tools), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Tools))));
-                if (PlatformUtil.RunningOnOS == PlatformUtil.OS.OSX)
+                if (PlatformUtil.RunningOnMacOS)
                 {
                     //TODO: we need to determine platform of container, for now assume linux-64
                     var containerPlatform = "linux-x64";
@@ -300,7 +300,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Externals), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Externals)), true));
                 }
 
-                if (PlatformUtil.RunningOnOS != PlatformUtil.OS.Windows)
+                if (!PlatformUtil.RunningOnWindows)
                 {
                     // Ensure .taskkey file exist so we can mount it.
                     string taskKeyFile = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), ".taskkey");
@@ -394,7 +394,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
 
-            if (PlatformUtil.RunningOnOS != PlatformUtil.OS.Windows)
+            if (!PlatformUtil.RunningOnWindows)
             {
                 if (container.IsJobContainer)
                 {
@@ -483,7 +483,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         executionContext.Output(StringUtil.Loc("AllowContainerUserRunDocker", containerUserName));
                         // Get docker.sock group id on Host
                         string statFormatOption = "-c %g";
-                        if (PlatformUtil.RunningOnOS == PlatformUtil.OS.OSX)
+                        if (PlatformUtil.RunningOnMacOS)
                         {
                             statFormatOption = "-f %g";
                         }

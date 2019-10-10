@@ -99,13 +99,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             path = path.Trim('\"');
 
             // if running on OS X, just translate the path
-            if (PlatformUtil.RunningOnOS == PlatformUtil.OS.OSX)
+            if (PlatformUtil.RunningOnMacOS)
             {
                 return Container.TranslateToContainerPath(path);
             }
 
             // try to resolve path inside container if the request path is part of the mount volume
-            StringComparison comparator = (PlatformUtil.RunningOnOS == PlatformUtil.OS.Windows) ? StringComparison.OrdinalIgnoreCase : StringComparison.OrdinalIgnoreCase;
+            StringComparison comparator = (PlatformUtil.RunningOnWindows) ? StringComparison.OrdinalIgnoreCase : StringComparison.OrdinalIgnoreCase;
             if (Container.MountVolumes.Exists(x => path.StartsWith(x.SourceVolumePath, comparator)))
             {
                 return Container.TranslateToContainerPath(path);
@@ -175,7 +175,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             string entryScript = Container.TranslateToContainerPath(targetEntryScript);
 
             string userArgs = "";
-            if (PlatformUtil.RunningOnOS != PlatformUtil.OS.Windows)
+            if (!PlatformUtil.RunningOnWindows)
             {
                 userArgs = $"-u {Container.CurrentUserId}";
             }
@@ -187,7 +187,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 processInvoker.ErrorDataReceived += ErrorDataReceived;
                 outputEncoding = null; // Let .NET choose the default.
 
-                if (PlatformUtil.RunningOnOS == PlatformUtil.OS.Windows)
+                if (PlatformUtil.RunningOnWindows)
                 {
                     // It appears that node.exe outputs UTF8 when not in TTY mode.
                     outputEncoding = Encoding.UTF8;
