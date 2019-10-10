@@ -93,7 +93,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             // node 6.x's implementation takes 2 parameters str.endsWith(searchString[, length]) / str.startsWith(searchString[, length])
             // the implementation vsts-task-lib had only takes one parameter str.endsWith(searchString) / str.startsWith(searchString).
             // as long as vsts-task-lib be loaded into memory, it will overwrite the implementation node 6.x has, 
-            // so any scirpt that use the second parameter (length) will encounter unexpected result.
+            // so any script that use the second parameter (length) will encounter unexpected result.
             // to avoid customer hit this error, we will modify the file (extensions.js) under vsts-task-lib module folder when customer choose to use Node 6.x
             Trace.Info("Inspect node_modules folder, make sure vsts-task-lib doesn't overwrite String.startsWith/endsWith.");
             FixVstsTaskLibModule();
@@ -209,7 +209,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                                 {
                                     if (_vstsTaskLibVersionNeedsFix.IsMatch(versionToken.ToString()))
                                     {
-                                        Trace.Info($"Fix extensions.js file at '{file.FullName}'. The vsts-task-lib vsersion is '{versionToken.ToString()}'");
+                                        Trace.Info($"Fix extensions.js file at '{file.FullName}'. The vsts-task-lib version is '{versionToken.ToString()}'");
 
                                         // take backup of the original file
                                         File.Copy(file.FullName, Path.Combine(file.DirectoryName, "extensions.js.vstsnode5"));
