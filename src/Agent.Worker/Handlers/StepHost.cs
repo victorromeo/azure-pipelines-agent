@@ -98,6 +98,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             // remove double quotes around the path
             path = path.Trim('\"');
 
+            // if running on OS X, just translate the path
+            if (PlatformUtil.RunningOnOS == PlatformUtil.OS.OSX)
+            {
+                return Container.TranslateToContainerPath(path);
+            }
+
             // try to resolve path inside container if the request path is part of the mount volume
             StringComparison comparator = (PlatformUtil.RunningOnOS == PlatformUtil.OS.Windows) ? StringComparison.OrdinalIgnoreCase : StringComparison.OrdinalIgnoreCase;
             if (Container.MountVolumes.Exists(x => path.StartsWith(x.SourceVolumePath, comparator)))
@@ -165,7 +171,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             {
                 node = Container.TranslateToContainerPath(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "node", "bin", $"node{IOUtil.ExeExtension}"));
             }
-
+            //payload.ExecutionHandler = node; // WHY???
             string entryScript = Container.TranslateToContainerPath(targetEntryScript);
 
             string userArgs = "";
@@ -173,7 +179,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             {
                 userArgs = $"-u {Container.CurrentUserId}";
             }
-            string containerExecutionArgs = $"exec -i {userArgs} {Container.ContainerId} strace {node} {entryScript}";
+            string containerExecutionArgs = $"exec -i {userArgs} {Container.ContainerId} {node} {entryScript}";
 
             using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
             {
