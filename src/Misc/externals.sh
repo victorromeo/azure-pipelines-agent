@@ -91,7 +91,7 @@ function acquireExternalTool() {
         local nested_dir=""
         if [[ "$download_basename" == *.zip ]]; then
             # Extract the zip.
-            echo "Extracting zip to layout"
+            echo "Extracting zip from $download_target to $target_dir"
             unzip "$download_target" -d "$target_dir" > /dev/null
             local rc=$?
             if [[ $rc -ne 0 && $rc -ne 1 ]]; then
@@ -104,7 +104,7 @@ function acquireExternalTool() {
             fi
         elif [[ "$download_basename" == *.tar.gz ]]; then
             # Extract the tar gz.
-            echo "Extracting tar gz to layout"
+            echo "Extracting tar gz from $download_target to $target_dir"
             tar xzf "$download_target" -C "$target_dir" > /dev/null || checkRC 'tar'
 
             # Capture the nested directory path if the fix_nested_dir flag is set.
@@ -113,7 +113,7 @@ function acquireExternalTool() {
             fi
         else
             # Copy the file.
-            echo "Copying to layout"
+            echo "Copying from $download_target to $target_dir"
             cp "$download_target" "$target_dir/" || checkRC 'cp'
         fi
 
@@ -178,4 +178,10 @@ fi
 if [[ "$PACKAGERUNTIME" == "linux-arm" ]]; then
     acquireExternalTool "$NODE_URL/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-armv7l.tar.gz" node fix_nested_dir
     acquireExternalTool "$NODE_URL/v${NODE10_VERSION}/node-v${NODE10_VERSION}-linux-armv7l.tar.gz" node10 fix_nested_dir	
+fi
+
+# For OSX and Windows, we also need a linux version of node to inject into a container
+if [[ "$PACKAGERUNTIME" == "osx-x64" || "$PACKAGERUNTIME" == "win-x64" ]]; then
+    acquireExternalTool "$NODE_URL/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz" containers/linux-x64/node fix_nested_dir
+    acquireExternalTool "$NODE_URL/v${NODE10_VERSION}/node-v${NODE10_VERSION}-linux-x64.tar.gz" containers/linux-x64/node10 fix_nested_dir
 fi

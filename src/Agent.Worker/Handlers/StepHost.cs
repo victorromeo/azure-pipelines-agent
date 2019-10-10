@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Agent.Worker.Container;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
+using PlatformUtil = Agent.Sdk.PlatformUtil;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 {
@@ -98,11 +99,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             path = path.Trim('\"');
 
             // try to resolve path inside container if the request path is part of the mount volume
-#if OS_WINDOWS
-            if (Container.MountVolumes.Exists(x => path.StartsWith(x.SourceVolumePath, StringComparison.OrdinalIgnoreCase)))
-#else
-            if (Container.MountVolumes.Exists(x => path.StartsWith(x.SourceVolumePath)))
-#endif
+            StringComparison comparator = (PlatformUtil.RunningOnOS == PlatformUtil.OS.Windows) ? StringComparison.OrdinalIgnoreCase : StringComparison.OrdinalIgnoreCase;
+            if (Container.MountVolumes.Exists(x => path.StartsWith(x.SourceVolumePath, comparator)))
             {
                 return Container.TranslateToContainerPath(path);
             }
@@ -147,7 +145,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             //    We use this intermediate script to read everything from STDIN, then launch the task execution engine (node/powershell) and redirect STDOUT/STDERR
 
             string tempDir = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), Constants.Path.TempDirectory);
-            File.Copy(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Bin), "containerHandlerInvoker.js.template"), Path.Combine(tempDir, "containerHandlerInvoker.js"), true);
+            string targetEntryScript = Path.Combine(tempDir, "containerHandlerInvoker.js");
+            HostContext.GetTrace(nameof(ContainerStepHost)).Info($"Copying containerHandlerInvoker.js to {tempDir}");
+            try
+            {
+                File.Copy(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Bin), "containerHandlerInvoker.js"), targetEntryScript, true);
+            }
+            catch (Exception copyError)
+            {
+                HostContext.GetTrace(nameof(ContainerStepHost)).Error(copyError.Message);
+            }
 
             string node;
             if (!string.IsNullOrEmpty(Container.ContainerBringNodePath))
@@ -159,26 +166,26 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 node = Container.TranslateToContainerPath(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "node", "bin", $"node{IOUtil.ExeExtension}"));
             }
 
-            string entryScript = Container.TranslateToContainerPath(Path.Combine(tempDir, "containerHandlerInvoker.js"));
+            string entryScript = Container.TranslateToContainerPath(targetEntryScript);
 
-#if !OS_WINDOWS
-            string containerExecutionArgs = $"exec -i -u {Container.CurrentUserId} {Container.ContainerId} {node} {entryScript}";
-#else
-            string containerExecutionArgs = $"exec -i {Container.ContainerId} {node} {entryScript}";
-#endif
+            string userArgs = "";
+            if (PlatformUtil.RunningOnOS != PlatformUtil.OS.Windows)
+            {
+                userArgs = $"-u {Container.CurrentUserId}";
+            }
+            string containerExecutionArgs = $"exec -i {userArgs} {Container.ContainerId} strace {node} {entryScript}";
 
             using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
             {
                 processInvoker.OutputDataReceived += OutputDataReceived;
                 processInvoker.ErrorDataReceived += ErrorDataReceived;
+                outputEncoding = null; // Let .NET choose the default.
 
-#if OS_WINDOWS
-                // It appears that node.exe outputs UTF8 when not in TTY mode.
-                outputEncoding = Encoding.UTF8;
-#else
-                // Let .NET choose the default.
-                outputEncoding = null;
-#endif
+                if (PlatformUtil.RunningOnOS == PlatformUtil.OS.Windows)
+                {
+                    // It appears that node.exe outputs UTF8 when not in TTY mode.
+                    outputEncoding = Encoding.UTF8;
+                }
 
                 var redirectStandardIn = new InputQueue<string>();
                 redirectStandardIn.Enqueue(JsonUtility.ToString(payload));
