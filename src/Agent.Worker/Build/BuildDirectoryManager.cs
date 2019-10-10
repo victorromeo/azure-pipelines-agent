@@ -90,7 +90,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             ArgUtil.NotNull(executionContext.Variables, nameof(executionContext.Variables));
             ArgUtil.NotNull(repositories, nameof(repositories));
 
-            var selfRepository = executionContext.Repositories.FirstOrDefault(r => string.Equals(r.Alias, "self", StringComparison.OrdinalIgnoreCase));
+            var selfRepository = repositories.FirstOrDefault(r => string.Equals(r.Alias, "self", StringComparison.OrdinalIgnoreCase));
             ArgUtil.NotNull(selfRepository, nameof(selfRepository));
 
             // TODO (next PR): We need to modify the Tracking file to handle multiple repositories (currently we are only tracking the self repo)
