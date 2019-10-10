@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.ServiceProcess;
 using System.Threading.Tasks;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using System.Linq;
 using System.Threading;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Agent.Worker.Container;
-using Microsoft.VisualStudio.Services.Agent.Worker.Handlers;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.Win32;
 using PlatformUtil = Agent.Sdk.PlatformUtil;
@@ -45,17 +43,19 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             // Check whether we are inside a container.
             // Our container feature requires to map working directory from host to the container.
             // If we are already inside a container, we will not able to find out the real working direcotry path on the host.
-#if OS_WINDOWS
-            // service CExecSvc is Container Execution Agent.
-            ServiceController[] scServices = ServiceController.GetServices();
-            if (scServices.Any(x => String.Equals(x.ServiceName, "cexecsvc", StringComparison.OrdinalIgnoreCase) && x.Status == ServiceControllerStatus.Running))
+            if (PlatformUtil.RunningOnWindows)
             {
-                throw new NotSupportedException(StringUtil.Loc("AgentAlreadyInsideContainer"));
+                // service CExecSvc is Container Execution Agent.
+                ServiceController[] scServices = ServiceController.GetServices();
+                if (scServices.Any(x => String.Equals(x.ServiceName, "cexecsvc", StringComparison.OrdinalIgnoreCase) && x.Status == ServiceControllerStatus.Running))
+                {
+                    throw new NotSupportedException(StringUtil.Loc("AgentAlreadyInsideContainer"));
+                }
             }
-#elif OS_RHEL6
+#if OS_RHEL6
             // Red Hat and CentOS 6 do not support the container feature
             throw new NotSupportedException(StringUtil.Loc("AgentDoesNotSupportContainerFeatureRhel6"));
-#else
+#endif
             try 
             {
                 var initProcessCgroup = File.ReadLines("/proc/1/cgroup");
@@ -68,39 +68,40 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 // if /proc/1/cgroup doesn't exist, we are not inside a container
             }
-#endif
 
-#if OS_WINDOWS
-            // Check OS version (Windows server 1803 is required)
-            object windowsInstallationType = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "InstallationType", defaultValue: null);
-            ArgUtil.NotNull(windowsInstallationType, nameof(windowsInstallationType));
-            object windowsReleaseId = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId", defaultValue: null);
-            ArgUtil.NotNull(windowsReleaseId, nameof(windowsReleaseId));
-            executionContext.Debug($"Current Windows version: '{windowsReleaseId} ({windowsInstallationType})'");
 
-            if (int.TryParse(windowsReleaseId.ToString(), out int releaseId))
+            if (PlatformUtil.RunningOnWindows)
             {
-                if (!windowsInstallationType.ToString().StartsWith("Server", StringComparison.OrdinalIgnoreCase) || releaseId < 1803)
+                // Check OS version (Windows server 1803 is required)
+                object windowsInstallationType = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "InstallationType", defaultValue: null);
+                ArgUtil.NotNull(windowsInstallationType, nameof(windowsInstallationType));
+                object windowsReleaseId = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId", defaultValue: null);
+                ArgUtil.NotNull(windowsReleaseId, nameof(windowsReleaseId));
+                executionContext.Debug($"Current Windows version: '{windowsReleaseId} ({windowsInstallationType})'");
+
+                if (int.TryParse(windowsReleaseId.ToString(), out int releaseId))
                 {
-                    throw new NotSupportedException(StringUtil.Loc("ContainerWindowsVersionRequirement"));
+                    if (!windowsInstallationType.ToString().StartsWith("Server", StringComparison.OrdinalIgnoreCase) || releaseId < 1803)
+                    {
+                        throw new NotSupportedException(StringUtil.Loc("ContainerWindowsVersionRequirement"));
+                    }
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ReleaseId");
                 }
             }
-            else
-            {
-                throw new ArgumentOutOfRangeException(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ReleaseId");
-            }
-#endif
 
             // Check docker client/server version
             DockerVersion dockerVersion = await _dockerManger.DockerVersion(executionContext);
             ArgUtil.NotNull(dockerVersion.ServerVersion, nameof(dockerVersion.ServerVersion));
             ArgUtil.NotNull(dockerVersion.ClientVersion, nameof(dockerVersion.ClientVersion));
 
-#if OS_WINDOWS
-            Version requiredDockerEngineAPIVersion = new Version(1, 30);  // Docker-EE version 17.6
-#else
             Version requiredDockerEngineAPIVersion = new Version(1, 35); // Docker-CE version 17.12
-#endif
+            if (PlatformUtil.RunningOnWindows)
+            {
+                requiredDockerEngineAPIVersion = new Version(1, 30);  // Docker-EE version 17.6
+            }
 
             if (dockerVersion.ServerVersion < requiredDockerEngineAPIVersion)
             {
