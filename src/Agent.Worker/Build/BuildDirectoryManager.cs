@@ -206,23 +206,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             return newConfig;
         }
 
-        public string GetDefaultRepositoryPath(
-            IExecutionContext executionContext, 
-            RepositoryResource repository,
-            string defaultSourcesDirectory)
-        {
-            if (RepositoryUtil.HasMultipleCheckouts(executionContext.JobSettings))
-            {
-                // If we have multiple checkouts they should all be rooted to the work directory
-                return Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), RepositoryUtil.GetCloneDirectory(repository));
-            }
-            else
-            {
-                // For single checkouts, the repository is rooted to the sources folder
-                return Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), defaultSourcesDirectory);
-            }
-        }
-
         public TrackingConfig UpdateDirectory(
             IExecutionContext executionContext,
             RepositoryResource repository)
@@ -534,6 +517,23 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 {
                     return BuildCleanOption.None;
                 }
+            }
+        }
+
+        private string GetDefaultRepositoryPath(
+            IExecutionContext executionContext,
+            RepositoryResource repository,
+            string defaultSourcesDirectory)
+        {
+            if (RepositoryUtil.HasMultipleCheckouts(executionContext.JobSettings))
+            {
+                // If we have multiple checkouts they should all be rooted to the work directory
+                return Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), RepositoryUtil.GetCloneDirectory(repository));
+            }
+            else
+            {
+                // For single checkouts, the repository is rooted to the sources folder
+                return Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), defaultSourcesDirectory);
             }
         }
     }
