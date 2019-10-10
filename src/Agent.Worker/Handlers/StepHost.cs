@@ -171,7 +171,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             {
                 node = Container.TranslateToContainerPath(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "node", "bin", $"node{IOUtil.ExeExtension}"));
             }
-            //payload.ExecutionHandler = node; // WHY???
+
             string entryScript = Container.TranslateToContainerPath(targetEntryScript);
 
             string userArgs = "";

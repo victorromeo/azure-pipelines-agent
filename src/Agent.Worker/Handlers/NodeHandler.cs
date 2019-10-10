@@ -158,7 +158,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             string nodeFolder = (taskHasNode10Data || useNode10) ? "node10" : "node";
 
             Trace.Info($"Task.json has node10 handler data: {taskHasNode10Data}, use node10 for node tasks: {useNode10}");
-        
+
             return Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals),
                 nodeFolder,
                 "bin",
