@@ -65,7 +65,7 @@ In lieu of that (which complicates billing and technical design), this feature m
 
 Similar problem spaces:
 - [Jenkins can use Azure agents](https://docs.microsoft.com/en-us/azure/jenkins/jenkins-azure-vm-agents) this way
-- [AppVeyor](https://www.appveyor.com/docs/enterprise/running-builds-on-azure/) offers instructions for solving a similar problem on several cloud providers
+- [AppVeyor](https://www.appveyor.com/docs/server/running-builds-on-azure/) offers instructions for solving a similar problem on several cloud providers
 - GitLab CI/CD offers auto-scaling of builder containers using [Docker Machine](https://gitlab.com/gitlab-org/gitlab-runner/blob/master/docs/configuration/autoscale.md) or [Kubernetes](https://docs.gitlab.com/runner/executors/kubernetes.html).
 
 Not offered:
