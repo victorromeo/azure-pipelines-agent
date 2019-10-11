@@ -1,12 +1,9 @@
 ## Features
-  - Update environmetserver to use vm resource client api's (#2433)
-  - Adding check and show error message in on-prem scenario  (#2425)
+ - Add retry for createArtifactAsyncFunction (#2508)
 
 ## Bugs
-  - Fix missing job source for pipeline artifacts (#2427)
 
 ## Misc
-  - Changing vss-api-netcore version to 0.5.131-private (#2428)
 
 ## Agent Downloads  
 
