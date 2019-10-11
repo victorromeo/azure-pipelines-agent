@@ -179,9 +179,3 @@ if [[ "$PACKAGERUNTIME" == "linux-arm" ]]; then
     acquireExternalTool "$NODE_URL/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-armv7l.tar.gz" node fix_nested_dir
     acquireExternalTool "$NODE_URL/v${NODE10_VERSION}/node-v${NODE10_VERSION}-linux-armv7l.tar.gz" node10 fix_nested_dir	
 fi
-
-# For OSX and Windows, we also need a linux version of node to inject into a container
-if [[ "$PACKAGERUNTIME" == "osx-x64" || "$PACKAGERUNTIME" == "win-x64" ]]; then
-    acquireExternalTool "$NODE_URL/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-x64.tar.gz" containers/linux-x64/node fix_nested_dir
-    acquireExternalTool "$NODE_URL/v${NODE10_VERSION}/node-v${NODE10_VERSION}-linux-x64.tar.gz" containers/linux-x64/node10 fix_nested_dir
-fi

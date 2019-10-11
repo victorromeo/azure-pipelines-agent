@@ -289,16 +289,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
 
                 container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Tools), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Tools))));
-                if (PlatformUtil.RunningOnMacOS)
-                {
-                    //TODO: we need to determine platform of container, for now assume linux-64
-                    var containerPlatform = "linux-x64";
-                    container.MountVolumes.Add(new MountVolume(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "containers", containerPlatform), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Externals)), true));
-                }
-                else
-                {
-                    container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Externals), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Externals)), true));
-                }
+
+                bool externalReadOnly = !PlatformUtil.RunningOnWindows; // This code was refactored to use PlatformUtils. The previous implementation did not have the externals directory mounted read-only for Windows.
+                                                                        // That seems wrong, but to prevent any potential backwards compatibility issues, we are keeping the same logic
+                container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Externals), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Externals)), externalReadOnly));
 
                 if (!PlatformUtil.RunningOnWindows)
                 {
@@ -326,7 +320,27 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     else
                     {
                         node = container.TranslateToContainerPath(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "node", "bin", $"node{IOUtil.ExeExtension}"));
+                        
+                        // if on Mac OS X, require container to have node
+                        if (PlatformUtil.RunningOnMacOS)
+                        {
+                            container.ContainerBringNodePath = "node";
+                            node = container.ContainerBringNodePath;
+                        }
+                        // if running on Windows, and attempting to run linux container, require container to have node
+                        else if (PlatformUtil.RunningOnWindows)
+                        {
+                            string containerOS = await _dockerManger.DockerInspect(context: executionContext,
+                                                                        dockerObject: container.ContainerImage,
+                                                                        options: $"--format=\"{{{{.Os}}}}\"");
+                            if (string.Equals("linux", containerOS, StringComparison.OrdinalIgnoreCase))
+                            {
+                                container.ContainerBringNodePath = "node";
+                                node = container.ContainerBringNodePath;
+                            }
+                        }                        
                     }
+                    
                     string sleepCommand = $"\"{node}\" -e \"setInterval(function(){{}}, 24 * 60 * 60 * 1000);\"";
                     container.ContainerCommand = sleepCommand;
                 }
@@ -542,6 +556,26 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         if (execGroupUsermodExitCode != 0)
                         {
                             throw new InvalidOperationException($"Docker exec fail with exit code {execGroupUsermodExitCode}");
+                        }
+
+                        // if path to node is just 'node', with no path, let's make sure it is actually there
+                        if (string.Equals(container.ContainerBringNodePath, "node", StringComparison.OrdinalIgnoreCase))
+                        {
+                            List<string> nodeVersionOutput = new List<string>();
+                            int execNodeVersionExitCode = await _dockerManger.DockerExec(executionContext, container.ContainerId, string.Empty, $"bash -c \"node -v\"", nodeVersionOutput);
+                            if (execNodeVersionExitCode != 0)
+                            {
+                                throw new InvalidOperationException($"Unable to get node version on container {container.ContainerId}. Got exit code {execNodeVersionExitCode} from docer exec");
+                            }
+                            if (nodeVersionOutput.Count > 0)
+                            {
+                                executionContext.Output($"Detected Node Version: {nodeVersionOutput[0]}");
+                                Trace.Info($"Using node version {nodeVersionOutput[0]} in container {container.ContainerId}");
+                            }
+                            else
+                            {
+                                throw new InvalidOperationException($"Unable to get node version on container {container.ContainerId}. No output from node -v");
+                            }
                         }
                     }
                 }

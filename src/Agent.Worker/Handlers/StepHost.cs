@@ -98,14 +98,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             // remove double quotes around the path
             path = path.Trim('\"');
 
-            // if running on OS X, just translate the path
-            if (PlatformUtil.RunningOnMacOS)
-            {
-                return Container.TranslateToContainerPath(path);
-            }
-
             // try to resolve path inside container if the request path is part of the mount volume
-            StringComparison comparator = (PlatformUtil.RunningOnWindows) ? StringComparison.OrdinalIgnoreCase : StringComparison.OrdinalIgnoreCase;
+            StringComparison comparator = (PlatformUtil.RunningOnWindows) ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
             if (Container.MountVolumes.Exists(x => path.StartsWith(x.SourceVolumePath, comparator)))
             {
                 return Container.TranslateToContainerPath(path);
