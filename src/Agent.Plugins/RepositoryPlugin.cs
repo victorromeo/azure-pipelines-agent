@@ -89,6 +89,12 @@ namespace Agent.Plugins.Repository
         {
             return executionContext != null && RepositoryUtil.HasMultipleCheckouts(executionContext.JobSettings);
         }
+
+        protected bool ShouldUpdateRepositoryPath(AgentTaskPluginExecutionContext executionContext, string repositoryAlias)
+        {
+            // Only update the repo path if this is the only checkout task or this checkout task is for the 'self' repo
+            return !HasMultipleCheckouts(executionContext) || RepositoryUtil.IsPrimaryRepositoryName(repositoryAlias);
+        }
     }
 
     public class CheckoutTask : RepositoryTask
@@ -139,17 +145,17 @@ namespace Agent.Plugins.Repository
             }
             else if (HasMultipleCheckouts(executionContext))
             {
-                // When repository doesn't has path set, default to directory 1/<repoName>
+                // When there are multiple checkout tasks (and this one didn't set the path), default to directory 1/<repoName>
                 expectRepoPath = Path.Combine(buildDirectory, RepositoryUtil.GetCloneDirectory(repo));
             }
             else
             {
-                // When there's a single checkout task that doesn't has path set, default to sources directory 1/s
+                // When there's a single checkout task that doesn't have path set, default to sources directory 1/s
                 expectRepoPath = Path.Combine(buildDirectory, "s");
             }
 
-            // Only update the repo path variables if there is a single checkout task
-            if (!HasMultipleCheckouts(executionContext))
+            // Don't update the repository path for every checkout task (it should only be updated once)
+            if (ShouldUpdateRepositoryPath(executionContext, repo.Alias))
             {
                 executionContext.UpdateRepositoryPath(repoAlias, expectRepoPath);
             }

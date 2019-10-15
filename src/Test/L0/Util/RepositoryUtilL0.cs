@@ -51,6 +51,79 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        public void HasMultipleCheckouts_should_return_false_when_not_set_correctly()
+        {
+            using (TestHostContext hc = new TestHostContext(this))
+            {
+                Tracing trace = hc.GetTrace();
+
+                Assert.Equal(false, RepositoryUtil.HasMultipleCheckouts(null));
+                var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                dict[WellKnownJobSettings.HasMultipleCheckouts] = "!true";
+                Assert.Equal(false, RepositoryUtil.HasMultipleCheckouts(dict));
+                dict[WellKnownJobSettings.HasMultipleCheckouts] = "false";
+                Assert.Equal(false, RepositoryUtil.HasMultipleCheckouts(dict));
+                dict[WellKnownJobSettings.HasMultipleCheckouts] = "FALSE";
+                Assert.Equal(false, RepositoryUtil.HasMultipleCheckouts(dict));
+                dict[WellKnownJobSettings.HasMultipleCheckouts] = "False";
+                Assert.Equal(false, RepositoryUtil.HasMultipleCheckouts(dict));
+                dict[WellKnownJobSettings.HasMultipleCheckouts] = "0";
+                Assert.Equal(false, RepositoryUtil.HasMultipleCheckouts(dict));
+                dict[WellKnownJobSettings.HasMultipleCheckouts] = "1";
+                Assert.Equal(false, RepositoryUtil.HasMultipleCheckouts(dict));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void GetRepository_should_return_correct_value_when_called()
+        {
+            using (TestHostContext hc = new TestHostContext(this))
+            {
+                Tracing trace = hc.GetTrace();
+
+                var repo1 = new RepositoryResource
+                {
+                    Alias = "repo1",
+                    Id = "repo1",
+                    Type = "git",
+                };
+
+                var repo2 = new RepositoryResource
+                {
+                    Alias = "repo2",
+                    Id = "repo2",
+                    Type = "git",
+                };
+
+                var repoSelf = new RepositoryResource
+                {
+                    Alias = "self",
+                    Id = "repo3",
+                    Type = "git",
+                };
+
+                Assert.Equal(null, RepositoryUtil.GetRepository(null));
+                Assert.Equal(repo1, RepositoryUtil.GetRepository(new[] { repo1 }));
+                Assert.Equal(repo2, RepositoryUtil.GetRepository(new[] { repo2 }));
+                Assert.Equal(repoSelf, RepositoryUtil.GetRepository(new[] { repoSelf }));
+                Assert.Equal(null, RepositoryUtil.GetRepository(new[] { repo1, repo2 }));
+                Assert.Equal(repo1, RepositoryUtil.GetRepository(new[] { repo1, repo2 }, "repo1"));
+                Assert.Equal(repo2, RepositoryUtil.GetRepository(new[] { repo1, repo2 }, "repo2"));
+                Assert.Equal(repoSelf, RepositoryUtil.GetRepository(new[] { repoSelf, repo1, repo2 }));
+                Assert.Equal(repoSelf, RepositoryUtil.GetRepository(new[] { repo1, repoSelf, repo2 }));
+                Assert.Equal(repoSelf, RepositoryUtil.GetRepository(new[] { repo1, repo2, repoSelf }));
+                Assert.Equal(repo1, RepositoryUtil.GetRepository(new[] { repoSelf, repo1, repo2 }, "repo1"));
+                Assert.Equal(repo2, RepositoryUtil.GetRepository(new[] { repoSelf, repo1, repo2 }, "repo2"));
+                Assert.Equal(repoSelf, RepositoryUtil.GetRepository(new[] { repoSelf, repo1, repo2 }, "self"));
+                Assert.Equal(null, RepositoryUtil.GetRepository(new[] { repoSelf, repo1, repo2 }, "unknown"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
         public void GetCloneDirectory_REPO_should_throw_on_null()
         {
             using (TestHostContext hc = new TestHostContext(this))
@@ -142,6 +215,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
                 Assert.Equal("foo", RepositoryUtil.GetCloneDirectory("host:foo.git///"));
                 Assert.Equal("foo", RepositoryUtil.GetCloneDirectory("host:foo///.git/"));
                 Assert.Equal("foo", RepositoryUtil.GetCloneDirectory("host:foo/.git///"));
+                Assert.Equal("foo", RepositoryUtil.GetCloneDirectory("host:foo/.git///"));
+                Assert.Equal("repo", RepositoryUtil.GetCloneDirectory("host:foo/repo"));
 
                 // omitting the path should default to the hostname
                 Assert.Equal("host", RepositoryUtil.GetCloneDirectory("ssh://host/"));

@@ -1,13 +1,19 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Agent.Sdk;
 using Microsoft.TeamFoundation.DistributedTask.Pipelines;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Microsoft.VisualStudio.Services.Agent.Util
 {
     public static class RepositoryUtil
     {
+        private const string primaryRepositoryName = "self";
+
+        // To allow the const to be available outside this public class, we publish it as a static readonly string
+        public static readonly string PrimaryRepositoryName = primaryRepositoryName;
+
         public static bool HasMultipleCheckouts(Dictionary<string, string> jobSettings)
         {
             if (jobSettings != null && jobSettings.TryGetValue(WellKnownJobSettings.HasMultipleCheckouts, out string hasMultipleCheckoutsText))
@@ -18,7 +24,29 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             return false;
         }
 
-        public static string GetCloneDirectory(Pipelines.RepositoryResource repository)
+        public static bool IsPrimaryRepositoryName(string repoAlias)
+        {
+            return string.Equals(repoAlias, primaryRepositoryName, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static RepositoryResource GetRepository(IList<RepositoryResource> repositories, string repoAlias = primaryRepositoryName)
+        {
+            if (repositories == null)
+            {
+                return null;
+            }
+
+            if (repositories.Count == 1 || String.IsNullOrEmpty(repoAlias))
+            {
+                return repositories.FirstOrDefault();
+            }
+            else
+            {
+                return repositories.FirstOrDefault(r => string.Equals(r.Alias, repoAlias, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        public static string GetCloneDirectory(RepositoryResource repository)
         {
             ArgUtil.NotNull(repository, nameof(repository));
 
@@ -75,7 +103,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
         {
             int lastColon = buffer.FinalIndexOf(':', startIndex, endIndex);
             // Trim the rest of the string after the colon if it is empty or is all digits
-            if (lastColon >= 0 && (lastColon == endIndex || buffer.IsNumber(lastColon + 1, endIndex)))
+            if (lastColon >= 0 && (lastColon == endIndex || buffer.SubstringIsNumber(lastColon + 1, endIndex)))
             {
                 return lastColon - 1;
             }
@@ -97,8 +125,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
 
             const string gitExtension = ".git";
-            int possiblExtStart = endIndex - gitExtension.Length + 1;
-            if (possiblExtStart >= 0 && gitExtension.Equals(buffer.Substring(possiblExtStart, gitExtension.Length), StringComparison.OrdinalIgnoreCase))
+            int possibleExtensionStart = endIndex - gitExtension.Length + 1;
+            if (possibleExtensionStart >= 0 && gitExtension.Equals(buffer.Substring(possibleExtensionStart, gitExtension.Length), StringComparison.OrdinalIgnoreCase))
             {
                 // We found the .git extension
                 endIndex -= gitExtension.Length;
@@ -137,11 +165,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             return buffer.LastIndexOf(charToSearchFor, endIndex, endIndex - startIndex + 1);
         }
 
-        private static bool IsNumber(this string buffer, int startIndex, int endIndex)
+        private static bool SubstringIsNumber(this string buffer, int startIndex, int endIndex)
         {
-            bool digitsFound = false;
-
-            if (buffer == null || startIndex < 0 || endIndex < 0 || startIndex >= buffer.Length || endIndex >= buffer.Length)
+            if (buffer == null || startIndex < 0 || endIndex < 0 || startIndex >= buffer.Length || endIndex >= buffer.Length || startIndex > endIndex)
             {
                 return false;
             }
@@ -152,13 +178,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 {
                     return false;
                 }
-                else
-                {
-                    digitsFound = true;
-                }
             }
 
-            return digitsFound;
+            return true;
         }
     }
 }
