@@ -133,10 +133,12 @@ namespace Agent.Plugins.Repository
             ArgUtil.NotNullOrEmpty(buildDirectory, nameof(buildDirectory));
             ArgUtil.NotNullOrEmpty(tempDirectory, nameof(tempDirectory));
 
+            // Determine the path that we should clone/move the repository into
             string expectRepoPath;
             var path = executionContext.GetInput("path");
             if (!string.IsNullOrEmpty(path))
             {
+                // When the checkout task provides a path, always use that one
                 expectRepoPath = IOUtil.ResolvePath(buildDirectory, path);
                 if (!expectRepoPath.StartsWith(buildDirectory.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar))
                 {

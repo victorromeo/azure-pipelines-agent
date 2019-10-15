@@ -1,12 +1,9 @@
-using Microsoft.TeamFoundation.Build.WebApi;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
-using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
@@ -31,7 +28,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
         public override string GetRootedPath(IExecutionContext context, string path)
         {
             string rootedPath = null;
-            TryGetRepositoryInfo(context, "self", out RepositoryInfo repoInfo);
+            TryGetRepositoryInfo(context, out RepositoryInfo repoInfo);
 
             if (repoInfo.SourceProvider != null &&
                 repoInfo.Repository != null &&
@@ -100,7 +97,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
         public override void ConvertLocalPath(IExecutionContext context, string localPath, out string repoName, out string sourcePath)
         {
             repoName = "";
-            TryGetRepositoryInfo(context, "self", out RepositoryInfo repoInfo);
+            TryGetRepositoryInfo(context, out RepositoryInfo repoInfo);
 
             // If no repo was found, send back an empty repo with original path.
             sourcePath = localPath;
@@ -135,7 +132,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             }
 
             // We set the variables based on the 'self' repository
-            if (!TryGetRepositoryInfo(executionContext, "self", out RepositoryInfo repoInfo))
+            if (!TryGetRepositoryInfo(executionContext, out RepositoryInfo repoInfo))
             {
                 throw new Exception(StringUtil.Loc("SupportedRepositoryEndpointNotFound"));
             }
@@ -218,7 +215,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             }
         }
 
-        private bool TryGetRepositoryInfo(IExecutionContext executionContext, string repoAlias, out RepositoryInfo repoInfo)
+        private bool TryGetRepositoryInfo(IExecutionContext executionContext, out RepositoryInfo repoInfo)
         {
             // Return the matching repository resource and its source provider.
             Trace.Entering();
@@ -226,15 +223,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             var extensionManager = HostContext.GetService<IExtensionManager>();
             List<ISourceProvider> sourceProviders = extensionManager.GetExtensions<ISourceProvider>();
 
-            var repository = RepositoryUtil.GetRepository(executionContext.Repositories, repoAlias);
+            var primaryRepository = RepositoryUtil.GetRepository(executionContext.Repositories);
 
-            if (repository != null)
+            if (primaryRepository != null)
             {
-                var sourceProvider = sourceProviders.FirstOrDefault(x => string.Equals(x.RepositoryType, repository.Type, StringComparison.OrdinalIgnoreCase));
+                var sourceProvider = sourceProviders.FirstOrDefault(x => string.Equals(x.RepositoryType, primaryRepository.Type, StringComparison.OrdinalIgnoreCase));
 
                 if (sourceProvider != null)
                 {
-                    repoInfo.Repository = repository;
+                    repoInfo.Repository = primaryRepository;
                     repoInfo.SourceProvider = sourceProvider;
                     return true;
                 }

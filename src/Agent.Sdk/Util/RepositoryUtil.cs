@@ -31,14 +31,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
         public static RepositoryResource GetRepository(IList<RepositoryResource> repositories, string repoAlias = primaryRepositoryName)
         {
-            if (repositories == null)
+            if (repositories == null || !repositories.Any())
             {
                 return null;
             }
 
             if (repositories.Count == 1 || String.IsNullOrEmpty(repoAlias))
             {
-                return repositories.FirstOrDefault();
+                return repositories.First();
             }
             else
             {
