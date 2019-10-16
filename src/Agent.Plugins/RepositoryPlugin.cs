@@ -145,8 +145,8 @@ namespace Agent.Plugins.Repository
             }
             else if (HasMultipleCheckouts(executionContext))
             {
-                // When there are multiple checkout tasks (and this one didn't set the path), default to directory 1/<repoName>
-                expectRepoPath = Path.Combine(buildDirectory, RepositoryUtil.GetCloneDirectory(repo));
+                // When there are multiple checkout tasks (and this one didn't set the path), default to directory 1/s/<repoName>
+                expectRepoPath = Path.Combine(buildDirectory, "s", RepositoryUtil.GetCloneDirectory(repo));
             }
             else
             {
