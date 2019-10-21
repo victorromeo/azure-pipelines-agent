@@ -92,9 +92,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 legacyPShandler.Platforms = null;
             }
 
+            var targetOs = PlatformUtil.RunningOnOS;
+            if (ExecutionContext.Container != null)
+            {
+                targetOs = ExecutionContext.Container.ImageOS;
+            }
+            Trace.Info($"Get handler data for target platform {targetOs.ToString()}");
+
             HandlerData handlerData =
                 currentExecution?.All
-                .OrderBy(x => !x.PreferredOnCurrentPlatform()) // Sort true to false.
+                .OrderBy(x => !x.PreferredOnPlatform(targetOs)) // Sort true to false.
                 .ThenBy(x => x.Priority)
                 .FirstOrDefault();
             if (handlerData == null)
@@ -304,6 +311,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     ExecutionContext.OutputVariables.Add(outputVar.Name);
                 }
+            }
+
+            if (ExecutionContext.Container != null && targetOs != PlatformUtil.RunningOnOS )
+            {
+                // translate inputs
+                Dictionary<string,string> newInputs = new Dictionary<string, string>();
+                foreach (var entry in inputs)
+                {
+                    newInputs[entry.Key] = ExecutionContext.Container.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, entry.Value);
+                }
+                inputs = newInputs;
             }
 
             // Create the handler.

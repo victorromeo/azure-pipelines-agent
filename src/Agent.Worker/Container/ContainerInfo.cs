@@ -1,3 +1,4 @@
+using Agent.Sdk;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,13 +14,19 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
         private List<MountVolume> _mountVolumes;
         private IDictionary<string, string> _userPortMappings;
         private List<PortMapping> _portMappings;
-        private IDictionary<string, string> _environmentVariables;
+        private Dictionary<string, string> _environmentVariables;
 
 #if OS_WINDOWS
         private Dictionary<string, string> _pathMappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 #else
         private Dictionary<string, string> _pathMappings = new Dictionary<string, string>();
 #endif
+
+        private PlatformUtil.OS _imageOS;
+
+        public delegate void ImageOSChangedHandler();
+
+        public event ImageOSChangedHandler ImageOSChanged;
 
         public ContainerInfo(IHostContext hostContext, Pipelines.ContainerResource container, Boolean isJobContainer = true)
         {
@@ -33,9 +40,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
             this.ContainerRegistryEndpoint = container.Endpoint?.Id ?? Guid.Empty;
             this.ContainerCreateOptions = container.Properties.Get<string>("options");
             this.SkipContainerImagePull = container.Properties.Get<bool>("localimage");
-            _environmentVariables = container.Environment;
+            _environmentVariables = container.Environment != null ? new Dictionary<string, string>(container.Environment) : new Dictionary<string, string>();
             this.ContainerCommand = container.Properties.Get<string>("command", defaultValue: "");
             this.IsJobContainer = isJobContainer;
+            this._imageOS = PlatformUtil.RunningOnOS;
 
 #if OS_WINDOWS
             _pathMappings[hostContext.GetDirectory(WellKnownDirectory.Tools)] = "C:\\__t"; // Tool cache folder may come from ENV, so we need a unique folder to avoid collision
@@ -81,8 +89,35 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
         public string CurrentUserName { get; set; }
         public string CurrentUserId { get; set; }
         public bool IsJobContainer { get; set; }
+        public PlatformUtil.OS ImageOS { 
+            get
+            {
+                return _imageOS;
+            }
+            set
+            {
+                var previousImageOS = _imageOS;
+                _imageOS = value;
+                var newMappings = new Dictionary<string, string>( _pathMappings.Comparer);
+                foreach (var mapping in _pathMappings)
+                {
+                    newMappings[mapping.Key] = TranslateContainerPathForImageOS(previousImageOS, mapping.Value);
+                }
+                _pathMappings = newMappings;
+                var newEnvVars = new Dictionary<string, string>(_environmentVariables.Comparer);
+                foreach (var env in _environmentVariables)
+                {
+                    newEnvVars[env.Key] = TranslateContainerPathForImageOS(previousImageOS, env.Value);
+                }
+                _environmentVariables = newEnvVars;
+                if (ImageOSChanged != null)
+                {
+                    ImageOSChanged();
+                }
+            }
+        }
 
-        public IDictionary<string, string> ContainerEnvironmentVariables
+        public Dictionary<string, string> ContainerEnvironmentVariables
         {
             get
             {
@@ -184,33 +219,58 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
         {
             if (!string.IsNullOrEmpty(path))
             {
+                
+                //path = TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, path);
                 foreach (var mapping in _pathMappings)
                 {
+                    string retval = null;
 #if OS_WINDOWS
                     if (string.Equals(path, mapping.Value, StringComparison.OrdinalIgnoreCase))
                     {
-                        return mapping.Key;
+                        retval = mapping.Key;
                     }
-
-                    if (path.StartsWith(mapping.Value + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
+                    else if (path.StartsWith(mapping.Value + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
                         path.StartsWith(mapping.Value + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
                     {
-                        return mapping.Key + path.Remove(0, mapping.Value.Length);
+                        retval = mapping.Key + path.Remove(0, mapping.Value.Length);
                     }
 #else
                     if (string.Equals(path, mapping.Value))
                     {
-                        return mapping.Key;
+                        retval = mapping.Key;
                     }
-
-                    if (path.StartsWith(mapping.Value + Path.DirectorySeparatorChar))
+                    else if (path.StartsWith(mapping.Value + Path.DirectorySeparatorChar))
                     {
-                        return mapping.Key + path.Remove(0, mapping.Value.Length);
+                        retval = mapping.Key + path.Remove(0, mapping.Value.Length);
                     }
 #endif
+                    if (retval != null)
+                    {
+                        if (PlatformUtil.RunningOnWindows)
+                        {
+                            retval = retval.Replace("/", "\\");
+                        }
+                        else
+                        {
+                            retval = retval.Replace("\\","/");
+                        }
+                        return retval;
+                    }
                 }
             }
 
+            return path;
+        }
+
+        public string TranslateContainerPathForImageOS(PlatformUtil.OS runningOs, string path)
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                if (runningOs == PlatformUtil.OS.Windows && ImageOS == PlatformUtil.OS.Linux)
+                {
+                    return path.Replace("C:\\","/").Replace("\\", "/");
+                }
+            }
             return path;
         }
 

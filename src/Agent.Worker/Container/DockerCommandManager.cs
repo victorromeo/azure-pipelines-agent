@@ -1,3 +1,4 @@
+using Agent.Sdk;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -137,15 +138,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
             {
                 // replace `"` with `\"` and add `"{0}"` to all path.
                 String volumeArg;
+                String targetVolume = container.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, volume.TargetVolumePath).Replace("\"", "\\\"");
+                
                 if (String.IsNullOrEmpty(volume.SourceVolumePath))
                 {
                     // Anonymous docker volume
-                    volumeArg = $"-v \"{volume.TargetVolumePath.Replace("\"", "\\\"")}\"";
+                    volumeArg = $"-v \"{targetVolume}\"";
                 }
                 else
                 {
                     // Named Docker volume / host bind mount
-                    volumeArg = $"-v \"{volume.SourceVolumePath.Replace("\"", "\\\"")}\":\"{volume.TargetVolumePath.Replace("\"", "\\\"")}\"";
+                    volumeArg = $"-v \"{volume.SourceVolumePath.Replace("\"", "\\\"")}\":\"{targetVolume}\"";
                 }
                 if (volume.ReadOnly)
                 {
@@ -186,11 +189,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
 
         public async Task<int> DockerNetworkCreate(IExecutionContext context, string network)
         {
-#if OS_WINDOWS
-            return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} --driver nat", context.CancellationToken);
-#else
+// #if OS_WINDOWS
+//             return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} --driver nat", context.CancellationToken);
+// #else
             return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network}", context.CancellationToken);
-#endif
+//#endif
         }
 
         public async Task<int> DockerNetworkRemove(IExecutionContext context, string network)

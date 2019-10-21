@@ -102,7 +102,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             StringComparison comparator = (PlatformUtil.RunningOnWindows) ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
             if (Container.MountVolumes.Exists(x => path.StartsWith(x.SourceVolumePath, comparator)))
             {
-                return Container.TranslateToContainerPath(path);
+                return Container.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, Container.TranslateToContainerPath(path));
             }
             else
             {
@@ -166,7 +166,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 node = Container.TranslateToContainerPath(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "node", "bin", $"node{IOUtil.ExeExtension}"));
             }
 
-            string entryScript = Container.TranslateToContainerPath(targetEntryScript);
+            string entryScript = Container.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, Container.TranslateToContainerPath(targetEntryScript));
 
             string userArgs = "";
             if (!PlatformUtil.RunningOnWindows)
@@ -188,8 +188,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 }
 
                 var redirectStandardIn = new InputQueue<string>();
-                redirectStandardIn.Enqueue(JsonUtility.ToString(payload));
-
+                var payloadJson = JsonUtility.ToString(payload);
+                redirectStandardIn.Enqueue(payloadJson);
+                HostContext.GetTrace(nameof(ContainerStepHost)).Info($"Payload: {payloadJson}");
                 return await processInvoker.ExecuteAsync(workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Work),
                                                          fileName: containerEnginePath,
                                                          arguments: containerExecutionArgs,

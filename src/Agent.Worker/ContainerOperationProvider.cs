@@ -70,27 +70,27 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
 
-            if (PlatformUtil.RunningOnWindows)
-            {
-                // Check OS version (Windows server 1803 is required)
-                object windowsInstallationType = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "InstallationType", defaultValue: null);
-                ArgUtil.NotNull(windowsInstallationType, nameof(windowsInstallationType));
-                object windowsReleaseId = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId", defaultValue: null);
-                ArgUtil.NotNull(windowsReleaseId, nameof(windowsReleaseId));
-                executionContext.Debug($"Current Windows version: '{windowsReleaseId} ({windowsInstallationType})'");
+            // if (PlatformUtil.RunningOnWindows)
+            // {
+            //     // Check OS version (Windows server 1803 is required)
+            //     object windowsInstallationType = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "InstallationType", defaultValue: null);
+            //     ArgUtil.NotNull(windowsInstallationType, nameof(windowsInstallationType));
+            //     object windowsReleaseId = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId", defaultValue: null);
+            //     ArgUtil.NotNull(windowsReleaseId, nameof(windowsReleaseId));
+            //     executionContext.Debug($"Current Windows version: '{windowsReleaseId} ({windowsInstallationType})'");
 
-                if (int.TryParse(windowsReleaseId.ToString(), out int releaseId))
-                {
-                    if (!windowsInstallationType.ToString().StartsWith("Server", StringComparison.OrdinalIgnoreCase) || releaseId < 1803)
-                    {
-                        throw new NotSupportedException(StringUtil.Loc("ContainerWindowsVersionRequirement"));
-                    }
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ReleaseId");
-                }
-            }
+            //     if (int.TryParse(windowsReleaseId.ToString(), out int releaseId))
+            //     {
+            //         if (!windowsInstallationType.ToString().StartsWith("Server", StringComparison.OrdinalIgnoreCase) || releaseId < 1803)
+            //         {
+            //             throw new NotSupportedException(StringUtil.Loc("ContainerWindowsVersionRequirement"));
+            //         }
+            //     }
+            //     else
+            //     {
+            //         throw new ArgumentOutOfRangeException(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ReleaseId");
+            //     }
+            // }
 
             // Check docker client/server version
             DockerVersion dockerVersion = await _dockerManger.DockerVersion(executionContext);
@@ -269,7 +269,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     }
                 }
 
-                if (!PlatformUtil.RunningOnWindows)
+                if (container.ImageOS != PlatformUtil.OS.Windows)
                 {
                     string defaultWorkingDirectory = executionContext.Variables.Get(Constants.Variables.System.DefaultWorkingDirectory);
                     if (string.IsNullOrEmpty(defaultWorkingDirectory))
@@ -290,11 +290,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Tools), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Tools))));
 
-                bool externalReadOnly = !PlatformUtil.RunningOnWindows; // This code was refactored to use PlatformUtils. The previous implementation did not have the externals directory mounted read-only for Windows.
+                bool externalReadOnly = container.ImageOS != PlatformUtil.OS.Windows; // This code was refactored to use PlatformUtils. The previous implementation did not have the externals directory mounted read-only for Windows.
                                                                         // That seems wrong, but to prevent any potential backwards compatibility issues, we are keeping the same logic
                 container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Externals), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Externals)), externalReadOnly));
 
-                if (!PlatformUtil.RunningOnWindows)
+                if (container.ImageOS != PlatformUtil.OS.Windows)
                 {
                     // Ensure .taskkey file exist so we can mount it.
                     string taskKeyFile = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), ".taskkey");
@@ -326,6 +326,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         {
                             container.ContainerBringNodePath = "node";
                             node = container.ContainerBringNodePath;
+                            container.ImageOS = PlatformUtil.OS.Linux;
                         }
                         // if running on Windows, and attempting to run linux container, require container to have node
                         else if (PlatformUtil.RunningOnWindows)
@@ -337,8 +338,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             {
                                 container.ContainerBringNodePath = "node";
                                 node = container.ContainerBringNodePath;
+                                container.ImageOS = PlatformUtil.OS.Linux;
                             }
-                        }                        
+                        }
                     }
                     
                     string sleepCommand = $"\"{node}\" -e \"setInterval(function(){{}}, 24 * 60 * 60 * 1000);\"";

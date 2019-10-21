@@ -1,3 +1,4 @@
+using Agent.Sdk;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
@@ -450,14 +451,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Inputs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public bool PreferredOnCurrentPlatform()
+        public bool PreferredOnPlatform(PlatformUtil.OS os)
         {
-#if OS_WINDOWS
-            const string CurrentPlatform = "windows";
-            return Platforms?.Any(x => string.Equals(x, CurrentPlatform, StringComparison.OrdinalIgnoreCase)) ?? false;
-#else
+            if (os == PlatformUtil.OS.Windows)
+            {
+                return Platforms?.Any(x => string.Equals(x, os.ToString().ToLowerInvariant(), StringComparison.OrdinalIgnoreCase)) ?? false;
+            }
             return false;
-#endif
         }
 
         public void ReplaceMacros(IHostContext context, Definition definition)

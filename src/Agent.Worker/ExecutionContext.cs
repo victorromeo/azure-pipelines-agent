@@ -1,3 +1,4 @@
+using Agent.Sdk;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -427,6 +428,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             else
             {
                 Container = null;
+            }
+
+            if (Container != null)
+            {
+                Container.ImageOSChanged += () => {
+                    // if the Image OS Changed, we need to retranslate all the variables we have that may contain paths
+                    Variables.Transform( (x) => Container.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, x));
+                };
             }
 
             // Docker (Sidecar Containers)
