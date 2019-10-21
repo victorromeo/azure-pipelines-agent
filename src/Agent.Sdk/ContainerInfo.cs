@@ -5,8 +5,9 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using System.Threading;
 
-namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
+namespace Agent.Sdk
 {
     public class ContainerInfo
     {
@@ -15,21 +16,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
         private IDictionary<string, string> _userPortMappings;
         private List<PortMapping> _portMappings;
         private Dictionary<string, string> _environmentVariables;
-
-#if OS_WINDOWS
-        private Dictionary<string, string> _pathMappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-#else
-        private Dictionary<string, string> _pathMappings = new Dictionary<string, string>();
-#endif
-
+        private Dictionary<string, string> _pathMappings;
         private PlatformUtil.OS _imageOS;
 
         public delegate void ImageOSChangedHandler();
 
         public event ImageOSChangedHandler ImageOSChanged;
 
-        public ContainerInfo(IHostContext hostContext, Pipelines.ContainerResource container, Boolean isJobContainer = true)
+        public ContainerInfo()
         {
+            this.IsJobContainer = true;
+        }
+
+        public ContainerInfo(Pipelines.ContainerResource container, Boolean isJobContainer = true)
+        { 
             this.ContainerName = container.Alias;
 
             string containerImage = container.Properties.Get<string>("image");
@@ -44,21 +44,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
             this.ContainerCommand = container.Properties.Get<string>("command", defaultValue: "");
             this.IsJobContainer = isJobContainer;
             this._imageOS = PlatformUtil.RunningOnOS;
+           _pathMappings = new Dictionary<string, string>( PlatformUtil.RunningOnWindows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
 
-#if OS_WINDOWS
-            _pathMappings[hostContext.GetDirectory(WellKnownDirectory.Tools)] = "C:\\__t"; // Tool cache folder may come from ENV, so we need a unique folder to avoid collision
-            _pathMappings[hostContext.GetDirectory(WellKnownDirectory.Work)] = "C:\\__w";
-            _pathMappings[hostContext.GetDirectory(WellKnownDirectory.Root)] = "C:\\__a";
-            // add -v '\\.\pipe\docker_engine:\\.\pipe\docker_engine' when they are available (17.09)
-#else
-            _pathMappings[hostContext.GetDirectory(WellKnownDirectory.Tools)] = "/__t"; // Tool cache folder may come from ENV, so we need a unique folder to avoid collision
-            _pathMappings[hostContext.GetDirectory(WellKnownDirectory.Work)] = "/__w";
-            _pathMappings[hostContext.GetDirectory(WellKnownDirectory.Root)] = "/__a";
-            if (this.IsJobContainer)
-            {
-                this.MountVolumes.Add(new MountVolume("/var/run/docker.sock", "/var/run/docker.sock"));
-            }
-#endif
             if (container.Ports?.Count > 0)
             {
                 foreach (var port in container.Ports)
@@ -84,7 +71,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
         public string ContainerCommand { get; set; }
         public string ContainerBringNodePath { get; set; }
         public Guid ContainerRegistryEndpoint { get; private set; }
-        public string ContainerCreateOptions { get; private set; }
+        public string ContainerCreateOptions { get; set; }
         public bool SkipContainerImagePull { get; private set; }
         public string CurrentUserName { get; set; }
         public string CurrentUserId { get; set; }
@@ -98,18 +85,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
             {
                 var previousImageOS = _imageOS;
                 _imageOS = value;
-                var newMappings = new Dictionary<string, string>( _pathMappings.Comparer);
-                foreach (var mapping in _pathMappings)
+                if (_pathMappings != null)
                 {
-                    newMappings[mapping.Key] = TranslateContainerPathForImageOS(previousImageOS, mapping.Value);
+                    var newMappings = new Dictionary<string, string>( _pathMappings.Comparer);
+                    foreach (var mapping in _pathMappings)
+                    {
+                        newMappings[mapping.Key] = TranslateContainerPathForImageOS(previousImageOS, mapping.Value);
+                    }
+                    _pathMappings = newMappings;
                 }
-                _pathMappings = newMappings;
-                var newEnvVars = new Dictionary<string, string>(_environmentVariables.Comparer);
-                foreach (var env in _environmentVariables)
+                if (_environmentVariables != null)
                 {
-                    newEnvVars[env.Key] = TranslateContainerPathForImageOS(previousImageOS, env.Value);
+                    var newEnvVars = new Dictionary<string, string>(_environmentVariables.Comparer);
+                    foreach (var env in _environmentVariables)
+                    {
+                        newEnvVars[env.Key] = TranslateContainerPathForImageOS(previousImageOS, env.Value);
+                    }
+                    _environmentVariables = newEnvVars;
                 }
-                _environmentVariables = newEnvVars;
                 if (ImageOSChanged != null)
                 {
                     ImageOSChanged();
@@ -181,34 +174,40 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
             }
         }
 
+        public Dictionary<string, string> PathMappings
+        {
+            get
+            {
+                if (_pathMappings == null)
+                {
+                    _pathMappings = new Dictionary<string, string>();
+                }
+
+                return _pathMappings;
+            }
+        }
+
         public string TranslateToContainerPath(string path)
         {
             if (!string.IsNullOrEmpty(path))
             {
                 foreach (var mapping in _pathMappings)
                 {
-#if OS_WINDOWS
-                    if (string.Equals(path, mapping.Key, StringComparison.OrdinalIgnoreCase))
+                    StringComparison comparer = StringComparison.Ordinal;
+                    if (PlatformUtil.RunningOnWindows)
+                    {
+                        comparer = StringComparison.OrdinalIgnoreCase;
+                    }
+                    if (string.Equals(path, mapping.Key, comparer))
                     {
                         return mapping.Value;
                     }
 
-                    if (path.StartsWith(mapping.Key + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
-                        path.StartsWith(mapping.Key + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                    if (path.StartsWith(mapping.Key + Path.DirectorySeparatorChar, comparer) ||
+                        path.StartsWith(mapping.Key + Path.AltDirectorySeparatorChar, comparer))
                     {
                         return mapping.Value + path.Remove(0, mapping.Key.Length);
                     }
-#else
-                    if (string.Equals(path, mapping.Key))
-                    {
-                        return mapping.Value;
-                    }
-
-                    if (path.StartsWith(mapping.Key + Path.DirectorySeparatorChar))
-                    {
-                        return mapping.Value + path.Remove(0, mapping.Key.Length);
-                    }
-#endif
                 }
             }
 
@@ -224,26 +223,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
                 foreach (var mapping in _pathMappings)
                 {
                     string retval = null;
-#if OS_WINDOWS
-                    if (string.Equals(path, mapping.Value, StringComparison.OrdinalIgnoreCase))
+                    StringComparison comparer = StringComparison.Ordinal;
+                    if (PlatformUtil.RunningOnWindows)
+                    {
+                        comparer = StringComparison.OrdinalIgnoreCase;
+                    }
+
+                    if (string.Equals(path, mapping.Value, comparer))
                     {
                         retval = mapping.Key;
                     }
-                    else if (path.StartsWith(mapping.Value + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) ||
-                        path.StartsWith(mapping.Value + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                    else if (path.StartsWith(mapping.Value + Path.DirectorySeparatorChar, comparer) ||
+                             path.StartsWith(mapping.Value + Path.AltDirectorySeparatorChar, comparer))
                     {
                         retval = mapping.Key + path.Remove(0, mapping.Value.Length);
                     }
-#else
-                    if (string.Equals(path, mapping.Value))
-                    {
-                        retval = mapping.Key;
-                    }
-                    else if (path.StartsWith(mapping.Value + Path.DirectorySeparatorChar))
-                    {
-                        retval = mapping.Key + path.Remove(0, mapping.Value.Length);
-                    }
-#endif
+
                     if (retval != null)
                     {
                         if (PlatformUtil.RunningOnWindows)
@@ -282,30 +277,21 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
             }
         }
 
-        public void ExpandProperties(Variables variables)
+        public void AddPathMappings(Dictionary<string, string> pathMappings)
         {
-            // Expand port mapping
-            variables.ExpandValues(UserPortMappings);
-
-            // Expand volume mounts
-            variables.ExpandValues(UserMountVolumes);
-            foreach (var volume in UserMountVolumes.Values)
+            foreach (var path in pathMappings)
             {
-                // After mount volume variables are expanded, they are final
-                MountVolumes.Add(new MountVolume(volume));
+                PathMappings.Add(path.Key, path.Value);
             }
-
-            // Expand env vars
-            variables.ExpandValues(ContainerEnvironmentVariables);
-
-            // Expand image and options strings
-            ContainerImage = variables.ExpandValue(nameof(ContainerImage), ContainerImage);
-            ContainerCreateOptions = variables.ExpandValue(nameof(ContainerCreateOptions), ContainerCreateOptions);
         }
     }
 
     public class MountVolume
     {
+        public MountVolume()
+        {
+
+        }
                 
         public MountVolume(string sourceVolumePath, string targetVolumePath, bool readOnly = false)
         {
@@ -386,6 +372,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
 
     public class PortMapping
     {
+
+        public PortMapping()
+        {
+
+        }
+
         public PortMapping(string hostPort, string containerPort, string protocol)
         {
             this.HostPort = hostPort;
@@ -400,6 +392,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
 
     public class DockerVersion
     {
+        public DockerVersion()
+        {
+
+        }
+        
         public DockerVersion(Version serverVersion, Version clientVersion)
         {
             this.ServerVersion = serverVersion;
