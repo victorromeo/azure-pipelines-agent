@@ -71,27 +71,31 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
 
-            // if (PlatformUtil.RunningOnWindows)
-            // {
-            //     // Check OS version (Windows server 1803 is required)
-            //     object windowsInstallationType = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "InstallationType", defaultValue: null);
-            //     ArgUtil.NotNull(windowsInstallationType, nameof(windowsInstallationType));
-            //     object windowsReleaseId = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId", defaultValue: null);
-            //     ArgUtil.NotNull(windowsReleaseId, nameof(windowsReleaseId));
-            //     executionContext.Debug($"Current Windows version: '{windowsReleaseId} ({windowsInstallationType})'");
+            if (PlatformUtil.RunningOnWindows)
+            {
+                // Check OS version (Windows server 1803 is required)
+                // Works on Windows client 1903
+                object windowsInstallationType = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "InstallationType", defaultValue: null);
+                ArgUtil.NotNull(windowsInstallationType, nameof(windowsInstallationType));
+                object windowsReleaseId = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion", "ReleaseId", defaultValue: null);
+                ArgUtil.NotNull(windowsReleaseId, nameof(windowsReleaseId));
+                executionContext.Debug($"Current Windows version: '{windowsReleaseId} ({windowsInstallationType})'");
 
-            //     if (int.TryParse(windowsReleaseId.ToString(), out int releaseId))
-            //     {
-            //         if (!windowsInstallationType.ToString().StartsWith("Server", StringComparison.OrdinalIgnoreCase) || releaseId < 1803)
-            //         {
-            //             throw new NotSupportedException(StringUtil.Loc("ContainerWindowsVersionRequirement"));
-            //         }
-            //     }
-            //     else
-            //     {
-            //         throw new ArgumentOutOfRangeException(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ReleaseId");
-            //     }
-            // }
+                if (int.TryParse(windowsReleaseId.ToString(), out int releaseId))
+                {
+                    if (releaseId < 1903) // ?= 1903, support windows client and server
+                    {
+                        if (!windowsInstallationType.ToString().StartsWith("Server", StringComparison.OrdinalIgnoreCase) || releaseId < 1803)
+                        {
+                            throw new NotSupportedException(StringUtil.Loc("ContainerWindowsVersionRequirement"));
+                        }
+                    }
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ReleaseId");
+                }
+            }
 
             // Check docker client/server version
             DockerVersion dockerVersion = await _dockerManger.DockerVersion(executionContext);
@@ -132,6 +136,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 executionContext.Warning($"Delete stale container networks failed, docker network prune fail with exit code {networkPruneExitCode}");
             }
 
+            // We need to pull the containers first before setting up the network
+            foreach (var container in containers)
+            {
+                await PullContainerAsync(executionContext, container);
+            }
+
             // Create local docker network for this job to avoid port conflict when multiple agents run on same machine.
             // All containers within a job join the same network
             await CreateContainerNetworkAsync(executionContext, _containerNetwork);
@@ -164,7 +174,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             await RemoveContainerNetworkAsync(executionContext, _containerNetwork);
         }
 
-        private async Task StartContainerAsync(IExecutionContext executionContext, ContainerInfo container)
+        private async Task PullContainerAsync(IExecutionContext executionContext, ContainerInfo container)
         {
             Trace.Entering();
             ArgUtil.NotNull(executionContext, nameof(executionContext));
@@ -176,14 +186,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Trace.Info($"Container registry: {container.ContainerRegistryEndpoint.ToString()}");
             Trace.Info($"Container options: {container.ContainerCreateOptions}");
             Trace.Info($"Skip container image pull: {container.SkipContainerImagePull}");
-            foreach(var port in container.UserPortMappings)
-            {
-                Trace.Info($"User provided port: {port.Value}");
-            }
-            foreach(var volume in container.UserMountVolumes)
-            {
-                Trace.Info($"User provided volume: {volume.Value}");
-            }
 
             // Login to private docker registry
             string registryServer = string.Empty;
@@ -270,96 +272,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     }
                 }
 
-                if (container.ImageOS != PlatformUtil.OS.Windows)
+                if (PlatformUtil.RunningOnMacOS)
                 {
-                    string defaultWorkingDirectory = executionContext.Variables.Get(Constants.Variables.System.DefaultWorkingDirectory);
-                    if (string.IsNullOrEmpty(defaultWorkingDirectory))
+                    container.ImageOS = PlatformUtil.OS.Linux;
+                }
+                // if running on Windows, and attempting to run linux container, require container to have node
+                else if (PlatformUtil.RunningOnWindows)
+                {
+                    string containerOS = await _dockerManger.DockerInspect(context: executionContext,
+                                                                dockerObject: container.ContainerImage,
+                                                                options: $"--format=\"{{{{.Os}}}}\"");
+                    if (string.Equals("linux", containerOS, StringComparison.OrdinalIgnoreCase))
                     {
-                        throw new NotSupportedException(StringUtil.Loc("ContainerJobRequireSystemDefaultWorkDir"));
+                        container.ImageOS = PlatformUtil.OS.Linux;
                     }
-
-                    string workingDirectory = Path.GetDirectoryName(defaultWorkingDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-                    container.MountVolumes.Add(new MountVolume(container.TranslateToHostPath(workingDirectory), workingDirectory));
-                    container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Temp), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Temp))));
-                    container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Tasks), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Tasks))));
-                }
-                else
-                {
-                    container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Work), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Work))));
-
-                }
-
-                container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Tools), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Tools))));
-
-                bool externalReadOnly = container.ImageOS != PlatformUtil.OS.Windows; // This code was refactored to use PlatformUtils. The previous implementation did not have the externals directory mounted read-only for Windows.
-                                                                        // That seems wrong, but to prevent any potential backwards compatibility issues, we are keeping the same logic
-                container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Externals), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Externals)), externalReadOnly));
-
-                if (container.ImageOS != PlatformUtil.OS.Windows)
-                {
-                    // Ensure .taskkey file exist so we can mount it.
-                    string taskKeyFile = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), ".taskkey");
-                    if (!File.Exists(taskKeyFile))
-                    {
-                        File.WriteAllText(taskKeyFile, string.Empty);
-                    }
-                    container.MountVolumes.Add(new MountVolume(taskKeyFile, container.TranslateToContainerPath(taskKeyFile)));
-                }
-
-                if (container.IsJobContainer)
-                {
-                    // See if this container brings its own Node.js
-                    container.ContainerBringNodePath = await _dockerManger.DockerInspect(context: executionContext,
-                                                                        dockerObject: container.ContainerImage,
-                                                                        options: $"--format=\"{{{{index .Config.Labels \\\"{_nodeJsPathLabel}\\\"}}}}\"");
-
-                    string node;
-                    if (!string.IsNullOrEmpty(container.ContainerBringNodePath))
-                    {
-                        node = container.ContainerBringNodePath;
-                    }
-                    else
-                    {
-                        node = container.TranslateToContainerPath(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "node", "bin", $"node{IOUtil.ExeExtension}"));
-                        
-                        // if on Mac OS X, require container to have node
-                        if (PlatformUtil.RunningOnMacOS)
-                        {
-                            container.ContainerBringNodePath = "node";
-                            node = container.ContainerBringNodePath;
-                            container.ImageOS = PlatformUtil.OS.Linux;
-                        }
-                        // if running on Windows, and attempting to run linux container, require container to have node
-                        else if (PlatformUtil.RunningOnWindows)
-                        {
-                            string containerOS = await _dockerManger.DockerInspect(context: executionContext,
-                                                                        dockerObject: container.ContainerImage,
-                                                                        options: $"--format=\"{{{{.Os}}}}\"");
-                            if (string.Equals("linux", containerOS, StringComparison.OrdinalIgnoreCase))
-                            {
-                                container.ContainerBringNodePath = "node";
-                                node = container.ContainerBringNodePath;
-                                container.ImageOS = PlatformUtil.OS.Linux;
-                            }
-                        }
-                    }
-                    
-                    string sleepCommand = $"\"{node}\" -e \"setInterval(function(){{}}, 24 * 60 * 60 * 1000);\"";
-                    container.ContainerCommand = sleepCommand;
-                }
-
-                container.ContainerId = await _dockerManger.DockerCreate(executionContext, container);
-                ArgUtil.NotNullOrEmpty(container.ContainerId, nameof(container.ContainerId));
-                if (container.IsJobContainer)
-                {
-                    executionContext.Variables.Set(Constants.Variables.Agent.ContainerId, container.ContainerId);
-                }
-
-                // Start container
-                int startExitCode = await _dockerManger.DockerStart(executionContext, container.ContainerId);
-                if (startExitCode != 0)
-                {
-                    throw new InvalidOperationException($"Docker start fail with exit code {startExitCode}");
                 }
             }
             finally
@@ -373,6 +299,116 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         executionContext.Error($"Docker logout fail with exit code {logoutExitCode}");
                     }
                 }
+            }
+        }
+
+        private async Task StartContainerAsync(IExecutionContext executionContext, ContainerInfo container)
+        {
+            Trace.Entering();
+            ArgUtil.NotNull(executionContext, nameof(executionContext));
+            ArgUtil.NotNull(container, nameof(container));
+            ArgUtil.NotNullOrEmpty(container.ContainerImage, nameof(container.ContainerImage));
+
+            Trace.Info($"Container name: {container.ContainerName}");
+            Trace.Info($"Container image: {container.ContainerImage}");
+            Trace.Info($"Container registry: {container.ContainerRegistryEndpoint.ToString()}");
+            Trace.Info($"Container options: {container.ContainerCreateOptions}");
+            Trace.Info($"Skip container image pull: {container.SkipContainerImagePull}");
+            foreach(var port in container.UserPortMappings)
+            {
+                Trace.Info($"User provided port: {port.Value}");
+            }
+            foreach(var volume in container.UserMountVolumes)
+            {
+                Trace.Info($"User provided volume: {volume.Value}");
+            }
+
+            if (container.ImageOS != PlatformUtil.OS.Windows)
+            {
+                string defaultWorkingDirectory = executionContext.Variables.Get(Constants.Variables.System.DefaultWorkingDirectory);
+                if (string.IsNullOrEmpty(defaultWorkingDirectory))
+                {
+                    throw new NotSupportedException(StringUtil.Loc("ContainerJobRequireSystemDefaultWorkDir"));
+                }
+
+                string workingDirectory = IOUtil.GetDirectoryName(defaultWorkingDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), container.ImageOS);
+                string mountWorkingDirectory = container.TranslateToHostPath(workingDirectory);
+                executionContext.Debug($"Default Working Directory {defaultWorkingDirectory}");
+                executionContext.Debug($"Working Directory {workingDirectory}");
+                executionContext.Debug($"Mount Working Directory {mountWorkingDirectory}");
+                container.MountVolumes.Add(new MountVolume(mountWorkingDirectory, workingDirectory));
+                container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Temp), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Temp))));
+                container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Tasks), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Tasks))));
+            }
+            else
+            {
+                container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Work), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Work))));
+
+            }
+
+            container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Tools), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Tools))));
+
+            bool externalReadOnly = container.ImageOS != PlatformUtil.OS.Windows; // This code was refactored to use PlatformUtils. The previous implementation did not have the externals directory mounted read-only for Windows.
+                                                                    // That seems wrong, but to prevent any potential backwards compatibility issues, we are keeping the same logic
+            container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Externals), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Externals)), externalReadOnly));
+
+            if (container.ImageOS != PlatformUtil.OS.Windows)
+            {
+                // Ensure .taskkey file exist so we can mount it.
+                string taskKeyFile = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), ".taskkey");
+                if (!File.Exists(taskKeyFile))
+                {
+                    File.WriteAllText(taskKeyFile, string.Empty);
+                }
+                container.MountVolumes.Add(new MountVolume(taskKeyFile, container.TranslateToContainerPath(taskKeyFile)));
+            }
+
+            if (container.IsJobContainer)
+            {
+                // See if this container brings its own Node.js
+                container.ContainerBringNodePath = await _dockerManger.DockerInspect(context: executionContext,
+                                                                    dockerObject: container.ContainerImage,
+                                                                    options: $"--format=\"{{{{index .Config.Labels \\\"{_nodeJsPathLabel}\\\"}}}}\"");
+
+                string node;
+                if (!string.IsNullOrEmpty(container.ContainerBringNodePath))
+                {
+                    node = container.ContainerBringNodePath;
+                }
+                else
+                {
+                    node = container.TranslateToContainerPath(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "node", "bin", $"node{IOUtil.ExeExtension}"));
+                    
+                    // if on Mac OS X, require container to have node
+                    if (PlatformUtil.RunningOnMacOS)
+                    {
+                        container.ContainerBringNodePath = "node";
+                        node = container.ContainerBringNodePath;
+                    }
+                    // if running on Windows, and attempting to run linux container, require container to have node
+                    else if (PlatformUtil.RunningOnWindows && container.ImageOS == PlatformUtil.OS.Linux)
+                    {
+                        container.ContainerBringNodePath = "node";
+                        node = container.ContainerBringNodePath;
+                    }
+                }
+                
+                string sleepCommand = $"\"{node}\" -e \"setInterval(function(){{}}, 24 * 60 * 60 * 1000);\"";
+                container.ContainerCommand = sleepCommand;
+            }
+
+            container.ContainerId = await _dockerManger.DockerCreate(executionContext, container);
+            ArgUtil.NotNullOrEmpty(container.ContainerId, nameof(container.ContainerId));
+            if (container.IsJobContainer)
+            {
+                executionContext.Variables.Set(Constants.Variables.Agent.ContainerId, container.ContainerId);
+            }
+
+            // Start container
+            int startExitCode = await _dockerManger.DockerStart(executionContext, container.ContainerId);
+            if (startExitCode != 0)
+            {
+                throw new InvalidOperationException($"Docker start fail with exit code {startExitCode}");
             }
 
             try
