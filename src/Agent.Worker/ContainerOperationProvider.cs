@@ -568,7 +568,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             int execNodeVersionExitCode = await _dockerManger.DockerExec(executionContext, container.ContainerId, string.Empty, $"bash -c \"node -v\"", nodeVersionOutput);
                             if (execNodeVersionExitCode != 0)
                             {
-                                throw new InvalidOperationException($"Unable to get node version on container {container.ContainerId}. Got exit code {execNodeVersionExitCode} from docer exec");
+                                throw new InvalidOperationException($"Unable to get node version on container {container.ContainerId}. Got exit code {execNodeVersionExitCode} from docker exec");
                             }
                             if (nodeVersionOutput.Count > 0)
                             {

@@ -19,7 +19,7 @@ namespace Agent.Sdk
         private Dictionary<string, string> _pathMappings;
         private PlatformUtil.OS _imageOS;
 
-        public delegate void ImageOSChangedHandler();
+        public delegate void ImageOSChangedHandler(ContainerInfo container, PlatformUtil.OS oldOS);
 
         public event ImageOSChangedHandler ImageOSChanged;
 
@@ -105,7 +105,7 @@ namespace Agent.Sdk
                 }
                 if (ImageOSChanged != null)
                 {
-                    ImageOSChanged();
+                    ImageOSChanged(this, previousImageOS);
                 }
             }
         }

@@ -455,7 +455,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             if (os == PlatformUtil.OS.Windows)
             {
-                return Platforms?.Any(x => string.Equals(x, os.ToString().ToLowerInvariant(), StringComparison.OrdinalIgnoreCase)) ?? false;
+                return Platforms?.Any(x => string.Equals(x, os.ToString(), StringComparison.OrdinalIgnoreCase)) ?? false;
             }
             return false;
         }

@@ -439,10 +439,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             if (Container != null)
             {
-                Container.ImageOSChanged += () => {
-                    // if the Image OS Changed, we need to retranslate all the variables we have that may contain paths
-                    Variables.Transform( (x) => Container.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, x));
-                };
+                Container.ImageOSChanged += HandleContainerImageOSChange;
             }
 
             // Docker (Sidecar Containers)
@@ -540,6 +537,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             // Hook up JobServerQueueThrottling event, we will log warning on server tarpit.
             _jobServerQueue.JobServerQueueThrottling += JobServerQueueThrottling_EventReceived;
+        }
+
+        private void HandleContainerImageOSChange(ContainerInfo container, PlatformUtil.OS oldOs)
+        {
+            // if the Image OS Changed, we need to retranslate all the variables we have that may contain paths
+            Variables.Transform( (x) => container.TranslateContainerPathForImageOS(oldOs, x));
         }
 
         // Do not add a format string overload. In general, execution context messages are user facing and
