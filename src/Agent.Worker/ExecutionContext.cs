@@ -67,7 +67,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         void ForceTaskComplete();
         string TranslateToHostPath(string path);
         string TranslateToContainerPath(string path);
-        ContainerInfo GetStepTarget();
+        ContainerInfo StepTarget();
 
     }
 
@@ -111,6 +111,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public List<string> PrependPath { get; private set; }
         public List<ContainerInfo> Containers { get; private set; }
         public List<ContainerInfo> SidecarContainers { get; private set; }
+
+        public ContainerInfo DefaultStepTarget { get; private set; } // TODO: maybe keep this private
 
         public List<IAsyncCommandContext> AsyncCommands => _asyncCommands;
 
@@ -253,11 +255,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             if (isFilePath && Containers != null)
             {
+                // TODO: This may be the wrong approach for step targets since we will need to translate variables
+                //       at task time,  not at SetVariable time
                 // All containers should be of the same OS and have the same mappings
-                var firstContainer = Containers.FirstOrDefault();
-                if (firstContainer != null)
+                var stepTarget = StepTarget();
+                if (stepTarget != null)
                 {
-                    value = firstContainer.TranslateToContainerPath(value);
+                    value = stepTarget.TranslateToContainerPath(value);
                 }
             }
 
@@ -428,6 +432,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
             Containers = new List<ContainerInfo>();
+            DefaultStepTarget = null;
             if (!string.IsNullOrEmpty(imageName) &&
                 string.IsNullOrEmpty(message.JobContainer))
             {
@@ -436,11 +441,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     Alias = "vsts_container_preview"
                 };
                 dockerContainer.Properties.Set("image", imageName);
-                Containers.Add(HostContext.CreateContainerInfo(dockerContainer));
+                DefaultStepTarget = HostContext.CreateContainerInfo(dockerContainer);
+                Containers.Add(DefaultStepTarget);
             }
             else if (!string.IsNullOrEmpty(message.JobContainer))
             {
-                Containers.Add(HostContext.CreateContainerInfo(message.Resources.Containers.Single(x => string.Equals(x.Alias, message.JobContainer, StringComparison.OrdinalIgnoreCase))));
+                DefaultStepTarget = HostContext.CreateContainerInfo(message.Resources.Containers.Single(x => string.Equals(x.Alias, message.JobContainer, StringComparison.OrdinalIgnoreCase)));
+                Containers.Add(DefaultStepTarget);
+                foreach (var container in message.Resources.Containers.FindAll(x => !string.Equals(x.Alias, message.JobContainer, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Containers.Add(HostContext.CreateContainerInfo(container));
+                }
             }
 
             if (Containers.Count > 0)
@@ -674,7 +685,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public string TranslateToHostPath(string path)
         {
-            var stepTarget = GetStepTarget();
+            var stepTarget = StepTarget();
             if (stepTarget != null)
             {
                 return stepTarget.TranslateToHostPath(path);
@@ -683,7 +694,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         }
         public string TranslateToContainerPath(string path)
         {
-            var stepTarget = GetStepTarget();
+            var stepTarget = StepTarget();
             if (stepTarget != null)
             {
                 return stepTarget.TranslateToContainerPath(path);
@@ -691,13 +702,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return path;
         }
 
-        public ContainerInfo GetStepTarget()
+        public ContainerInfo StepTarget()
         {
-             if (Containers != null && Containers.Count > 0)
+            if (Containers != null && Containers.Count > 0)
             {
                 return Containers.First();
             }
-            return null;
+            
+            return DefaultStepTarget;
         }
     }
 

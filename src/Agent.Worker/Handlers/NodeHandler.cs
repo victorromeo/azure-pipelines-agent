@@ -102,9 +102,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             StepHost.ErrorDataReceived += OnDataReceived;
 
             string file;
-            if (!string.IsNullOrEmpty(ExecutionContext.GetStepTarget()?.ContainerBringNodePath))
+            if (!string.IsNullOrEmpty(ExecutionContext.StepTarget()?.ContainerBringNodePath))
             {
-                file = ExecutionContext.GetStepTarget().ContainerBringNodePath;
+                file = ExecutionContext.StepTarget().ContainerBringNodePath;
             }
             else
             {

@@ -93,7 +93,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
             var targetOs = PlatformUtil.RunningOnOS;
-            var stepTarget = ExecutionContext.GetStepTarget();
+            var stepTarget = ExecutionContext.StepTarget();
             if (stepTarget != null)
             {
                 targetOs = stepTarget.ImageOS;
