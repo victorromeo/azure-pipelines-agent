@@ -162,7 +162,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Inputs = inputs,
                 Repositories = context.Repositories,
                 Endpoints = context.Endpoints,
-                Container = context.Container,
+                Container = context.GetStepTarget(), //TODO: Figure out if this needs to have all the containers or just the one for the current step
                 JobSettings = context.JobSettings,
             };
 

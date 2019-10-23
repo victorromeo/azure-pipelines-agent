@@ -147,15 +147,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             string tempDir = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), Constants.Path.TempDirectory);
             string targetEntryScript = Path.Combine(tempDir, "containerHandlerInvoker.js");
             HostContext.GetTrace(nameof(ContainerStepHost)).Info($"Copying containerHandlerInvoker.js to {tempDir}");
-            try
-            {
-                File.Copy(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Bin), "containerHandlerInvoker.js"), targetEntryScript, true);
-            }
-            catch (Exception copyError)
-            {
-                HostContext.GetTrace(nameof(ContainerStepHost)).Error(copyError.Message);
-            }
-
+            File.Copy(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Bin), "containerHandlerInvoker.js"), targetEntryScript, true);
+            
             string node;
             if (!string.IsNullOrEmpty(Container.ContainerBringNodePath))
             {

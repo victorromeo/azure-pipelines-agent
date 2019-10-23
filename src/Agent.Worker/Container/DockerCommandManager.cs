@@ -189,7 +189,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
 
         public async Task<int> DockerNetworkCreate(IExecutionContext context, string network)
         {
-            if (context.Container.ImageOS == PlatformUtil.OS.Windows)
+            if (context.GetStepTarget().ImageOS == PlatformUtil.OS.Windows)
             {
                 //TODO: Test this. I verified that using --drive nat does not work when starting a linux container on windows
                 return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} --driver nat", context.CancellationToken);

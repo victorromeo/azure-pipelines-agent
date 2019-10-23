@@ -136,14 +136,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     Stack<IStep> postJobStepsBuilder = new Stack<IStep>();
                     Dictionary<Guid, Variables> taskVariablesMapping = new Dictionary<Guid, Variables>();
 
-                    if (context.Container != null || context.SidecarContainers.Count > 0)
+                    if (context.Containers.Count > 0 || context.SidecarContainers.Count > 0)
                     {
                         var containerProvider = HostContext.GetService<IContainerOperationProvider>();
                         var containers = new List<ContainerInfo>();
-                        if (context.Container != null)
-                        {
-                            containers.Add(context.Container);
-                        }
+                        containers.AddRange(context.Containers);
                         containers.AddRange(context.SidecarContainers);
 
                         preJobSteps.Add(new JobExtensionRunner(runAsync: containerProvider.StartContainersAsync,

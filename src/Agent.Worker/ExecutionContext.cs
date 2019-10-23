@@ -41,7 +41,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         HashSet<string> OutputVariables { get; }
         List<IAsyncCommandContext> AsyncCommands { get; }
         List<string> PrependPath { get; }
-        ContainerInfo Container { get; }
+        List<ContainerInfo> Containers { get; }
         List<ContainerInfo> SidecarContainers { get; }
 
         // Initialize
@@ -65,6 +65,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         // others
         void ForceTaskComplete();
+        string TranslateToHostPath(string path);
+        string TranslateToContainerPath(string path);
+        ContainerInfo GetStepTarget();
+
     }
 
     public sealed class ExecutionContext : AgentService, IExecutionContext
@@ -105,7 +109,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public HashSet<string> OutputVariables => _outputvariables;
         public bool WriteDebug { get; private set; }
         public List<string> PrependPath { get; private set; }
-        public ContainerInfo Container { get; private set; }
+        public List<ContainerInfo> Containers { get; private set; }
         public List<ContainerInfo> SidecarContainers { get; private set; }
 
         public List<IAsyncCommandContext> AsyncCommands => _asyncCommands;
@@ -179,7 +183,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             child.WriteDebug = WriteDebug;
             child._parentExecutionContext = this;
             child.PrependPath = PrependPath;
-            child.Container = Container;
+            child.Containers = Containers;
             child.SidecarContainers = SidecarContainers;
             child._outputForward = outputForward;
 
@@ -247,9 +251,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             ArgUtil.NotNullOrEmpty(name, nameof(name));
 
-            if (isFilePath && Container != null)
+            if (isFilePath && Containers != null)
             {
-                value = Container.TranslateToContainerPath(value);
+                // All containers should be of the same OS and have the same mappings
+                var firstContainer = Containers.FirstOrDefault();
+                if (firstContainer != null)
+                {
+                    value = firstContainer.TranslateToContainerPath(value);
+                }
             }
 
             if (isOutput || OutputVariables.Contains(name))
@@ -418,6 +427,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 imageName = Environment.GetEnvironmentVariable("_PREVIEW_VSTS_DOCKER_IMAGE");
             }
 
+            Containers = new List<ContainerInfo>();
             if (!string.IsNullOrEmpty(imageName) &&
                 string.IsNullOrEmpty(message.JobContainer))
             {
@@ -426,20 +436,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     Alias = "vsts_container_preview"
                 };
                 dockerContainer.Properties.Set("image", imageName);
-                Container = HostContext.CreateContainerInfo(dockerContainer);
+                Containers.Add(HostContext.CreateContainerInfo(dockerContainer));
             }
             else if (!string.IsNullOrEmpty(message.JobContainer))
             {
-                Container = HostContext.CreateContainerInfo(message.Resources.Containers.Single(x => string.Equals(x.Alias, message.JobContainer, StringComparison.OrdinalIgnoreCase)));
-            }
-            else
-            {
-                Container = null;
+                Containers.Add(HostContext.CreateContainerInfo(message.Resources.Containers.Single(x => string.Equals(x.Alias, message.JobContainer, StringComparison.OrdinalIgnoreCase))));
             }
 
-            if (Container != null)
+            if (Containers.Count > 0)
             {
-                Container.ImageOSChanged += HandleContainerImageOSChange;
+                // since all containers need to be the same OS, we only need to listen to the first one
+                Containers.First().ImageOSChanged += HandleContainerImageOSChange;
             }
 
             // Docker (Sidecar Containers)
@@ -663,6 +670,34 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 _throttlingReported = true;
             }
+        }
+
+        public string TranslateToHostPath(string path)
+        {
+            var stepTarget = GetStepTarget();
+            if (stepTarget != null)
+            {
+                return stepTarget.TranslateToHostPath(path);
+            }
+            return path;
+        }
+        public string TranslateToContainerPath(string path)
+        {
+            var stepTarget = GetStepTarget();
+            if (stepTarget != null)
+            {
+                return stepTarget.TranslateToContainerPath(path);
+            }
+            return path;
+        }
+
+        public ContainerInfo GetStepTarget()
+        {
+             if (Containers != null && Containers.Count > 0)
+            {
+                return Containers.First();
+            }
+            return null;
         }
     }
 

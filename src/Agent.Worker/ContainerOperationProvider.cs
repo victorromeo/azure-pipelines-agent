@@ -436,7 +436,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
             // Get port mappings of running container
-            if (executionContext.Container == null && !container.IsJobContainer)
+            if (executionContext.GetStepTarget() == null && !container.IsJobContainer)
             {
                 container.AddPortMappings(await _dockerManger.DockerPort(executionContext, container.ContainerId));
                 foreach (var port in container.PortMappings)

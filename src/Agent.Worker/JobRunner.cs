@@ -223,9 +223,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
 
                 // Expand container properties
-                if (jobContext.Container != null)
+                foreach (var container in jobContext.Containers)
                 {
-                    this.ExpandProperties(jobContext.Container, jobContext.Variables);
+                    this.ExpandProperties(container, jobContext.Variables);
                 }
                 foreach (var sidecar in jobContext.SidecarContainers)
                 {

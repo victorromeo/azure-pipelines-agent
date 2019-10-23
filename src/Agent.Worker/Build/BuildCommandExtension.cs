@@ -44,12 +44,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
         private void ProcessBuildUploadLogCommand(IExecutionContext context, string data)
         {
-            if (context.Container != null)
-            {
-                // Translate file path back from container path
-                data = context.Container.TranslateToHostPath(data);
-            }
-
+            // Translate file path back from container path
+            data = context.TranslateToHostPath(data);
+            
             if (!string.IsNullOrEmpty(data) && File.Exists(data))
             {
                 context.QueueAttachFile(CoreAttachmentType.Log, "CustomToolLog", data);
@@ -64,12 +61,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
         // Leave the implementation on agent for back compat
         private void ProcessBuildUploadSummaryCommand(IExecutionContext context, string data)
         {
-            if (context.Container != null)
-            {
-                // Translate file path back from container path
-                data = context.Container.TranslateToHostPath(data);
-            }
-
+            // Translate file path back from container path
+            data = context.TranslateToHostPath(data);
+            
             if (!string.IsNullOrEmpty(data) && File.Exists(data))
             {
                 var fileName = Path.GetFileName(data);

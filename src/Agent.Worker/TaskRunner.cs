@@ -93,9 +93,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
             var targetOs = PlatformUtil.RunningOnOS;
-            if (ExecutionContext.Container != null)
+            var stepTarget = ExecutionContext.GetStepTarget();
+            if (stepTarget != null)
             {
-                targetOs = ExecutionContext.Container.ImageOS;
+                targetOs = stepTarget.ImageOS;
             }
             Trace.Info($"Get handler data for target platform {targetOs.ToString()}");
 
@@ -117,7 +118,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             IStepHost stepHost = HostContext.CreateService<IDefaultStepHost>();
 
             // Setup container stephost and the right runtime variables for running job inside container.
-            if (ExecutionContext.Container != null)
+            if (stepTarget != null)
             {
                 if (handlerData is AgentPluginHandlerData)
                 {
@@ -125,11 +126,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     Dictionary<string, VariableValue> variableCopy = new Dictionary<string, VariableValue>(StringComparer.OrdinalIgnoreCase);
                     foreach (var publicVar in ExecutionContext.Variables.Public)
                     {
-                        variableCopy[publicVar.Key] = new VariableValue(ExecutionContext.Container.TranslateToHostPath(publicVar.Value));
+                        variableCopy[publicVar.Key] = new VariableValue(stepTarget.TranslateToHostPath(publicVar.Value));
                     }
                     foreach (var secretVar in ExecutionContext.Variables.Private)
                     {
-                        variableCopy[secretVar.Key] = new VariableValue(ExecutionContext.Container.TranslateToHostPath(secretVar.Value), true);
+                        variableCopy[secretVar.Key] = new VariableValue(stepTarget.TranslateToHostPath(secretVar.Value), true);
                     }
 
                     List<string> expansionWarnings;
@@ -140,9 +141,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     // Only the node, node10, and powershell3 handlers support running inside container. 
                     // Make sure required container is already created.
-                    ArgUtil.NotNullOrEmpty(ExecutionContext.Container.ContainerId, nameof(ExecutionContext.Container.ContainerId));
+                    ArgUtil.NotNullOrEmpty(stepTarget.ContainerId, nameof(stepTarget.ContainerId));
                     var containerStepHost = HostContext.CreateService<IContainerStepHost>();
-                    containerStepHost.Container = ExecutionContext.Container;
+                    containerStepHost.Container = stepTarget;
                     stepHost = containerStepHost;
                 }
                 else
@@ -313,13 +314,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
 
-            if (ExecutionContext.Container != null && targetOs != PlatformUtil.RunningOnOS )
+            if (stepTarget != null && targetOs != PlatformUtil.RunningOnOS )
             {
                 // translate inputs
                 Dictionary<string,string> newInputs = new Dictionary<string, string>();
                 foreach (var entry in inputs)
                 {
-                    newInputs[entry.Key] = ExecutionContext.Container.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, entry.Value);
+                    newInputs[entry.Key] = stepTarget.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, entry.Value);
                 }
                 inputs = newInputs;
             }
