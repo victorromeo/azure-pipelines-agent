@@ -129,18 +129,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 // Set agent variables.
                 AgentSettings settings = HostContext.GetService<IConfigurationStore>().GetSettings();
-                jobContext.Variables.Set(Constants.Variables.Agent.Id, settings.AgentId.ToString(CultureInfo.InvariantCulture));
+                jobContext.SetVariable(Constants.Variables.Agent.Id, settings.AgentId.ToString(CultureInfo.InvariantCulture));
                 jobContext.SetVariable(Constants.Variables.Agent.HomeDirectory, HostContext.GetDirectory(WellKnownDirectory.Root), isFilePath: true);
-                jobContext.Variables.Set(Constants.Variables.Agent.JobName, message.JobDisplayName);
-                jobContext.Variables.Set(Constants.Variables.Agent.MachineName, Environment.MachineName);
-                jobContext.Variables.Set(Constants.Variables.Agent.Name, settings.AgentName);
-                jobContext.Variables.Set(Constants.Variables.Agent.OS, VarUtil.OS);
-                jobContext.Variables.Set(Constants.Variables.Agent.OSArchitecture, VarUtil.OSArchitecture);
+                jobContext.SetVariable(Constants.Variables.Agent.JobName, message.JobDisplayName);
+                jobContext.SetVariable(Constants.Variables.Agent.MachineName, Environment.MachineName);
+                jobContext.SetVariable(Constants.Variables.Agent.Name, settings.AgentName);
+                jobContext.SetVariable(Constants.Variables.Agent.OS, VarUtil.OS);
+                jobContext.SetVariable(Constants.Variables.Agent.OSArchitecture, VarUtil.OSArchitecture);
                 jobContext.SetVariable(Constants.Variables.Agent.RootDirectory, HostContext.GetDirectory(WellKnownDirectory.Work), isFilePath: true);
 #if OS_WINDOWS
                 jobContext.SetVariable(Constants.Variables.Agent.ServerOMDirectory, HostContext.GetDirectory(WellKnownDirectory.ServerOM), isFilePath: true);
 #else
-                jobContext.Variables.Set(Constants.Variables.Agent.AcceptTeeEula, settings.AcceptTeeEula.ToString());
+                jobContext.SetVariable(Constants.Variables.Agent.AcceptTeeEula, settings.AcceptTeeEula.ToString());
 #endif
                 jobContext.SetVariable(Constants.Variables.Agent.WorkFolder, HostContext.GetDirectory(WellKnownDirectory.Work), isFilePath: true);
                 jobContext.SetVariable(Constants.Variables.System.WorkFolder, HostContext.GetDirectory(WellKnownDirectory.Work), isFilePath: true);

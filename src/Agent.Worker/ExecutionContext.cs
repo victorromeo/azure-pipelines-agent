@@ -66,8 +66,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         // others
         void ForceTaskComplete();
         string TranslateToHostPath(string path);
-        string TranslateToContainerPath(string path);
         ContainerInfo StepTarget();
+        string TranslatePathForStepTarget(string val);
 
     }
 
@@ -80,12 +80,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private readonly object _loggerLock = new object();
         private readonly List<IAsyncCommandContext> _asyncCommands = new List<IAsyncCommandContext>();
         private readonly HashSet<string> _outputvariables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
         private IAgentLogPlugin _logPlugin;
         private IPagingLogger _logger;
         private IJobServerQueue _jobServerQueue;
         private IExecutionContext _parentExecutionContext;
-
         private bool _outputForward = false;
         private Guid _mainTimelineId;
         private Guid _detailTimelineId;
@@ -111,9 +109,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public List<string> PrependPath { get; private set; }
         public List<ContainerInfo> Containers { get; private set; }
         public List<ContainerInfo> SidecarContainers { get; private set; }
-
         public ContainerInfo DefaultStepTarget { get; private set; } // TODO: maybe keep this private
-
         public List<IAsyncCommandContext> AsyncCommands => _asyncCommands;
 
         public TaskResult? Result
@@ -252,18 +248,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public void SetVariable(string name, string value, bool isSecret = false, bool isOutput = false, bool isFilePath = false)
         {
             ArgUtil.NotNullOrEmpty(name, nameof(name));
-
-            if (isFilePath && Containers != null)
-            {
-                // TODO: This may be the wrong approach for step targets since we will need to translate variables
-                //       at task time,  not at SetVariable time
-                // All containers should be of the same OS and have the same mappings
-                var stepTarget = StepTarget();
-                if (stepTarget != null)
-                {
-                    value = stepTarget.TranslateToContainerPath(value);
-                }
-            }
 
             if (isOutput || OutputVariables.Contains(name))
             {
@@ -420,6 +404,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             // Variables (constructor performs initial recursive expansion)
             List<string> warnings;
             Variables = new Variables(HostContext, message.Variables, out warnings);
+            Variables.StringTranslator = TranslatePathForStepTarget;
 
             // Prepend Path
             PrependPath = new List<string>();
@@ -452,12 +437,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     Containers.Add(HostContext.CreateContainerInfo(container));
                 }
-            }
-
-            if (Containers.Count > 0)
-            {
-                // since all containers need to be the same OS, we only need to listen to the first one
-                Containers.First().ImageOSChanged += HandleContainerImageOSChange;
             }
 
             // Docker (Sidecar Containers)
@@ -557,12 +536,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             _jobServerQueue.JobServerQueueThrottling += JobServerQueueThrottling_EventReceived;
         }
 
-        private void HandleContainerImageOSChange(ContainerInfo container, PlatformUtil.OS oldOs)
-        {
-            // if the Image OS Changed, we need to retranslate all the variables we have that may contain paths
-            Variables.Transform( (x) => container.TranslateContainerPathForImageOS(oldOs, x));
-        }
-
         // Do not add a format string overload. In general, execution context messages are user facing and
         // therefore should be localized. Use the Loc methods from the StringUtil class. The exception to
         // the rule is command messages - which should be crafted using strongly typed wrapper methods.
@@ -586,7 +559,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
 
-            // write to plugin daemon, 
+            // write to plugin daemon,
             if (_outputForward)
             {
                 if (_logPlugin == null)
@@ -658,7 +631,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     uriBuilder.Path += (Variables.System_TFCollectionUrl.EndsWith("/") ? "" : "/") + "_usersSettings/usage";
                     query["tab"] = "pipelines";
                     query["queryDate"] = queryDate;
-                    
+
                     // Global RU link
                     uriBuilder.Query = query.ToString();
                     string global = StringUtil.Loc("ServerTarpitUrl", uriBuilder.ToString());
@@ -692,14 +665,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
             return path;
         }
-        public string TranslateToContainerPath(string path)
+
+        public string TranslatePathForStepTarget(string val)
         {
             var stepTarget = StepTarget();
-            if (stepTarget != null)
+            if (stepTarget == null)
             {
-                return stepTarget.TranslateToContainerPath(path);
+                return val;
             }
-            return path;
+            return stepTarget.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, stepTarget.TranslateToContainerPath(val));
         }
 
         public ContainerInfo StepTarget()
@@ -708,7 +682,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 return Containers.First();
             }
-            
+
             return DefaultStepTarget;
         }
     }

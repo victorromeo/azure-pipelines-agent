@@ -142,12 +142,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             // Set the repo variables.
             if (!string.IsNullOrEmpty(repoInfo.Repository.Id)) // TODO: Move to const after source artifacts PR is merged.
             {
-                executionContext.Variables.Set(Constants.Variables.Build.RepoId, repoInfo.Repository.Id);
+                executionContext.SetVariable(Constants.Variables.Build.RepoId, repoInfo.Repository.Id);
             }
 
-            executionContext.Variables.Set(Constants.Variables.Build.RepoName, repoInfo.Repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name));
-            executionContext.Variables.Set(Constants.Variables.Build.RepoProvider, ConvertToLegacyRepositoryType(repoInfo.Repository.Type));
-            executionContext.Variables.Set(Constants.Variables.Build.RepoUri, repoInfo.Repository.Url?.AbsoluteUri);
+            executionContext.SetVariable(Constants.Variables.Build.RepoName, repoInfo.Repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name));
+            executionContext.SetVariable(Constants.Variables.Build.RepoProvider, ConvertToLegacyRepositoryType(repoInfo.Repository.Type));
+            executionContext.SetVariable(Constants.Variables.Build.RepoUri, repoInfo.Repository.Url?.AbsoluteUri);
 
             // There may be more than one Checkout task, but for back compat we will simply pay attention to the first checkout task here
             var checkoutTask = steps.FirstOrDefault(x => x.IsCheckoutTask()) as Pipelines.TaskStep;
@@ -155,11 +155,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             {
                 if (checkoutTask.Inputs.ContainsKey(Pipelines.PipelineConstants.CheckoutTaskInputs.Submodules))
                 {
-                    executionContext.Variables.Set(Constants.Variables.Build.RepoGitSubmoduleCheckout, Boolean.TrueString);
+                    executionContext.SetVariable(Constants.Variables.Build.RepoGitSubmoduleCheckout, Boolean.TrueString);
                 }
                 else
                 {
-                    executionContext.Variables.Set(Constants.Variables.Build.RepoGitSubmoduleCheckout, Boolean.FalseString);
+                    executionContext.SetVariable(Constants.Variables.Build.RepoGitSubmoduleCheckout, Boolean.FalseString);
                 }
 
                 // overwrite primary repository's clean value if build.repository.clean is sent from server. this is used by tfvc gated check-in
@@ -172,11 +172,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 {
                     if (checkoutTask.Inputs.ContainsKey(Pipelines.PipelineConstants.CheckoutTaskInputs.Clean))
                     {
-                        executionContext.Variables.Set(Constants.Variables.Build.RepoClean, checkoutTask.Inputs[Pipelines.PipelineConstants.CheckoutTaskInputs.Clean]);
+                        executionContext.SetVariable(Constants.Variables.Build.RepoClean, checkoutTask.Inputs[Pipelines.PipelineConstants.CheckoutTaskInputs.Clean]);
                     }
                     else
                     {
-                        executionContext.Variables.Set(Constants.Variables.Build.RepoClean, Boolean.FalseString);
+                        executionContext.SetVariable(Constants.Variables.Build.RepoClean, Boolean.FalseString);
                     }
                 }
             }

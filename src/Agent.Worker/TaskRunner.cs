@@ -56,10 +56,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             var handlerFactory = HostContext.GetService<IHandlerFactory>();
 
             // Set the task id and display name variable.
-            ExecutionContext.Variables.Set(Constants.Variables.Task.DisplayName, DisplayName);
-            ExecutionContext.Variables.Set(WellKnownDistributedTaskVariables.TaskInstanceId, Task.Id.ToString("D"));
-            ExecutionContext.Variables.Set(WellKnownDistributedTaskVariables.TaskDisplayName, DisplayName);
-            ExecutionContext.Variables.Set(WellKnownDistributedTaskVariables.TaskInstanceName, Task.Name);
+            ExecutionContext.SetVariable(Constants.Variables.Task.DisplayName, DisplayName);
+            ExecutionContext.SetVariable(WellKnownDistributedTaskVariables.TaskInstanceId, Task.Id.ToString("D"));
+            ExecutionContext.SetVariable(WellKnownDistributedTaskVariables.TaskDisplayName, DisplayName);
+            ExecutionContext.SetVariable(WellKnownDistributedTaskVariables.TaskInstanceName, Task.Name);
 
             // Load the task definition and choose the handler.
             // TODO: Add a try catch here to give a better error message.
@@ -139,7 +139,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
                 else if (handlerData is NodeHandlerData || handlerData is Node10HandlerData || handlerData is PowerShell3HandlerData)
                 {
-                    // Only the node, node10, and powershell3 handlers support running inside container. 
+                    // Only the node, node10, and powershell3 handlers support running inside container.
                     // Make sure required container is already created.
                     ArgUtil.NotNullOrEmpty(stepTarget.ContainerId, nameof(stepTarget.ContainerId));
                     var containerStepHost = HostContext.CreateService<IContainerStepHost>();
@@ -314,16 +314,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
 
-            if (stepTarget != null && targetOs != PlatformUtil.RunningOnOS )
-            {
-                // translate inputs
-                Dictionary<string,string> newInputs = new Dictionary<string, string>();
-                foreach (var entry in inputs)
-                {
-                    newInputs[entry.Key] = stepTarget.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, entry.Value);
-                }
-                inputs = newInputs;
-            }
+            // translate inputs
+            inputs = inputs.ToDictionary(kvp => kvp.Key, kvp => ExecutionContext.TranslatePathForStepTarget(kvp.Value));
 
             // Create the handler.
             IHandler handler = handlerFactory.Create(
@@ -355,7 +347,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Trace.Verbose($"Replace any '{Path.AltDirectorySeparatorChar}' with '{Path.DirectorySeparatorChar}'.");
                 inputValue = inputValue.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
             }
-#endif 
+#endif
             // if inputValue is rooted, return full path.
             string fullPath;
             if (!string.IsNullOrEmpty(inputValue) &&
@@ -394,7 +386,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
             // return original inputValue.
-            Trace.Info("Can't root path even by using JobExtension, return original input.");
+            Trace.Info("Cannot root path even by using JobExtension, return original input.");
             return inputValue;
         }
 

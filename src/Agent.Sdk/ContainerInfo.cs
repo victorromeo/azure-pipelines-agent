@@ -19,17 +19,13 @@ namespace Agent.Sdk
         private Dictionary<string, string> _pathMappings;
         private PlatformUtil.OS _imageOS;
 
-        public delegate void ImageOSChangedHandler(ContainerInfo container, PlatformUtil.OS oldOS);
-
-        public event ImageOSChangedHandler ImageOSChanged;
-
         public ContainerInfo()
         {
             this.IsJobContainer = true;
         }
 
         public ContainerInfo(Pipelines.ContainerResource container, Boolean isJobContainer = true)
-        { 
+        {
             this.ContainerName = container.Alias;
 
             string containerImage = container.Properties.Get<string>("image");
@@ -76,7 +72,7 @@ namespace Agent.Sdk
         public string CurrentUserName { get; set; }
         public string CurrentUserId { get; set; }
         public bool IsJobContainer { get; set; }
-        public PlatformUtil.OS ImageOS { 
+        public PlatformUtil.OS ImageOS {
             get
             {
                 return _imageOS;
@@ -102,10 +98,6 @@ namespace Agent.Sdk
                         newEnvVars[env.Key] = TranslateContainerPathForImageOS(previousImageOS, env.Value);
                     }
                     _environmentVariables = newEnvVars;
-                }
-                if (ImageOSChanged != null)
-                {
-                    ImageOSChanged(this, previousImageOS);
                 }
             }
         }
@@ -218,8 +210,6 @@ namespace Agent.Sdk
         {
             if (!string.IsNullOrEmpty(path))
             {
-                
-                //path = TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, path);
                 foreach (var mapping in _pathMappings)
                 {
                     string retval = null;
@@ -292,7 +282,7 @@ namespace Agent.Sdk
         {
 
         }
-                
+
         public MountVolume(string sourceVolumePath, string targetVolumePath, bool readOnly = false)
         {
             this.SourceVolumePath = sourceVolumePath;
@@ -308,7 +298,7 @@ namespace Agent.Sdk
         private static Regex autoEscapeWindowsDriveRegex = new Regex(@"(^|:)([a-zA-Z]):(\\|/)", RegexOptions.Compiled);
         private string AutoEscapeWindowsDriveInPath(string path)
         {
-            
+
             return autoEscapeWindowsDriveRegex.Replace(path, @"$1$2\:$3");
         }
 
@@ -396,7 +386,7 @@ namespace Agent.Sdk
         {
 
         }
-        
+
         public DockerVersion(Version serverVersion, Version clientVersion)
         {
             this.ServerVersion = serverVersion;

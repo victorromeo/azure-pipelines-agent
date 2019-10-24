@@ -66,7 +66,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     context.Section(StringUtil.Loc("StepStarting", StringUtil.Loc("InitializeJob")));
 
                     // Set agent version variable.
-                    context.Variables.Set(Constants.Variables.Agent.Version, BuildConstants.AgentPackage.Version);
+                    context.SetVariable(Constants.Variables.Agent.Version, BuildConstants.AgentPackage.Version);
                     context.Output(StringUtil.Loc("AgentNameLog", context.Variables.Get(Constants.Variables.Agent.Name)));
                     context.Output(StringUtil.Loc("AgentMachineNameLog", context.Variables.Get(Constants.Variables.Agent.MachineName)));
                     context.Output(StringUtil.Loc("AgentVersion", BuildConstants.AgentPackage.Version));

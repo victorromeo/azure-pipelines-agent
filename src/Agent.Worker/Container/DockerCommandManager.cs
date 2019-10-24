@@ -85,12 +85,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
 
         public async Task<int> DockerLogin(IExecutionContext context, string server, string username, string password)
         {
-#if OS_WINDOWS
-            // Wait for 17.07 to switch using stdin for docker registry password.
-            return await ExecuteDockerCommandAsync(context, "login", $"--username \"{username}\" --password \"{password.Replace("\"", "\\\"")}\" {server}", new List<string>() { password }, context.CancellationToken);
-#else
+            if (PlatformUtil.RunningOnWindows)
+            {
+                // Wait for 17.07 to switch using stdin for docker registry password.
+                return await ExecuteDockerCommandAsync(context, "login", $"--username \"{username}\" --password \"{password.Replace("\"", "\\\"")}\" {server}", new List<string>() { password }, context.CancellationToken);
+            }
+            
             return await ExecuteDockerCommandAsync(context, "login", $"--username \"{username}\" --password-stdin {server}", new List<string>() { password }, context.CancellationToken);
-#endif
         }
 
         public async Task<int> DockerLogout(IExecutionContext context, string server)

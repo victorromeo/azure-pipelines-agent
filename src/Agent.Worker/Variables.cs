@@ -20,13 +20,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private readonly Tracing _trace;
         private ConcurrentDictionary<string, Variable> _expanded;
 
+        public delegate string TranslationMethod(string val);
+        public TranslationMethod StringTranslator = val => val ;
+
+
         public IEnumerable<KeyValuePair<string, string>> Public
         {
             get
             {
                 return _expanded.Values
                     .Where(x => !x.Secret)
-                    .Select(x => new KeyValuePair<string, string>(x.Name, x.Value));
+                    .Select(x => new KeyValuePair<string, string>(x.Name, StringTranslator(x.Value)));
             }
         }
 
@@ -36,7 +40,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 return _expanded.Values
                     .Where(x => x.Secret)
-                    .Select(x => new KeyValuePair<string, string>(x.Name, x.Value));
+                    .Select(x => new KeyValuePair<string, string>(x.Name, StringTranslator(x.Value)));
             }
         }
 
@@ -255,8 +259,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Variable variable;
             if (_expanded.TryGetValue(name, out variable))
             {
-                _trace.Verbose($"Get '{name}': '{variable.Value}'");
-                return variable.Value;
+                var value = StringTranslator(variable.Value);
+                _trace.Verbose($"Get '{name}': '{value}'");
+                return value;
             }
 
             _trace.Verbose($"Get '{name}' (not found)");
@@ -377,7 +382,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Variable variable;
             if (_expanded.TryGetValue(name, out variable))
             {
-                val = variable.Value;
+                val = StringTranslator(variable.Value);
                 _trace.Verbose($"Get '{name}': '{val}'");
                 return true;
             }
