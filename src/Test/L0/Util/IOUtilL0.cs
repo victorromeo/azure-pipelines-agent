@@ -952,5 +952,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
                     cancellationToken: CancellationToken.None);
             }
         }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void GetDirectoryName_WindowsStyle()
+        {
+            string[,] testcases = new string [,] {
+                {"c:\\foo\\bar", "c:\\foo"}
+            };
+        }
     }
 }
