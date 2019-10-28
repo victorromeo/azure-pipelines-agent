@@ -462,23 +462,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
         public static string GetDirectoryName(string path, PlatformUtil.OS platform)
         {
-            string retval = Path.GetDirectoryName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-            if (PlatformUtil.RunningOnWindows)
+            if (platform == PlatformUtil.OS.Windows)
             {
-                if (platform != PlatformUtil.OS.Windows)
-                {
-                    retval = retval.Replace("\\","/");
-                }
+                var paths = path.TrimEnd('\\', '/')
+                                .Split(new char[] {'\\','/'}, StringSplitOptions.RemoveEmptyEntries);
+                Array.Resize(ref paths, paths.Length - 1);
+                return string.Join('\\', paths);
             }
             else
             {
-                if (platform == PlatformUtil.OS.Windows)
-                {
-                    retval = retval.Replace("/","\\");
-                }
+                var paths = path.TrimEnd('/')
+                                .Split('/', StringSplitOptions.RemoveEmptyEntries);
+                Array.Resize(ref paths, paths.Length - 1);
+                return string.Join(Path.DirectorySeparatorChar, paths);
             }
-            
-            return retval;
         }
     }
 }
