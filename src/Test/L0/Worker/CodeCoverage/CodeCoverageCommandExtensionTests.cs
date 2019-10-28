@@ -102,8 +102,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.CodeCoverage
                 command.Properties.Add("summaryfile", coberturaXml);
                 command.Properties.Add("reportdirectory", reportDirectory);
                 publishCCCommand.ProcessCommand(_ec.Object, command);
-                Assert.Equal(0, _warnings.Count);
-                Assert.Equal(0, _errors.Count);
+                Assert.True(0 == _warnings.Count, "Got WARNINGS! " + string.Join(",", _warnings));
+                Assert.True(0 == _errors.Count, string.Join(",", _errors));
                 _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageSummaryAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<IEnumerable<CodeCoverageStatistics>>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
                 _mockCodeCoveragePublisher.Verify(x => x.PublishCodeCoverageFilesAsync(It.IsAny<IAsyncCommandContext>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<long>(), It.IsAny<List<Tuple<string, string>>>(), It.Is<bool>(browsable => browsable == true), It.IsAny<CancellationToken>()));
                 Assert.True(File.Exists(Path.Combine(reportDirectory, "frame-summary.html")));
