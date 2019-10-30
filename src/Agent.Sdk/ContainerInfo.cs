@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Agent.Sdk;
 using System;
 using System.Collections.Generic;
@@ -22,6 +25,14 @@ namespace Agent.Sdk
         public ContainerInfo()
         {
             this.IsJobContainer = true;
+            if (PlatformUtil.RunningOnWindows)
+            {
+                _pathMappings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            }
+            else
+            {
+                _pathMappings = new Dictionary<string, string>();
+            }
         }
 
         public ContainerInfo(Pipelines.ContainerResource container, Boolean isJobContainer = true)
@@ -39,7 +50,7 @@ namespace Agent.Sdk
             _environmentVariables = container.Environment != null ? new Dictionary<string, string>(container.Environment) : new Dictionary<string, string>();
             this.ContainerCommand = container.Properties.Get<string>("command", defaultValue: "");
             this.IsJobContainer = isJobContainer;
-            this._imageOS = PlatformUtil.RunningOnOS;
+            this._imageOS = PlatformUtil.HostOS;
            _pathMappings = new Dictionary<string, string>( PlatformUtil.RunningOnWindows ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
 
             if (container.Ports?.Count > 0)
@@ -183,20 +194,18 @@ namespace Agent.Sdk
         {
             if (!string.IsNullOrEmpty(path))
             {
+                var comparison = PlatformUtil.RunningOnWindows
+                    ? StringComparison.OrdinalIgnoreCase
+                    : StringComparison.Ordinal;
                 foreach (var mapping in _pathMappings)
                 {
-                    StringComparison comparer = StringComparison.Ordinal;
-                    if (PlatformUtil.RunningOnWindows)
-                    {
-                        comparer = StringComparison.OrdinalIgnoreCase;
-                    }
-                    if (string.Equals(path, mapping.Key, comparer))
+                    if (string.Equals(path, mapping.Key, comparison))
                     {
                         return mapping.Value;
                     }
 
-                    if (path.StartsWith(mapping.Key + Path.DirectorySeparatorChar, comparer) ||
-                        path.StartsWith(mapping.Key + Path.AltDirectorySeparatorChar, comparer))
+                    if (path.StartsWith(mapping.Key + Path.DirectorySeparatorChar, comparison) ||
+                        path.StartsWith(mapping.Key + Path.AltDirectorySeparatorChar, comparison))
                     {
                         return mapping.Value + path.Remove(0, mapping.Key.Length);
                     }
@@ -210,21 +219,19 @@ namespace Agent.Sdk
         {
             if (!string.IsNullOrEmpty(path))
             {
+                var comparison = PlatformUtil.RunningOnWindows
+                    ? StringComparison.OrdinalIgnoreCase
+                    : StringComparison.Ordinal;
                 foreach (var mapping in _pathMappings)
                 {
                     string retval = null;
-                    StringComparison comparer = StringComparison.Ordinal;
-                    if (PlatformUtil.RunningOnWindows)
-                    {
-                        comparer = StringComparison.OrdinalIgnoreCase;
-                    }
 
-                    if (string.Equals(path, mapping.Value, comparer))
+                    if (string.Equals(path, mapping.Value, comparison))
                     {
                         retval = mapping.Key;
                     }
-                    else if (path.StartsWith(mapping.Value + Path.DirectorySeparatorChar, comparer) ||
-                             path.StartsWith(mapping.Value + Path.AltDirectorySeparatorChar, comparer))
+                    else if (path.StartsWith(mapping.Value + Path.DirectorySeparatorChar, comparison) ||
+                             path.StartsWith(mapping.Value + Path.AltDirectorySeparatorChar, comparison))
                     {
                         retval = mapping.Key + path.Remove(0, mapping.Value.Length);
                     }
@@ -313,6 +320,14 @@ namespace Agent.Sdk
                 ReadOnly = true;
                 volume = volume.Remove(volume.Length-readonlyToken.Length);
             }
+            // for completeness, in case someone explicitly added :rw in the volume mapping, we should strip it as well
+            string readWriteToken = ":rw";
+            if (volume.ToLower().EndsWith(readWriteToken))
+            {
+                ReadOnly = false;
+                volume = volume.Remove(volume.Length-readWriteToken.Length);
+            }
+
             if (volume.StartsWith(":"))
             {
                 volume = volume.Substring(1);
@@ -342,11 +357,13 @@ namespace Agent.Sdk
                 }
             }
 
-            if (volumes.Count == 2)
+            if (volumes.Count >= 2)
             {
                 // source:target
                 SourceVolumePath = volumes[0];
                 TargetVolumePath = volumes[1];
+                // if volumes.Count > 2 here, we should log something that says we ignored options passed in.
+                // for now, do nothing in order to remain backwards compatable.
             }
             else
             {

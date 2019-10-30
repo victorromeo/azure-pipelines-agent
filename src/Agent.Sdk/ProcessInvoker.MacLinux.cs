@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Agent.Sdk;
 using System;
 using System.IO;
@@ -52,7 +55,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
         private void WriteProcessOomScoreAdj(int processId, int oomScoreAdj)
         {
-            if (PlatformUtil.RunningOnOS != PlatformUtil.OS.Linux)
+            if (PlatformUtil.HostOS != PlatformUtil.OS.Linux)
             {
                 Trace.Info("OOM score adjustment is Linux only");
                 return;

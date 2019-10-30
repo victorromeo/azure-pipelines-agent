@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Agent.Sdk;
 using System;
 using System.Collections.Generic;
@@ -92,7 +95,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 legacyPShandler.Platforms = null;
             }
 
-            var targetOs = PlatformUtil.RunningOnOS;
+            var targetOs = PlatformUtil.HostOS;
             var stepTarget = ExecutionContext.StepTarget();
             if (stepTarget != null)
             {
@@ -107,11 +110,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 .FirstOrDefault();
             if (handlerData == null)
             {
-#if OS_WINDOWS
-                throw new Exception(StringUtil.Loc("SupportedTaskHandlerNotFoundWindows", $"{PlatformUtil.RunningOnOS}({PlatformUtil.RunningOnArchitecture})"));
-#else
+                if (PlatformUtil.RunningOnWindows)
+                {
+                    throw new Exception(StringUtil.Loc("SupportedTaskHandlerNotFoundWindows", $"{PlatformUtil.HostOS}({PlatformUtil.HostArchitecture})"));
+                }
+
                 throw new Exception(StringUtil.Loc("SupportedTaskHandlerNotFoundLinux"));
-#endif
             }
 
             Variables runtimeVariables = ExecutionContext.Variables;
@@ -338,8 +342,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             Trace.Entering();
 
-#if OS_WINDOWS
-            if (!string.IsNullOrEmpty(inputValue))
+            if (PlatformUtil.RunningOnWindows && !string.IsNullOrEmpty(inputValue))
             {
                 Trace.Verbose("Trim double quotes around filepath type input on Windows.");
                 inputValue = inputValue.Trim('\"');
@@ -347,7 +350,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Trace.Verbose($"Replace any '{Path.AltDirectorySeparatorChar}' with '{Path.DirectorySeparatorChar}'.");
                 inputValue = inputValue.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
             }
-#endif
             // if inputValue is rooted, return full path.
             string fullPath;
             if (!string.IsNullOrEmpty(inputValue) &&

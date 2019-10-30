@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Agent.Sdk;
 using System;
 using System.Collections.Generic;
@@ -68,7 +71,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         string TranslateToHostPath(string path);
         ContainerInfo StepTarget();
         string TranslatePathForStepTarget(string val);
-
+        IHostContext GetHostContext();
     }
 
     public sealed class ExecutionContext : AgentService, IExecutionContext
@@ -162,6 +165,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 await Task.Delay(TimeSpan.FromSeconds(5));
                 _forceCompleted?.TrySetResult(1);
             });
+        }
+
+        public IHostContext GetHostContext()
+        {
+            return HostContext;
         }
 
         public IExecutionContext CreateChild(Guid recordId, string displayName, string refName, Variables taskVariables = null, bool outputForward = false)
@@ -673,7 +681,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 return val;
             }
-            return stepTarget.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, stepTarget.TranslateToContainerPath(val));
+            return stepTarget.TranslateContainerPathForImageOS(PlatformUtil.HostOS, stepTarget.TranslateToContainerPath(val));
         }
 
         public ContainerInfo StepTarget()

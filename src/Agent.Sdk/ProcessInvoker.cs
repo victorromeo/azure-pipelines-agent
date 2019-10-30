@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -546,7 +549,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
         private void DecreaseProcessPriority(Process process)
         {
-            if (PlatformUtil.RunningOnOS != PlatformUtil.OS.Linux)
+            if (PlatformUtil.HostOS != PlatformUtil.OS.Linux)
             {
                 Trace.Info("OOM score adjustment is Linux-only.");
                 return;

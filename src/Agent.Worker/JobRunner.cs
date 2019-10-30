@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Agent.Sdk;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
@@ -12,7 +16,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
-using Agent.Sdk;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -137,11 +140,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 jobContext.SetVariable(Constants.Variables.Agent.OS, VarUtil.OS);
                 jobContext.SetVariable(Constants.Variables.Agent.OSArchitecture, VarUtil.OSArchitecture);
                 jobContext.SetVariable(Constants.Variables.Agent.RootDirectory, HostContext.GetDirectory(WellKnownDirectory.Work), isFilePath: true);
-#if OS_WINDOWS
-                jobContext.SetVariable(Constants.Variables.Agent.ServerOMDirectory, HostContext.GetDirectory(WellKnownDirectory.ServerOM), isFilePath: true);
-#else
-                jobContext.SetVariable(Constants.Variables.Agent.AcceptTeeEula, settings.AcceptTeeEula.ToString());
-#endif
+                if (PlatformUtil.RunningOnWindows)
+                {
+                    jobContext.SetVariable(Constants.Variables.Agent.ServerOMDirectory, HostContext.GetDirectory(WellKnownDirectory.ServerOM), isFilePath: true);
+                }
+                if (!PlatformUtil.RunningOnWindows)
+                {
+                    jobContext.SetVariable(Constants.Variables.Agent.AcceptTeeEula, settings.AcceptTeeEula.ToString());
+                }
                 jobContext.SetVariable(Constants.Variables.Agent.WorkFolder, HostContext.GetDirectory(WellKnownDirectory.Work), isFilePath: true);
                 jobContext.SetVariable(Constants.Variables.System.WorkFolder, HostContext.GetDirectory(WellKnownDirectory.Work), isFilePath: true);
 
@@ -440,8 +446,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         // the scheme://hostname:port (how the agent knows the server) is external to our server
         // in other words, an agent may have it's own way (DNS, hostname) of refering
         // to the server.  it owns that.  That's the scheme://hostname:port we will use.
-        // Example: Server's notification url is http://tfsserver:8080/tfs 
-        //          Agent config url is https://tfsserver.mycompany.com:9090/tfs 
+        // Example: Server's notification url is http://tfsserver:8080/tfs
+        //          Agent config url is https://tfsserver.mycompany.com:9090/tfs
         private Uri ReplaceWithConfigUriBase(Uri messageUri)
         {
             AgentSettings settings = HostContext.GetService<IConfigurationStore>().GetSettings();

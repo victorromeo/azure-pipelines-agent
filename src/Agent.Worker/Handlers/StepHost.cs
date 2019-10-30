@@ -1,3 +1,7 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Agent.Sdk;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +13,6 @@ using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Agent.Worker.Container;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
-using Agent.Sdk;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 {
@@ -99,10 +102,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             path = path.Trim('\"');
 
             // try to resolve path inside container if the request path is part of the mount volume
-            StringComparison comparator = (PlatformUtil.RunningOnWindows) ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-            if (Container.MountVolumes.Exists(x => path.StartsWith(x.SourceVolumePath, comparator)))
+            StringComparison sc = (PlatformUtil.RunningOnWindows)
+                                ? StringComparison.OrdinalIgnoreCase
+                                : StringComparison.Ordinal;
+            if (Container.MountVolumes.Exists(x => {
+                if (!string.IsNullOrEmpty(x.SourceVolumePath))
+                {
+                    return path.StartsWith(x.SourceVolumePath, sc);
+                }
+                if (!string.IsNullOrEmpty(x.TargetVolumePath))
+                {
+                    return path.StartsWith(x.TargetVolumePath, sc);
+                }
+                return false; // this should not happen, but just in case bad data got into MountVolumes, we do not want to throw an exception here
+            }))
             {
-                return Container.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, Container.TranslateToContainerPath(path));
+                return Container.TranslateContainerPathForImageOS(PlatformUtil.HostOS, Container.TranslateToContainerPath(path));
             }
             else
             {
@@ -148,7 +163,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             string targetEntryScript = Path.Combine(tempDir, "containerHandlerInvoker.js");
             HostContext.GetTrace(nameof(ContainerStepHost)).Info($"Copying containerHandlerInvoker.js to {tempDir}");
             File.Copy(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Bin), "containerHandlerInvoker.js"), targetEntryScript, true);
-            
+
             string node;
             if (!string.IsNullOrEmpty(Container.ContainerBringNodePath))
             {
@@ -159,7 +174,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 node = Container.TranslateToContainerPath(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "node", "bin", $"node{IOUtil.ExeExtension}"));
             }
 
-            string entryScript = Container.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, Container.TranslateToContainerPath(targetEntryScript));
+            string entryScript = Container.TranslateContainerPathForImageOS(PlatformUtil.HostOS, Container.TranslateToContainerPath(targetEntryScript));
 
             string userArgs = "";
             if (!PlatformUtil.RunningOnWindows)

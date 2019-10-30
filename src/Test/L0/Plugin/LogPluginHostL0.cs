@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Moq;
 using System;
@@ -355,7 +358,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.LogPluginHost
                     logPluginHost.EnqueueOutput($"{Guid.Empty.ToString("D")}:{i}");
                 }
 
-                await Task.Delay(1000);
+                await Task.Delay(2000);
                 logPluginHost.Finish();
                 await task;
 
@@ -470,7 +473,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.LogPluginHost
                 Assert.True(trace.Outputs.Contains("TestException: Done"));
             }
         }
-        
+
         // potential bug in XUnit cause the test failure.
         // [Fact]
         // [Trait("Level", "L0")]

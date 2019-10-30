@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Agent.Sdk;
 using System;
 using System.Collections.Generic;
@@ -90,7 +93,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
                 // Wait for 17.07 to switch using stdin for docker registry password.
                 return await ExecuteDockerCommandAsync(context, "login", $"--username \"{username}\" --password \"{password.Replace("\"", "\\\"")}\" {server}", new List<string>() { password }, context.CancellationToken);
             }
-            
             return await ExecuteDockerCommandAsync(context, "login", $"--username \"{username}\" --password-stdin {server}", new List<string>() { password }, context.CancellationToken);
         }
 
@@ -139,8 +141,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
             {
                 // replace `"` with `\"` and add `"{0}"` to all path.
                 String volumeArg;
-                String targetVolume = container.TranslateContainerPathForImageOS(PlatformUtil.RunningOnOS, volume.TargetVolumePath).Replace("\"", "\\\"");
-                
+                String targetVolume = container.TranslateContainerPathForImageOS(PlatformUtil.HostOS, volume.TargetVolumePath).Replace("\"", "\\\"");
+
                 if (String.IsNullOrEmpty(volume.SourceVolumePath))
                 {
                     // Anonymous docker volume
@@ -192,7 +194,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
         {
             if (context.StepTarget().ImageOS == PlatformUtil.OS.Windows)
             {
-                //TODO: Test this. I verified that using --drive nat does not work when starting a linux container on windows
                 return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} --driver nat", context.CancellationToken);
             }
             return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network}", context.CancellationToken);

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Agent.Sdk;
 using System;
 using System.Collections;
@@ -28,7 +31,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
         {
             get
             {
-                switch (PlatformUtil.RunningOnOS)
+                switch (PlatformUtil.HostOS)
                 {
                     case PlatformUtil.OS.Linux:
                         return "Linux";
@@ -46,7 +49,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
         {
             get
             {
-                switch (PlatformUtil.RunningOnArchitecture)
+                switch (PlatformUtil.HostArchitecture)
                 {
                     case Architecture.X86:
                         return "X86";

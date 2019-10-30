@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -401,6 +404,7 @@ namespace Agent.Sdk
                 foreach (var queue in _outputQueue)
                 {
                     string pluginName = queue.Key;
+
                     if (token.IsCancellationRequested)
                     {
                         break;
@@ -425,7 +429,7 @@ namespace Agent.Sdk
 
                 await Task.WhenAny(Task.Delay(_shortCircuitMonitorFrequency), Task.Delay(-1, token));
             }
-            
+
             _trace.Trace($"Output buffer monitor stopped.");
         }
 

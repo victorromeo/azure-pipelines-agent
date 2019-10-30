@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Agent.Sdk;
 using System;
 using System.Collections.Concurrent;
@@ -474,7 +477,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 var paths = path.TrimEnd('/')
                                 .Split('/', StringSplitOptions.RemoveEmptyEntries);
                 Array.Resize(ref paths, paths.Length - 1);
-                return string.Join(Path.DirectorySeparatorChar, paths);
+                var prefix = "";
+                if (path.StartsWith('/'))
+                {
+                    prefix = "/";
+                }
+                return prefix + string.Join('/', paths);
             }
         }
     }
