@@ -113,6 +113,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public List<ContainerInfo> Containers { get; private set; }
         public List<ContainerInfo> SidecarContainers { get; private set; }
         public ContainerInfo DefaultStepTarget { get; private set; } // TODO: maybe keep this private
+        public ContainerInfo CurrentStepTarget { get; private set; } // TODO: maybe keep this private
         public List<IAsyncCommandContext> AsyncCommands => _asyncCommands;
 
         public TaskResult? Result
@@ -192,6 +193,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             child.Containers = Containers;
             child.SidecarContainers = SidecarContainers;
             child._outputForward = outputForward;
+            child.DefaultStepTarget = DefaultStepTarget;
+            child.CurrentStepTarget = CurrentStepTarget;
 
             child.InitializeTimelineRecord(_mainTimelineId, recordId, _record.Id, ExecutionContextType.Task, displayName, refName, ++_childTimelineRecordOrder);
 
@@ -426,6 +429,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             Containers = new List<ContainerInfo>();
             DefaultStepTarget = null;
+            CurrentStepTarget = null;
             if (!string.IsNullOrEmpty(imageName) &&
                 string.IsNullOrEmpty(message.JobContainer))
             {
@@ -686,9 +690,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public ContainerInfo StepTarget()
         {
-            if (Containers != null && Containers.Count > 0)
+            if (CurrentStepTarget != null)
             {
-                return Containers.First();
+                return CurrentStepTarget;
             }
 
             return DefaultStepTarget;
