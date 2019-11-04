@@ -236,12 +236,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             // Set variables
             if (submoduleCheckout.HasValue)
             {
-                executionContext.Variables.Set(Constants.Variables.Build.RepoGitSubmoduleCheckout, submoduleCheckout.Value.ToString());
+                executionContext.SetVariable(Constants.Variables.Build.RepoGitSubmoduleCheckout, submoduleCheckout.Value.ToString());
             }
 
             if (repoClean.HasValue)
             {
-                executionContext.Variables.Set(Constants.Variables.Build.RepoClean, repoClean.Value.ToString());
+                executionContext.SetVariable(Constants.Variables.Build.RepoClean, repoClean.Value.ToString());
             }
         }
 

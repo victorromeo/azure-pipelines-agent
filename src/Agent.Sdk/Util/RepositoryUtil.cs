@@ -122,11 +122,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
         /// </summary>
         public static string GuessRepositoryType(string repositoryUrl)
         {
-            if (repositoryUrl?.IndexOf("github.com", StringComparison.OrdinalIgnoreCase) >= 0)
+            if (string.IsNullOrEmpty(repositoryUrl))
+            {
+                return string.Empty;
+            }
+
+            if (repositoryUrl.IndexOf("github.com", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 return RepositoryTypes.GitHub;
             }
-            else if (repositoryUrl?.IndexOf(".visualstudio.com", StringComparison.OrdinalIgnoreCase) >= 0 || repositoryUrl?.IndexOf("dev.azure.com", StringComparison.OrdinalIgnoreCase) >= 0)
+            else if (repositoryUrl.IndexOf(".visualstudio.com", StringComparison.OrdinalIgnoreCase) >= 0 
+                  || repositoryUrl.IndexOf("dev.azure.com", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 if (repositoryUrl.IndexOf("/_git/", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
@@ -135,7 +141,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
                 return RepositoryTypes.Tfvc;
             }
-            else if (repositoryUrl?.IndexOf("bitbucket.org", StringComparison.OrdinalIgnoreCase) >= 0)
+            else if (repositoryUrl.IndexOf("bitbucket.org", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 return RepositoryTypes.Bitbucket;
             }
