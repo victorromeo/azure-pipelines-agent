@@ -62,19 +62,19 @@ function detect_platform_and_runtime_id ()
     fi
 }
 
-function build ()
+function cmd_build ()
 {
-    heading "Building ..."
-    dotnet msbuild -t:Build -p:PackageRuntime="${RUNTIME_ID}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" || failed build
+    heading "Building"
+    dotnet msbuild -t:Build -p:PackageRuntime="${RUNTIME_ID}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" || failed build
 
     mkdir -p "${LAYOUT_DIR}/bin/en-US"
     grep --invert-match '^ *"CLI-WIDTH-' ./Misc/layoutbin/en-US/strings.json > "${LAYOUT_DIR}/bin/en-US/strings.json"
 }
 
-function layout ()
+function cmd_layout ()
 {
-    heading "Create layout ..."
-    dotnet msbuild -t:layout -p:PackageRuntime="${RUNTIME_ID}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" || failed build
+    heading "Creating layout"
+    dotnet msbuild -t:layout -p:PackageRuntime="${RUNTIME_ID}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" || failed build
 
     mkdir -p "${LAYOUT_DIR}/bin/en-US"
     grep --invert-match '^ *"CLI-WIDTH-' ./Misc/layoutbin/en-US/strings.json > "${LAYOUT_DIR}/bin/en-US/strings.json"
@@ -91,18 +91,18 @@ function layout ()
     bash ./Misc/externals.sh $RUNTIME_ID || checkRC externals.sh
 }
 
-function runtest ()
+function cmd_test ()
 {
-    heading "Testing ..."
+    heading "Testing"
 
     if [[ ("$CURRENT_PLATFORM" == "linux") || ("$CURRENT_PLATFORM" == "darwin") ]]; then
         ulimit -n 1024
     fi
 
-    dotnet msbuild -t:test -p:PackageRuntime="${RUNTIME_ID}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:SkipOn="${CURRENT_PLATFORM}" || failed "failed tests" 
+    dotnet msbuild -t:test -p:PackageRuntime="${RUNTIME_ID}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" -p:SkipOn="${CURRENT_PLATFORM}" || failed "failed tests" 
 }
 
-function package ()
+function cmd_package ()
 {
     if [ ! -d "${LAYOUT_DIR}/bin" ]; then
         echo "You must build first.  Expecting to find ${LAYOUT_DIR}/bin"
@@ -220,15 +220,15 @@ if [[ "$CURRENT_PLATFORM" == 'windows' ]]; then
 fi
 
 case $DEV_CMD in
-   "build") build;;
-   "b") build;;
-   "test") runtest;;
-   "t") runtest;;
-   "layout") layout;;
-   "l") layout;;
-   "package") package;;
-   "p") package;;
-   *) echo "Invalid cmd.  Use build(b), test(t), layout(l) or package(p)";;
+   "build") cmd_build;;
+   "b") cmd_build;;
+   "test") cmd_test;;
+   "t") cmd_test;;
+   "layout") cmd_layout;;
+   "l") cmd_layout;;
+   "package") cmd_package;;
+   "p") cmd_package;;
+   *) echo "Invalid command. Use (l)ayout, (b)uild, (t)est, or (p)ackage.";;
 esac
 
 popd
