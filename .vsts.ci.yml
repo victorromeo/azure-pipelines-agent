@@ -41,7 +41,7 @@ jobs:
       $unzipDir = Join-Path -Path $outDir -ChildPath "unzip"
       Add-Type -AssemblyName System.IO.Compression.FileSystem
       [System.IO.Compression.ZipFile]::ExtractToDirectory($outFile, $unzipDir)
-      $agentLayoutBin = Join-Path -Path $(Build.SourcesDirectory) -ChildPath "_layout\bin"
+      $agentLayoutBin = Join-Path -Path $(Build.SourcesDirectory) -ChildPath "_layout\win-x64\bin"
       Copy-Item -Path $unzipDir -Destination $agentLayoutBin -Force
     displayName: Package UCRT
     condition: and(succeeded(), ne(variables['build.reason'], 'PullRequest'))
@@ -86,7 +86,7 @@ jobs:
       $unzipDir = Join-Path -Path $outDir -ChildPath "unzip"
       Add-Type -AssemblyName System.IO.Compression.FileSystem
       [System.IO.Compression.ZipFile]::ExtractToDirectory($outFile, $unzipDir)
-      $agentLayoutBin = Join-Path -Path $(Build.SourcesDirectory) -ChildPath "_layout\bin"
+      $agentLayoutBin = Join-Path -Path $(Build.SourcesDirectory) -ChildPath "_layout\win-x86\bin"
       Copy-Item -Path $unzipDir -Destination $agentLayoutBin -Force
     displayName: Package UCRT
     condition: and(succeeded(), ne(variables['build.reason'], 'PullRequest'))
