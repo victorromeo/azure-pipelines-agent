@@ -8,7 +8,6 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
-using System.Threading;
 
 namespace Agent.Sdk
 {
