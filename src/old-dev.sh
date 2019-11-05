@@ -2,7 +2,7 @@
 
 ###############################################################################
 #  
-#  ./dev.sh build/layout/test/package [Debug/Release] [optional: runtime ID]
+#  ./dev.sh build/layout/test/package [Debug/Release]
 #
 ###############################################################################
 
@@ -10,16 +10,15 @@ set -e
 
 DEV_CMD=$1
 DEV_CONFIG=$2
-DEV_RUNTIME_ID=$3
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-source "$SCRIPT_DIR/.helpers.sh"
-
+LAYOUT_DIR="$SCRIPT_DIR/../_layout"
+DOWNLOAD_DIR="$SCRIPT_DIR/../_downloads/netcore2x"
+PACKAGE_DIR="$SCRIPT_DIR/../_package"
 DOTNETSDK_ROOT="$SCRIPT_DIR/../_dotnetsdk"
 DOTNETSDK_VERSION="2.1.403"
 DOTNETSDK_INSTALLDIR="$DOTNETSDK_ROOT/$DOTNETSDK_VERSION"
-AGENT_VERSION=$(cat "$SCRIPT_DIR/agentversion")
+AGENT_VERSION=$(cat agentversion)
 
 pushd "$SCRIPT_DIR"
 
@@ -28,38 +27,86 @@ if [[ "$DEV_CONFIG" == "Release" ]]; then
     BUILD_CONFIG="Release"
 fi
 
-function detect_platform_and_runtime_id ()
-{
-    CURRENT_PLATFORM="windows"
-    if [[ ($(uname) == "Linux") || ($(uname) == "Darwin") ]]; then
-        CURRENT_PLATFORM=$(uname | awk '{print tolower($0)}')
-    fi
+CURRENT_PLATFORM="windows"
+if [[ ($(uname) == "Linux") || ($(uname) == "Darwin") ]]; then
+    CURRENT_PLATFORM=$(uname | awk '{print tolower($0)}')
+fi
 
-    if [[ "$CURRENT_PLATFORM" == 'windows' ]]; then
-        DETECTED_RUNTIME_ID='win-x64'
-        if [[ "$PROCESSOR_ARCHITECTURE" == 'x86' ]]; then
-            DETECTED_RUNTIME_ID='win-x86'
-        fi
-    elif [[ "$CURRENT_PLATFORM" == 'linux' ]]; then
-        DETECTED_RUNTIME_ID="linux-x64"
-        if command -v uname > /dev/null; then
-            local CPU_NAME=$(uname -m)
-            case $CPU_NAME in
-                armv7l) DETECTED_RUNTIME_ID="linux-arm";;
-                aarch64) DETECTED_RUNTIME_ID="linux-arm";;
-            esac
-        fi
-    
-        if [ -e /etc/redhat-release ]; then
-            local redhatRelease=$(</etc/redhat-release)
-            if [[ $redhatRelease == "CentOS release 6."* || $redhatRelease == "Red Hat Enterprise Linux Server release 6."* ]]; then
-                DETECTED_RUNTIME_ID='rhel.6-x64'
-            fi
-        fi
-    
-    elif [[ "$CURRENT_PLATFORM" == 'darwin' ]]; then
-        DETECTED_RUNTIME_ID='osx-x64'
+if [[ "$CURRENT_PLATFORM" == 'windows' ]]; then
+   RUNTIME_ID='win-x64'
+   if [[ "$PROCESSOR_ARCHITECTURE" == 'x86' ]]; then
+      RUNTIME_ID='win-x86'
+   fi
+elif [[ "$CURRENT_PLATFORM" == 'linux' ]]; then
+   RUNTIME_ID="linux-x64"
+   if command -v uname > /dev/null; then
+      CPU_NAME=$(uname -m)
+      case $CPU_NAME in
+         armv7l) RUNTIME_ID="linux-arm";;
+         aarch64) RUNTIME_ID="linux-arm";;
+      esac
+   fi
+   
+   if [ -e /etc/redhat-release ]; then
+      redhatRelease=$(</etc/redhat-release)
+      if [[ $redhatRelease == "CentOS release 6."* || $redhatRelease == "Red Hat Enterprise Linux Server release 6."* ]]; then
+         RUNTIME_ID='rhel.6-x64'
+      fi
+   fi
+   
+elif [[ "$CURRENT_PLATFORM" == 'darwin' ]]; then
+   RUNTIME_ID='osx-x64'
+fi
+
+# Make sure current platform support publish the dotnet runtime
+# Windows can publish win-x86/x64
+# Linux can publish linux-x64/arm/rhel.6-x64
+# OSX can publish osx-x64
+if [[ "$CURRENT_PLATFORM" == 'windows' ]]; then
+   if [[ ("$RUNTIME_ID" != 'win-x86') && ("$RUNTIME_ID" != 'win-x64') ]]; then
+      echo "Failed: Can't build $RUNTIME_ID package $CURRENT_PLATFORM" >&2
+      exit 1
+   fi
+elif [[ "$CURRENT_PLATFORM" == 'linux' ]]; then
+   if [[ ("$RUNTIME_ID" != 'linux-x64') && ("$RUNTIME_ID" != 'linux-arm') && ("$RUNTIME_ID" != 'rhel.6-x64') ]]; then
+      echo "Failed: Can't build $RUNTIME_ID package $CURRENT_PLATFORM" >&2
+      exit 1
+   fi
+elif [[ "$CURRENT_PLATFORM" == 'darwin' ]]; then
+   if [[ ("$RUNTIME_ID" != 'osx-x64') ]]; then
+      echo "Failed: Can't build $RUNTIME_ID package $CURRENT_PLATFORM" >&2
+      exit 1
+   fi
+fi
+
+function failed()
+{
+   local error=${1:-Undefined error}
+   echo "Failed: $error" >&2
+   popd
+   exit 1
+}
+
+function warn()
+{
+   local error=${1:-Undefined error}
+   echo "WARNING - FAILED: $error" >&2
+}
+
+function checkRC() {
+    local rc=$?
+    if [ $rc -ne 0 ]; then
+        failed "${1} Failed with return code $rc"
     fi
+}
+
+function heading()
+{
+    echo
+    echo
+    echo "-----------------------------------------"
+    echo "  ${1}"
+    echo "-----------------------------------------"
 }
 
 function build ()
@@ -145,34 +192,10 @@ function package ()
     popd > /dev/null
 }
 
-heading "Platform / RID detection"
-
-detect_platform_and_runtime_id
-echo "Current platform: $CURRENT_PLATFORM"
-echo "Current runtime ID: $DETECTED_RUNTIME_ID"
-
-if [ "$DEV_RUNTIME_ID" ]; then
-    RUNTIME_ID=$DEV_RUNTIME_ID
-else
-    RUNTIME_ID=$DETECTED_RUNTIME_ID
-fi
-
-_VALID_RIDS='linux-x64:rhel.6-x64:osx-x64:win-x64:win-x86'
-if [[ ":$_VALID_RIDS:" != *:$RUNTIME_ID:* ]]; then
-    failed "must specify a valid target runtime ID (one of: $_VALID_RIDS)"
-fi
-
-echo "Building for runtime ID: $RUNTIME_ID"
-
-
-LAYOUT_DIR="$SCRIPT_DIR/../_layout/$RUNTIME_ID"
-DOWNLOAD_DIR="$SCRIPT_DIR/../_downloads/$RUNTIME_ID/netcore2x"
-PACKAGE_DIR="$SCRIPT_DIR/../_package/$RUNTIME_ID"
-
 if [[ (! -d "${DOTNETSDK_INSTALLDIR}") || (! -e "${DOTNETSDK_INSTALLDIR}/.${DOTNETSDK_VERSION}") || (! -e "${DOTNETSDK_INSTALLDIR}/dotnet") ]]; then
     
     # Download dotnet SDK to ../_dotnetsdk directory
-    heading "Install .NET SDK"
+    heading "Ensure Dotnet SDK"
 
     # _dotnetsdk
     #           \1.0.x
@@ -194,13 +217,13 @@ if [[ (! -d "${DOTNETSDK_INSTALLDIR}") || (! -e "${DOTNETSDK_INSTALLDIR}/.${DOTN
     echo "${DOTNETSDK_VERSION}" > "${DOTNETSDK_INSTALLDIR}/.${DOTNETSDK_VERSION}"
 fi
 
-echo "Adding .NET to PATH (${DOTNETSDK_INSTALLDIR})"
+echo "Prepend ${DOTNETSDK_INSTALLDIR} to %PATH%"
 export PATH=${DOTNETSDK_INSTALLDIR}:$PATH
 
-heading ".NET SDK Version"
+heading "Dotnet SDK Version"
 dotnet --version
 
-heading "Pre-caching external resources for $RUNTIME_ID"
+heading "Pre-cache external resources for $RUNTIME_ID package ..."
 bash ./Misc/externals.sh $RUNTIME_ID "Pre-Cache" || checkRC "externals.sh Pre-Cache"
 
 if [[ "$CURRENT_PLATFORM" == 'windows' ]]; then
