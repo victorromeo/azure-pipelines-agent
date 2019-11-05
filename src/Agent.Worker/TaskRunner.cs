@@ -97,17 +97,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     legacyPShandler.Platforms = null;
                 }
 
-                var targetOs = PlatformUtil.HostOS;
+                var targetOS = PlatformUtil.HostOS;
                 var stepTarget = ExecutionContext.StepTarget();
                 if (stepTarget != null)
                 {
-                    targetOs = stepTarget.ImageOS;
+                    targetOS = stepTarget.ImageOS;
                 }
-                Trace.Info($"Get handler data for target platform {targetOs.ToString()}");
+                Trace.Info($"Get handler data for target platform {targetOS.ToString()}");
 
                 HandlerData handlerData =
                     currentExecution?.All
-                    .OrderBy(x => !x.PreferredOnPlatform(targetOs)) // Sort true to false.
+                    .OrderBy(x => !x.PreferredOnPlatform(targetOS)) // Sort true to false.
                     .ThenBy(x => x.Priority)
                     .FirstOrDefault();
                 if (handlerData == null)

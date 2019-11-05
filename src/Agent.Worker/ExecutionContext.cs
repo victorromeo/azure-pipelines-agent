@@ -681,11 +681,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public string TranslatePathForStepTarget(string val)
         {
             var stepTarget = StepTarget();
-            if (stepTarget == null)
+            if (stepTarget != null)
             {
-                return val;
+                return stepTarget.TranslateContainerPathForImageOS(PlatformUtil.HostOS, stepTarget.TranslateToContainerPath(val));
             }
-            return stepTarget.TranslateContainerPathForImageOS(PlatformUtil.HostOS, stepTarget.TranslateToContainerPath(val));
+            return val;
         }
 
         public ContainerInfo StepTarget()
