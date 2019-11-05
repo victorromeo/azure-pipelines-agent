@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
-using PlatformUtil = Agent.Sdk.PlatformUtil;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 {
