@@ -15,6 +15,8 @@ stages:
     displayName: Windows Agent (x64)
     pool:
       vmImage: vs2017-win2016
+    variables:
+      layoutRoot: '_layout\win-x64'
     steps:
 
     # Steps template for windows platform
@@ -33,7 +35,7 @@ stages:
         $unzipDir = Join-Path -Path $outDir -ChildPath "unzip"
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         [System.IO.Compression.ZipFile]::ExtractToDirectory($outFile, $unzipDir)
-        $agentLayoutBin = Join-Path -Path $(Build.SourcesDirectory) -ChildPath "_layout\bin"
+        $agentLayoutBin = Join-Path -Path $(Build.SourcesDirectory) -ChildPath "$(layoutRoot)\bin"
         Copy-Item -Path $unzipDir -Destination $agentLayoutBin -Force
       displayName: Package UCRT
 
@@ -42,7 +44,7 @@ stages:
     - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
       inputs:
         ConnectedServiceName: VSTSAgentESRP
-        FolderPath: '_layout\bin'
+        FolderPath: '$(layoutRoot)\bin'
         Pattern: AgentService.exe
         signConfigType: inlineSignParams
         inlineOperation: |
@@ -66,7 +68,7 @@ stages:
     - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
       inputs:
         ConnectedServiceName: VSTSAgentESRP
-        FolderPath: '_layout\bin'
+        FolderPath: '$(layoutRoot)\bin'
         Pattern: |
           Agent.*.dll
           Agent.*.exe
@@ -115,7 +117,7 @@ stages:
     - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
       inputs:
         ConnectedServiceName: VSTSAgentESRP
-        FolderPath: '_layout'
+        FolderPath: '$(layoutRoot)'
         Pattern: |
           bin\powershell\**\*.ps1
           bin\powershell\**\*.psm1
@@ -165,7 +167,7 @@ stages:
     - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
       inputs:
         ConnectedServiceName: VSTSAgentESRP
-        FolderPath: '_layout'
+        FolderPath: '$(layoutRoot)'
         Pattern: |
           bin\Ben.Demystifier.dll
           bin\DotNet.Glob.dll
@@ -230,7 +232,7 @@ stages:
 
     - task: DeleteFiles@1
       inputs:
-        SourceFolder: '_layout'
+        SourceFolder: '$(layoutRoot)'
         Contents: '**\CodeSignSummary-*.md'
       displayName: Delete CodeSignSummary.md
 
@@ -251,7 +253,7 @@ stages:
     - task: securedevelopmentteam.vss-secure-development-tools.build-task-codesignvalidation.CodesignValidation@0
       displayName: 'Generate Codesign Report'
       inputs:
-        path: '_layout'
+        path: '$(layoutRoot)'
     
     # Verify all binaries are signed (check report)
     - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
@@ -268,6 +270,8 @@ stages:
     pool:
       name: buildDevs
       demands: 'Agent.OSArchitecture -equals X86'
+    variables:
+      layoutRoot: '_layout\win-x86'
     steps:
 
     # Steps template for windows platform
@@ -286,7 +290,7 @@ stages:
         $unzipDir = Join-Path -Path $outDir -ChildPath "unzip"
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         [System.IO.Compression.ZipFile]::ExtractToDirectory($outFile, $unzipDir)
-        $agentLayoutBin = Join-Path -Path $(Build.SourcesDirectory) -ChildPath "_layout\bin"
+        $agentLayoutBin = Join-Path -Path $(Build.SourcesDirectory) -ChildPath "$(layoutRoot)\bin"
         Copy-Item -Path $unzipDir -Destination $agentLayoutBin -Force
       displayName: Package UCRT
 
@@ -294,7 +298,7 @@ stages:
     - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
       inputs:
         ConnectedServiceName: VSTSAgentESRP
-        FolderPath: '_layout\bin'
+        FolderPath: '$(layoutRoot)\bin'
         Pattern: AgentService.exe
         signConfigType: inlineSignParams
         inlineOperation: |
@@ -318,7 +322,7 @@ stages:
     - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
       inputs:
         ConnectedServiceName: VSTSAgentESRP
-        FolderPath: '_layout\bin'
+        FolderPath: '$(layoutRoot)\bin'
         Pattern: |
           Agent.*.dll
           Agent.*.exe
@@ -367,7 +371,7 @@ stages:
     - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
       inputs:
         ConnectedServiceName: VSTSAgentESRP
-        FolderPath: '_layout'
+        FolderPath: '$(layoutRoot)'
         Pattern: |
           bin\powershell\**\*.ps1
           bin\powershell\**\*.psm1
@@ -414,7 +418,7 @@ stages:
     - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
       inputs:
         ConnectedServiceName: VSTSAgentESRP
-        FolderPath: '_layout'
+        FolderPath: '$(layoutRoot)'
         Pattern: |
           bin\Ben.Demystifier.dll
           bin\DotNet.Glob.dll
@@ -479,7 +483,7 @@ stages:
 
     - task: DeleteFiles@1
       inputs:
-        SourceFolder: '_layout'
+        SourceFolder: '$(layoutRoot)'
         Contents: '**\CodeSignSummary-*.md'
       displayName: Delete CodeSignSummary.md
 
