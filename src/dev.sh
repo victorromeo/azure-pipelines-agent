@@ -30,6 +30,8 @@ fi
 
 function detect_platform_and_runtime_id ()
 {
+    heading "Platform / RID detection"
+
     CURRENT_PLATFORM="windows"
     if [[ ($(uname) == "Linux") || ($(uname) == "Darwin") ]]; then
         CURRENT_PLATFORM=$(uname | awk '{print tolower($0)}')
@@ -145,8 +147,6 @@ function cmd_package ()
     popd > /dev/null
 }
 
-heading "Platform / RID detection"
-
 detect_platform_and_runtime_id
 echo "Current platform: $CURRENT_PLATFORM"
 echo "Current runtime ID: $DETECTED_RUNTIME_ID"
@@ -197,8 +197,7 @@ fi
 echo "Adding .NET to PATH (${DOTNETSDK_INSTALLDIR})"
 export PATH=${DOTNETSDK_INSTALLDIR}:$PATH
 
-heading ".NET SDK Version"
-dotnet --version
+heading ".NET SDK Version: $(dotnet --version)"
 
 heading "Pre-caching external resources for $RUNTIME_ID"
 bash ./Misc/externals.sh $RUNTIME_ID "Pre-Cache" || checkRC "externals.sh Pre-Cache"
