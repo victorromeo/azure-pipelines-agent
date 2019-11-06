@@ -194,10 +194,13 @@ if [[ (! -d "${DOTNETSDK_INSTALLDIR}") || (! -e "${DOTNETSDK_INSTALLDIR}/.${DOTN
     echo "${DOTNETSDK_VERSION}" > "${DOTNETSDK_INSTALLDIR}/.${DOTNETSDK_VERSION}"
 fi
 
+
+heading ".NET SDK to path"
+
 echo "Adding .NET to PATH (${DOTNETSDK_INSTALLDIR})"
 export PATH=${DOTNETSDK_INSTALLDIR}:$PATH
-
-heading ".NET SDK Version: $(dotnet --version)"
+echo "Path = $PATH"
+dotnet --version
 
 heading "Pre-caching external resources for $RUNTIME_ID"
 bash ./Misc/externals.sh $RUNTIME_ID "Pre-Cache" || checkRC "externals.sh Pre-Cache"
