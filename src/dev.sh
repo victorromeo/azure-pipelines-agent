@@ -157,7 +157,7 @@ else
     RUNTIME_ID=$DETECTED_RUNTIME_ID
 fi
 
-_VALID_RIDS='linux-x64:rhel.6-x64:osx-x64:win-x64:win-x86'
+_VALID_RIDS='linux-x64:linux-arm:rhel.6-x64:osx-x64:win-x64:win-x86'
 if [[ ":$_VALID_RIDS:" != *:$RUNTIME_ID:* ]]; then
     failed "must specify a valid target runtime ID (one of: $_VALID_RIDS)"
 fi
