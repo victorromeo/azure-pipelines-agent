@@ -200,7 +200,7 @@ heading ".NET SDK to path"
 echo "Adding .NET to PATH (${DOTNETSDK_INSTALLDIR})"
 export PATH=${DOTNETSDK_INSTALLDIR}:$PATH
 echo "Path = $PATH"
-dotnet --version
+echo ".NET Version = $(dotnet --version)"
 
 heading "Pre-caching external resources for $RUNTIME_ID"
 bash ./Misc/externals.sh $RUNTIME_ID "Pre-Cache" || checkRC "externals.sh Pre-Cache"
