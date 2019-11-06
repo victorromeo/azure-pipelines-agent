@@ -203,6 +203,7 @@ echo "Path = $PATH"
 echo ".NET Version = $(dotnet --version)"
 
 heading "Pre-caching external resources for $RUNTIME_ID"
+mkdir -p "${LAYOUT_DIR}" >/dev/null
 bash ./Misc/externals.sh $RUNTIME_ID "Pre-Cache" || checkRC "externals.sh Pre-Cache"
 
 if [[ "$CURRENT_PLATFORM" == 'windows' ]]; then
