@@ -5,9 +5,11 @@ parameters:
 
 steps:
 # Guard against missing parameters
-- ${{ if not(and(ne(parameters.layoutRoot, ''), ne(parameters.flavor, ''))) }}:
+- ${{ if or(eq(parameters.layoutRoot, ''), eq(parameters.flavor, '')) }}:
   - powershell: |
       Write-Error "Badly configured build; an expected parameter is missing."
+      Write-Host "layoutRoot: ${{ parameters.layoutRoot }}"
+      Write-Host "flavor: ${{ parameters.flavor }}"
     displayName: Package UCRT - FAILURE
     failOnStderr: true
 
