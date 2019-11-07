@@ -33,7 +33,7 @@ jobs:
   # Package .NET Core Windows dependency (VC++ Redistributable)
   - template: .azure-pipelines/package-vcredist.yml
     parameters:
-      layoutRoot: ${{ variables.layoutRoot }}
+      layoutRoot: '_layout/win-x64'
       flavor: 'x64'
       condition: and(succeeded(), ne(variables['build.reason'], 'PullRequest'))
 
@@ -69,7 +69,7 @@ jobs:
   # Package .NET Core Windows dependency (VC++ Redistributable)
   - template: .azure-pipelines/package-vcredist.yml
     parameters:
-      layoutRoot: ${{ variables.layoutRoot }}
+      layoutRoot: '_layout/win-x86'
       flavor: 'x86'
       condition: and(succeeded(), ne(variables['build.reason'], 'PullRequest'))
 
