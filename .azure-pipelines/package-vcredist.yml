@@ -6,12 +6,10 @@ parameters:
 steps:
 # Guard against missing parameters
 - ${{ if or(eq(parameters.layoutRoot, ''), eq(parameters.flavor, '')) }}:
-  - powershell: |
-      Write-Error "Badly configured build; an expected parameter is missing."
-      Write-Host "layoutRoot: ${{ parameters.layoutRoot }}"
-      Write-Host "flavor: ${{ parameters.flavor }}"
-    displayName: Package UCRT - FAILURE
-    failOnStderr: true
+  - |
+      Badly configured build; an expected parameter is missing. //
+      layoutRoot: ${{ parameters.layoutRoot }} //
+      flavor: ${{ parameters.flavor }}
 
 # Package .NET Core Windows dependency (VC++ Redistributable)
 - powershell: |

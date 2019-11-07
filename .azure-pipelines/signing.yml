@@ -4,10 +4,9 @@ parameters:
 steps:
 # Guard against missing parameters
 - ${{ if eq(parameters.layoutRoot, '') }}:
-  - powershell: |
-      Write-Error "Badly configured build; an expected parameter is missing."
-    displayName: Signing steps - FAILURE
-    failOnStderr: true
+  - |
+      Badly configured build; an expected parameter is missing. //
+      layoutRoot: ${{ parameters.layoutRoot }}
 
 - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
   inputs:
