@@ -205,7 +205,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Trace.Info("Starting the step.");
             step.ExecutionContext.Section(StringUtil.Loc("StepStarting", step.DisplayName));
             step.ExecutionContext.SetTimeout(timeout: step.Timeout);
-            step.ExecutionContext.SetStepTarget(step.Target?.Target);
+            step.ExecutionContext.SetStepTarget(step.Target);
 
             // Windows may not be on the UTF8 codepage; try to fix that
             await SwitchToUtf8Codepage(step);

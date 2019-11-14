@@ -69,7 +69,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         void ForceTaskComplete();
         string TranslateToHostPath(string path);
         ContainerInfo StepTarget();
-        void SetStepTarget(string target);
+        void SetStepTarget(Pipelines.StepTarget target);
         string TranslatePathForStepTarget(string val);
         IHostContext GetHostContext();
     }
@@ -704,12 +704,23 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return DefaultStepTarget;
         }
 
-        public void SetStepTarget(string target)
+        public void SetStepTarget(Pipelines.StepTarget target)
         {
+            // Enforce command restriction if set for the step target
+            var commandManager = HostContext.GetService<IWorkerCommandManager>();
+            if (string.Equals(WellKnownStepTargetStrings.Restricted, target?.Commands, StringComparison.OrdinalIgnoreCase))
+            {
+                commandManager.SetCommandRestrictionPolicy(new AttributeBasedWorkerCommandRestrictionPolicy());
+            }
+            else
+            {
+                commandManager.SetCommandRestrictionPolicy(new UnrestricedWorkerCommandRestrictionPolicy());
+            }
+
             // When step targets are set, we need to take over control for translating paths
             // from the job execution context
             Variables.StringTranslator = TranslatePathForStepTarget;
-            if (string.Equals("host", target, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(WellKnownStepTargetStrings.Host, target?.Target, StringComparison.OrdinalIgnoreCase))
             {
                 _runAsHost = true;
                 CurrentStepTarget = null;
@@ -717,7 +728,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             else
             {
                 _runAsHost = false;
-                CurrentStepTarget = Containers.FirstOrDefault(x => string.Equals(x.ContainerName, target, StringComparison.OrdinalIgnoreCase));
+                CurrentStepTarget = Containers.FirstOrDefault(x => string.Equals(x.ContainerName, target?.Target, StringComparison.OrdinalIgnoreCase));
             }
         }
     }
@@ -784,5 +795,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public static readonly string Error = "##[error]";
         public static readonly string Warning = "##[warning]";
         public static readonly string Debug = "##[debug]";
+    }
+
+    public static class WellKnownStepTargetStrings
+    {
+        public static readonly string Host = "host";
+        public static readonly string Restricted = "restricted";
     }
 }
