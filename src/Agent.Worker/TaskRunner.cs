@@ -47,6 +47,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public TimeSpan? Timeout => (Task?.TimeoutInMinutes ?? 0) > 0 ? (TimeSpan?)TimeSpan.FromMinutes(Task.TimeoutInMinutes) : null;
 
+        public Pipelines.StepTarget Target => Task?.Target;
+
         public async Task RunAsync()
         {
             // Validate args.

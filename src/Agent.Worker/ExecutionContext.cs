@@ -69,6 +69,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         void ForceTaskComplete();
         string TranslateToHostPath(string path);
         ContainerInfo StepTarget();
+        void SetStepTarget(string target);
         string TranslatePathForStepTarget(string val);
         IHostContext GetHostContext();
     }
@@ -96,6 +97,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         // only job level ExecutionContext will track throttling delay.
         private long _totalThrottlingDelayInMilliseconds = 0;
+        private bool _runAsHost = false;
 
         public Guid Id => _record.Id;
         public Task ForceCompleted => _forceCompleted.Task;
@@ -444,10 +446,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 DefaultStepTarget = HostContext.CreateContainerInfo(message.Resources.Containers.Single(x => string.Equals(x.Alias, message.JobContainer, StringComparison.OrdinalIgnoreCase)));
                 Containers.Add(DefaultStepTarget);
-                foreach (var container in message.Resources.Containers.FindAll(x => !string.Equals(x.Alias, message.JobContainer, StringComparison.OrdinalIgnoreCase)))
-                {
-                    Containers.Add(HostContext.CreateContainerInfo(container));
-                }
+            }
+            // Include other step containers
+            foreach (var container in message.Resources.Containers.FindAll(x => !string.Equals(x.Alias, message.JobContainer, StringComparison.OrdinalIgnoreCase)))
+            {
+                Containers.Add(HostContext.CreateContainerInfo(container));
             }
 
             // Docker (Sidecar Containers)
@@ -689,12 +692,33 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public ContainerInfo StepTarget()
         {
+            if (_runAsHost)
+            {
+                return null;
+            }
             if (CurrentStepTarget != null)
             {
                 return CurrentStepTarget;
             }
 
             return DefaultStepTarget;
+        }
+
+        public void SetStepTarget(string target)
+        {
+            // When step targets are set, we need to take over control for translating paths
+            // from the job execution context
+            Variables.StringTranslator = TranslatePathForStepTarget;
+            if (string.Equals("host", target, StringComparison.OrdinalIgnoreCase))
+            {
+                _runAsHost = true;
+                CurrentStepTarget = null;
+            }
+            else
+            {
+                _runAsHost = false;
+                CurrentStepTarget = Containers.FirstOrDefault(x => string.Equals(x.ContainerName, target, StringComparison.OrdinalIgnoreCase));
+            }
         }
     }
 

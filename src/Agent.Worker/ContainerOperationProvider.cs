@@ -271,11 +271,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Trace.Info($"Container registry: {container.ContainerRegistryEndpoint.ToString()}");
             Trace.Info($"Container options: {container.ContainerCreateOptions}");
             Trace.Info($"Skip container image pull: {container.SkipContainerImagePull}");
-            foreach(var port in container.UserPortMappings)
+            foreach (var port in container.UserPortMappings)
             {
                 Trace.Info($"User provided port: {port.Value}");
             }
-            foreach(var volume in container.UserMountVolumes)
+            foreach (var volume in container.UserMountVolumes)
             {
                 Trace.Info($"User provided volume: {volume.Value}");
             }
@@ -283,6 +283,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             if (container.ImageOS != PlatformUtil.OS.Windows)
             {
                 string defaultWorkingDirectory = executionContext.Variables.Get(Constants.Variables.System.DefaultWorkingDirectory);
+                defaultWorkingDirectory = container.TranslateContainerPathForImageOS(PlatformUtil.HostOS, container.TranslateToContainerPath(defaultWorkingDirectory));
                 if (string.IsNullOrEmpty(defaultWorkingDirectory))
                 {
                     throw new NotSupportedException(StringUtil.Loc("ContainerJobRequireSystemDefaultWorkDir"));
@@ -301,7 +302,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             else
             {
                 container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Work), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Work))));
-
             }
 
             container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Tools), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Tools))));
