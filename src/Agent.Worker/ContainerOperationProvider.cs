@@ -324,14 +324,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             if (container.IsJobContainer)
             {
                 // See if this container brings its own Node.js
-                container.ContainerBringNodePath = await _dockerManger.DockerInspect(context: executionContext,
+                container.CustomNodePath = await _dockerManger.DockerInspect(context: executionContext,
                                                                     dockerObject: container.ContainerImage,
                                                                     options: $"--format=\"{{{{index .Config.Labels \\\"{_nodeJsPathLabel}\\\"}}}}\"");
 
                 string node;
-                if (!string.IsNullOrEmpty(container.ContainerBringNodePath))
+                if (!string.IsNullOrEmpty(container.CustomNodePath))
                 {
-                    node = container.ContainerBringNodePath;
+                    node = container.CustomNodePath;
                 }
                 else
                 {
@@ -340,14 +340,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     // if on Mac OS X, require container to have node
                     if (PlatformUtil.RunningOnMacOS)
                     {
-                        container.ContainerBringNodePath = "node";
-                        node = container.ContainerBringNodePath;
+                        container.CustomNodePath = "node";
+                        node = container.CustomNodePath;
                     }
                     // if running on Windows, and attempting to run linux container, require container to have node
                     else if (PlatformUtil.RunningOnWindows && container.ImageOS == PlatformUtil.OS.Linux)
                     {
-                        container.ContainerBringNodePath = "node";
-                        node = container.ContainerBringNodePath;
+                        container.CustomNodePath = "node";
+                        node = container.CustomNodePath;
                     }
                 }
                 string sleepCommand = $"\"{node}\" -e \"setInterval(function(){{}}, 24 * 60 * 60 * 1000);\"";
@@ -554,7 +554,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         }
 
                         // if path to node is just 'node', with no path, let's make sure it is actually there
-                        if (string.Equals(container.ContainerBringNodePath, "node", StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(container.CustomNodePath, "node", StringComparison.OrdinalIgnoreCase))
                         {
                             List<string> nodeVersionOutput = new List<string>();
                             int execNodeVersionExitCode = await _dockerManger.DockerExec(executionContext, container.ContainerId, string.Empty, $"bash -c \"node -v\"", nodeVersionOutput);

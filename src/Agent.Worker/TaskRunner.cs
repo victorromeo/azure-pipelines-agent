@@ -102,7 +102,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 var stepTarget = ExecutionContext.StepTarget();
                 if (stepTarget != null)
                 {
-                    targetOS = stepTarget.ImageOS;
+                    targetOS = stepTarget.ExecutionOS;
                 }
                 Trace.Info($"Get handler data for target platform {targetOS.ToString()}");
 
@@ -126,7 +126,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 IStepHost stepHost = HostContext.CreateService<IDefaultStepHost>();
 
                 // Setup container stephost and the right runtime variables for running job inside container.
-                if (stepTarget != null)
+                if (stepTarget is ContainerInfo containerTarget)
                 {
                     if (handlerData is AgentPluginHandlerData)
                     {
@@ -149,9 +149,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     {
                         // Only the node, node10, and powershell3 handlers support running inside container.
                         // Make sure required container is already created.
-                        ArgUtil.NotNullOrEmpty(stepTarget.ContainerId, nameof(stepTarget.ContainerId));
+                        ArgUtil.NotNullOrEmpty(containerTarget.ContainerId, nameof(containerTarget.ContainerId));
                         var containerStepHost = HostContext.CreateService<IContainerStepHost>();
-                        containerStepHost.Container = stepTarget;
+                        containerStepHost.Container = containerTarget;
                         stepHost = containerStepHost;
                     }
                     else

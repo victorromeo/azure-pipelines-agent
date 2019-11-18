@@ -298,7 +298,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
             // Complete the step context.
-            step.ExecutionContext.SetStepTarget(null);
             step.ExecutionContext.Section(StringUtil.Loc("StepFinishing", step.DisplayName));
             step.ExecutionContext.Complete();
         }
