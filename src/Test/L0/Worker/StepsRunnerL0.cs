@@ -434,7 +434,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
 
                 // Assert.
                 stepContext.Verify(x => x.SetStepTarget(stepTarget), Times.Once);
-                stepContext.Verify(x => x.SetStepTarget(null), Times.Once);
             }
         }
 

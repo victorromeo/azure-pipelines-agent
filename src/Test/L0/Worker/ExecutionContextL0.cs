@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Agent.Sdk;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Moq;
 using System;
@@ -168,7 +169,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 ec.SetStepTarget(steps[0].Target);
 
                 // Assert.
-                Assert.NotNull(ec.StepTarget());
+                Assert.IsType<ContainerInfo>(ec.StepTarget());
                 commandMock.Verify(x => x.SetCommandRestrictionPolicy(It.IsAny<UnrestricedWorkerCommandRestrictionPolicy>()));
             }
         }
@@ -220,7 +221,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 ec.SetStepTarget(steps[0].Target);
 
                 // Assert.
-                Assert.Null(ec.StepTarget());
+                Assert.IsType<HostInfo>(ec.StepTarget());
                 commandMock.Verify(x => x.SetCommandRestrictionPolicy(It.IsAny<AttributeBasedWorkerCommandRestrictionPolicy>()));
             }
         }
