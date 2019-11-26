@@ -191,7 +191,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
 
         public async Task<int> DockerNetworkCreate(IExecutionContext context, string network)
         {
-            var usingWindowsContainers = context.Containers.Where(x => x.ExecutionOS != PlatformUtil.OS.Windows).Count() == 0);
+            var usingWindowsContainers = context.Containers.Where(x => x.ExecutionOS != PlatformUtil.OS.Windows).Count() == 0;
             var networkDrivers = await ExecuteDockerCommandAsync(context, "info", "-f \"{{range .Plugins.Network}}{{println .}}{{end}}\"");
             if (usingWindowsContainers && networkDrivers.Contains("nat"))
             {
