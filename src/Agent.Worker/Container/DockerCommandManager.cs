@@ -193,7 +193,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
         {
             var usingWindowsContainers = context.Containers.Where(x => x.ExecutionOS != PlatformUtil.OS.Windows).Count() == 0);
             var networkDrivers = await ExecuteDockerCommandAsync(context, "info", "-f \"{{range .Plugins.Network}}{{println .}}{{end}}\"");
-            if (containerHostOS == PlatformUtil.OS.Windows && networkDrivers.Contains("nat"))
+            if (usingWindowsContainers && networkDrivers.Contains("nat"))
             {
                 return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} --driver nat", context.CancellationToken);
             }
