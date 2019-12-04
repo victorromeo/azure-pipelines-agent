@@ -62,4 +62,3 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         }
     }
 }
-    
