@@ -29,7 +29,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             var configurationStore = HostContext.GetService<IConfigurationStore>();
             AgentSettings settings = configurationStore.GetSettings();
             String fingerprint = settings.Fingerprint;
-
             String taskZipPath = definition.ZipPath;
             String taskNugetPath = definition.ZipPath.Replace(".zip", ".nupkg");
 
