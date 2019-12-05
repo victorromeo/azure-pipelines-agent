@@ -43,7 +43,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                     var timeout = Process.GetProcessById(sleep.Id);
                     while (timeout == null)
                     {
-                        await Task.Delay(500);
+                        await Task.Delay(1500);
                         timeout = Process.GetProcessById(sleep.Id);
                     }
 
