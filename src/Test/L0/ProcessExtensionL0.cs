@@ -72,7 +72,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 }
                 finally
                 {
-                    sleep?.Kill();
+                    try 
+                    {
+                        sleep?.Kill();
+                    }
+                    catch {  }
                 }
             }
         }
