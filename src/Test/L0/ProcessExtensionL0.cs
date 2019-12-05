@@ -49,6 +49,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
 
                     try
                     {
+                        await Task.Delay(2000);
                         trace.Info($"Read env from {timeout.Id}");
                         var value = timeout.GetEnvironmentVariable(hc, envName);
                         if (string.Equals(value, envValue, StringComparison.OrdinalIgnoreCase))
