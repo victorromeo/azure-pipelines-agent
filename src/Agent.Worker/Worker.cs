@@ -113,7 +113,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             // Add mask hints for secret variables
             foreach (var variable in (message.Variables ?? new Dictionary<string, VariableValue>()))
             {
-                if (variable.Value.IsSecret)
+                if (variable.Value.IsSecret && !string.IsNullOrEmpty(variable.Value.Value))
                 {
                     HostContext.SecretMasker.AddValue(variable.Value.Value);
                 }
