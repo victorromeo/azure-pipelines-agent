@@ -8,6 +8,7 @@
 - Add an option to reduce checkout verbosity (#2547)
 - Make tarring default for Pipeline Caching and modifying Display to Info from Warning for Save Cache (#2535)
 - A customer reported an issue of a NPE when initializing secret masker (#2633)
+- Add support of minimumBuildStatus property (#2560)
 
 ## Bugs
 - Use DirectorySeparatorChar in git path (#2492)
