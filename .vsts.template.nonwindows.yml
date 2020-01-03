@@ -23,7 +23,7 @@ steps:
 
 - ${{ if eq(parameters.skipTests, 'false') }}:
   # Run test
-  - script: ./dev.sh test Release ${{ parameters.targetRuntime }}
+  - script: ./dev.sh test
     workingDirectory: src
     displayName: Test
 

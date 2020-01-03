@@ -219,7 +219,7 @@ jobs:
     parameters:
       componentDetection: 'true'
       testLogTitle: 'Linux-ARM-on-x64'
-      targetRuntime: 'Linux-ARM'
+      targetRuntime: 'linux-arm'
       skipTests: 'true'
 
   # # Create agent package zip
