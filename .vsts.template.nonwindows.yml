@@ -1,6 +1,8 @@
 parameters:
   componentDetection: 'false'
   testLogTitle: 'Non-Windows'
+  targetRuntime: ''
+  skipTests: 'false'
 
 steps:
 
@@ -15,29 +17,30 @@ steps:
   clean: true
 
 # Build agent layout
-- script: ./dev.sh layout Release
+- script: ./dev.sh layout Release ${{ parameters.targetRuntime }}
   workingDirectory: src
   displayName: Build & Layout Release
 
-# Run test
-- script: ./dev.sh test
-  workingDirectory: src
-  displayName: Test
+- ${{ if eq(parameters.skipTests, 'false') }}:
+  # Run test
+  - script: ./dev.sh test Release ${{ parameters.targetRuntime }}
+    workingDirectory: src
+    displayName: Test
 
-# Publish test results
-- task: PublishTestResults@2
-  displayName: Publish Test Results **/*.trx
-  condition: always()
-  inputs:
-    testRunner: VSTest
-    testResultsFiles: '**/*.trx'
-    testRunTitle: 'Agent Tests - ${{ parameters.testLogTitle }}'
+  # Publish test results
+  - task: PublishTestResults@2
+    displayName: Publish Test Results **/*.trx
+    condition: always()
+    inputs:
+      testRunner: VSTest
+      testResultsFiles: '**/*.trx'
+      testRunTitle: 'Agent Tests - ${{ parameters.testLogTitle }}'
 
-# Upload test log
-- task: PublishBuildArtifacts@1
-  displayName: Publish Test logs
-  condition: always()
-  inputs:
-    pathToPublish: src/Test/TestLogs
-    artifactName: ${{ parameters.testLogTitle }}-$(System.JobId)
-    artifactType: container
+  # Upload test log
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Test logs
+    condition: always()
+    inputs:
+      pathToPublish: src/Test/TestLogs
+      artifactName: ${{ parameters.testLogTitle }}-$(System.JobId)
+      artifactType: container

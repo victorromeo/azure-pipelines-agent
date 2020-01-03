@@ -14,9 +14,6 @@ resources:
   - container: dotnetcore_centos6
     image: huangtingluo/azure-pipelines-agent-eng:centos6
 
-  - container: linux_arm_on_x64
-    image: aarch64/ubuntu:16.04
-
 jobs:
 
 ################################################################################
@@ -215,7 +212,6 @@ jobs:
   displayName: Linux Agent (ARM on x64 EXPERIMENTAL)
   pool:
     vmImage: ubuntu-16.04
-  container: linux_arm_on_x64
   steps:
 
   # Steps template for non-windows platform
@@ -223,12 +219,14 @@ jobs:
     parameters:
       componentDetection: 'true'
       testLogTitle: 'Linux-ARM-on-x64'
+      targetRuntime: 'Linux-ARM'
+      skipTests: 'true'
 
-  # Create agent package zip
-  - script: ./dev.sh package Release
-    workingDirectory: src
-    displayName: Package Release
-    condition: and(succeeded(), ne(variables['build.reason'], 'PullRequest'))
+  # # Create agent package zip
+  # - script: ./dev.sh package Release
+  #   workingDirectory: src
+  #   displayName: Package Release
+  #   condition: and(succeeded(), ne(variables['build.reason'], 'PullRequest'))
 
   # # Upload agent package zip as build artifact
   # - task: PublishBuildArtifacts@1
