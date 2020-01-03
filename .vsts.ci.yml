@@ -10,9 +10,12 @@ resources:
   containers:
   - container: dotnetcore_arm
     image: huangtingluo/azure-pipelines-agent-eng:arm
-  
+
   - container: dotnetcore_centos6
     image: huangtingluo/azure-pipelines-agent-eng:centos6
+
+  - container: linux_arm_on_x64
+    image: aarch64/ubuntu:16.04
 
 jobs:
 
@@ -153,7 +156,7 @@ jobs:
 ################################################################################
   displayName: RHEL6 Agent (x64)
   pool:
-    vmImage: ubuntu-16.04  
+    vmImage: ubuntu-16.04
   container: dotnetcore_centos6
   steps:
 
@@ -190,7 +193,7 @@ jobs:
     parameters:
       componentDetection: 'true'
       testLogTitle: 'macOS-x64'
-  
+
   # Create agent package zip
   - script: ./dev.sh package Release
     workingDirectory: src
@@ -205,3 +208,33 @@ jobs:
       pathToPublish: _package
       artifactName: agent
       artifactType: container
+
+################################################################################
+- job: build_linux_arm_on_x64_agent
+################################################################################
+  displayName: Linux Agent (ARM on x64 EXPERIMENTAL)
+  pool:
+    vmImage: ubuntu-16.04
+  container: linux_arm_on_x64
+  steps:
+
+  # Steps template for non-windows platform
+  - template: .vsts.template.nonwindows.yml
+    parameters:
+      componentDetection: 'true'
+      testLogTitle: 'Linux-ARM-on-x64'
+
+  # Create agent package zip
+  - script: ./dev.sh package Release
+    workingDirectory: src
+    displayName: Package Release
+    condition: and(succeeded(), ne(variables['build.reason'], 'PullRequest'))
+
+  # # Upload agent package zip as build artifact
+  # - task: PublishBuildArtifacts@1
+  #   displayName: Publish Artifact (Linux x64)
+  #   condition: and(succeeded(), ne(variables['build.reason'], 'PullRequest'))
+  #   inputs:
+  #     pathToPublish: _package
+  #     artifactName: agent
+  #     artifactType: container
