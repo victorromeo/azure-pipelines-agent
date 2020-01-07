@@ -227,7 +227,7 @@ jobs:
     condition: succeeded()
     inputs:
       pathToPublish: _layout
-      artifactName: _layout-linux-arm-$(System.JobId)
+      artifactName: _layout-linux-arm-$(System.BuildId)
       artifactType: container
 
 ################################################################################
@@ -246,30 +246,30 @@ jobs:
     displayName: Download Layout Directory
     inputs:
       downloadPath: _layout
-      artifactName: _layout-linux-arm-$(System.JobId)
+      artifactName: _layout-linux-arm-$(System.BuildId)
 
   # Run test
   - script: ./dev.sh test
     workingDirectory: src
     displayName: Test
 
-  # # Publish test results
-  # - task: PublishTestResults@2
-  #   displayName: Publish Test Results **/*.trx
-  #   condition: always()
-  #   inputs:
-  #     testRunner: VSTest
-  #     testResultsFiles: '**/*.trx'
-  #     testRunTitle: 'Agent Tests - ARM-BuiltOn-x64'
+  # Publish test results
+  - task: PublishTestResults@2
+    displayName: Publish Test Results **/*.trx
+    condition: always()
+    inputs:
+      testRunner: VSTest
+      testResultsFiles: '**/*.trx'
+      testRunTitle: 'Agent Tests - ARM-BuiltOn-x64'
 
-  # # Upload test log
-  # - task: PublishBuildArtifacts@1
-  #   displayName: Publish Test logs
-  #   condition: always()
-  #   inputs:
-  #     pathToPublish: src/Test/TestLogs
-  #     artifactName: ARM-BuiltOn-x64-$(System.JobId)
-  #     artifactType: container
+  # Upload test log
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Test logs
+    condition: always()
+    inputs:
+      pathToPublish: src/Test/TestLogs
+      artifactName: ARM-BuiltOn-x64-$(System.JobId)
+      artifactType: container
 
 
   # # Create agent package zip
