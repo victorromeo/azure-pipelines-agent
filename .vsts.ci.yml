@@ -230,45 +230,46 @@ jobs:
       artifactName: _layout-linux-arm-$(System.JobId)
       artifactType: container
 
-# ################################################################################
-# - job: test_linux_arm_built_on_x64_agent
-# ################################################################################
-#   displayName: Linux Agent (Testing ARM Built On x64 EXPERIMENTAL)
-#   dependsOn: build_linux_arm_on_x64_agent
-#   pool:
-#     name: buildDevs
-#     demands: 'Agent.OSArchitecture -equals ARM'
-#   container: dotnetcore_arm
-#   timeoutInMinutes: 75
-#   steps:
-#   - task: DownloadBuildArtifacts@1
-#     displayName: Download Layout Directory
-#     inputs:
-#       downloadPath: _layout
-#       artifactName: _layout-linux-arm-$(System.JobId)
+################################################################################
+- job: test_linux_arm_built_on_x64_agent
+################################################################################
+  displayName: Linux Agent (Testing ARM Built On x64 EXPERIMENTAL)
+  dependsOn: build_linux_arm_on_x64_agent
+  pool:
+    name: buildDevs
+    demands: 'Agent.OSArchitecture -equals ARM'
+  container: dotnetcore_arm
+  timeoutInMinutes: 75
+  steps:
 
-#   # Run test
-#   - script: ./dev.sh test
-#     workingDirectory: src
-#     displayName: Test
+  - task: DownloadBuildArtifacts@1
+    displayName: Download Layout Directory
+    inputs:
+      downloadPath: _layout
+      artifactName: _layout-linux-arm-$(System.JobId)
 
-#   # Publish test results
-#   - task: PublishTestResults@2
-#     displayName: Publish Test Results **/*.trx
-#     condition: always()
-#     inputs:
-#       testRunner: VSTest
-#       testResultsFiles: '**/*.trx'
-#       testRunTitle: 'Agent Tests - ARM-BuiltOn-x64'
+  # Run test
+  - script: ./dev.sh test
+    workingDirectory: src
+    displayName: Test
 
-#   # Upload test log
-#   - task: PublishBuildArtifacts@1
-#     displayName: Publish Test logs
-#     condition: always()
-#     inputs:
-#       pathToPublish: src/Test/TestLogs
-#       artifactName: ARM-BuiltOn-x64-$(System.JobId)
-#       artifactType: container
+  # Publish test results
+  - task: PublishTestResults@2
+    displayName: Publish Test Results **/*.trx
+    condition: always()
+    inputs:
+      testRunner: VSTest
+      testResultsFiles: '**/*.trx'
+      testRunTitle: 'Agent Tests - ARM-BuiltOn-x64'
+
+  # Upload test log
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Test logs
+    condition: always()
+    inputs:
+      pathToPublish: src/Test/TestLogs
+      artifactName: ARM-BuiltOn-x64-$(System.JobId)
+      artifactType: container
 
 
   # # Create agent package zip
