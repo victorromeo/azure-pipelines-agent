@@ -222,6 +222,55 @@ jobs:
       targetRuntime: 'linux-arm'
       skipTests: 'true'
 
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Layout Directory
+    condition: and(succeeded())
+    inputs:
+      pathToPublish: _layout
+      artifactName: _layout-linux-arm-$(System.JobId)
+      artifactType: container
+
+################################################################################
+- job: test_linux_arm_built_on_x64_agent
+################################################################################
+  displayName: Linux Agent (Testing ARM Built On x64 EXPERIMENTAL)
+  dependsOn: build_linux_arm_on_x64_agent
+  pool:
+    name: buildDevs
+    demands: 'Agent.OSArchitecture -equals ARM'
+  container: dotnetcore_arm
+  timeoutInMinutes: 75
+  steps:
+  - task: DownloadBuildArtifacts@1
+    displayName: Download Layout Directory
+    inputs:
+      downloadPath: _layout
+      artifactName: _layout-linux-arm-$(System.JobId)
+
+  # Run test
+  - script: ./dev.sh test
+    workingDirectory: src
+    displayName: Test
+
+  # Publish test results
+  - task: PublishTestResults@2
+    displayName: Publish Test Results **/*.trx
+    condition: always()
+    inputs:
+      testRunner: VSTest
+      testResultsFiles: '**/*.trx'
+      testRunTitle: 'Agent Tests - ARM-BuiltOn-x64}'
+
+  # Upload test log
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Test logs
+    condition: always()
+    inputs:
+      pathToPublish: src/Test/TestLogs
+      artifactName: ARM-BuiltOn-x64-$(System.JobId)
+      artifactType: container
+
+
   # # Create agent package zip
   # - script: ./dev.sh package Release
   #   workingDirectory: src
