@@ -224,7 +224,7 @@ jobs:
 
   - task: PublishBuildArtifacts@1
     displayName: Publish Layout Directory
-    condition: and(succeeded())
+    condition: succeeded()
     inputs:
       pathToPublish: _layout
       artifactName: _layout-linux-arm-$(System.JobId)
