@@ -242,7 +242,7 @@ jobs:
   timeoutInMinutes: 75
   steps:
 
-  - task: DownloadBuildArtifacts@1
+  - task: DownloadBuildArtifacts@0
     displayName: Download Layout Directory
     inputs:
       downloadPath: _layout
