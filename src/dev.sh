@@ -252,7 +252,7 @@ mkdir -p "${LAYOUT_DIR}" >/dev/null
 bash ./Misc/externals.sh $RUNTIME_ID "Pre-Cache" || checkRC "externals.sh Pre-Cache"
 
 if [[ "$CURRENT_PLATFORM" == 'windows' ]]; then
-    vswhere=$(find "$DOWNLOAD_DIR" -name vswhere.exe | head -1)
+    vswhere="$DOWNLOAD_DIR/vstsagenttools.blob.core.windows.net/tools/vswhere/1_0_62/vswhere.exe"
     vs_location=$("$vswhere" -latest -property installationPath)
     msbuild_location="$vs_location""\MSBuild\15.0\Bin\msbuild.exe"
 
