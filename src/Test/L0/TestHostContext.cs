@@ -396,7 +396,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             var context = new Mock<IExecutionContext>();
             context.Setup(x => x.Error(It.IsAny<Exception>())).Callback( (Exception ex) => {
                 context.Object.AddIssue(new Issue() { Type = IssueType.Error, Message = ex.Message });
-                //Console.WriteLine(ex.ToString());
             });
             context.Setup(x => x.Error(It.IsAny<string>())).Callback( (string message) => {
                 context.Object.AddIssue(new Issue() { Type = IssueType.Error, Message = message });
@@ -405,16 +404,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 context.Object.AddIssue(new Issue() { Type = IssueType.Warning, Message = message });
             });
             context.Setup(x => x.Output(It.IsAny<string>())).Callback( (string message) => {
-                //Console.WriteLine(message);
             });
             context.Setup(x => x.Command(It.IsAny<string>())).Callback( (string message) => {
-                //Console.WriteLine(message);
             });
             context.Setup(x => x.Debug(It.IsAny<string>())).Callback( (string message) => {
-                //Console.WriteLine(message);
             });
             context.Setup(x => x.Section(It.IsAny<string>())).Callback( (string message) => {
-                //Console.WriteLine(message);
             });
 
             return context;

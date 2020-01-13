@@ -31,7 +31,7 @@ namespace Agent.Sdk
         public static readonly string HasMultipleCheckouts = "HasMultipleCheckouts";
     }
 
-    public class AgentTaskPluginExecutionContext : IBaseContext
+    public class AgentTaskPluginExecutionContext : IBaseExecutionContext
     {
         private VssConnection _connection;
         private readonly object _stdoutLock = new object();

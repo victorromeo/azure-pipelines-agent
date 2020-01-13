@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Agent.Sdk
 {
-    public interface IBaseContext : ITraceWriter
+    public interface IBaseExecutionContext : ITraceWriter
     {
         string GetVariableValueOrDefault(string variableName);
         IEnumerable<KeyValuePair<string, string>> EnumeratePublicVariables();

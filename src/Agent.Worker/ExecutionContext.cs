@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     }
 
     [ServiceLocator(Default = typeof(ExecutionContext))]
-    public interface IExecutionContext : IAgentService, IBaseContext
+    public interface IExecutionContext : IAgentService, IBaseExecutionContext
     {
         Guid Id { get; }
         Task ForceCompleted { get; }
@@ -42,7 +42,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         Variables TaskVariables { get; }
         HashSet<string> OutputVariables { get; }
         List<IAsyncCommandContext> AsyncCommands { get; }
-        List<string> PrependPathList { get; }
+        List<string> PathsToPrepend { get; }
         List<ContainerInfo> Containers { get; }
         List<ContainerInfo> SidecarContainers { get; }
 
@@ -112,7 +112,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public Variables TaskVariables { get; private set; }
         public HashSet<string> OutputVariables => _outputvariables;
         public bool WriteDebug { get; private set; }
-        public List<string> PrependPathList { get; private set; }
+        public List<string> PathsToPrepend { get; private set; }
         public List<ContainerInfo> Containers { get; private set; }
         public List<ContainerInfo> SidecarContainers { get; private set; }
         public List<IAsyncCommandContext> AsyncCommands => _asyncCommands;
@@ -190,7 +190,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             child._cancellationTokenSource = new CancellationTokenSource();
             child.WriteDebug = WriteDebug;
             child._parentExecutionContext = this;
-            child.PrependPathList = PrependPathList;
+            child.PathsToPrepend = PathsToPrepend;
             child.Containers = Containers;
             child.SidecarContainers = SidecarContainers;
             child._outputForward = outputForward;
@@ -419,7 +419,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Variables.StringTranslator = TranslatePathForStepTarget;
 
             // Prepend Path
-            PrependPathList = new List<string>();
+            PathsToPrepend = new List<string>();
 
             // Docker (JobContainer)
             string imageName = Variables.Get("_PREVIEW_VSTS_DOCKER_IMAGE");
@@ -809,7 +809,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public void PrependPath(string directory)
         {
-            PrependPathList.Insert(0, directory);
+            PathsToPrepend.Insert(0, directory);
         }
 
         public string GetInput(string name, bool required = false)
