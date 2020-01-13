@@ -31,7 +31,7 @@ namespace Agent.Sdk
         public static readonly string HasMultipleCheckouts = "HasMultipleCheckouts";
     }
 
-    public class AgentTaskPluginExecutionContext : ITraceWriter
+    public class AgentTaskPluginExecutionContext : IBaseContext
     {
         private VssConnection _connection;
         private readonly object _stdoutLock = new object();
@@ -159,6 +159,13 @@ namespace Agent.Sdk
 #endif
         }
 
+        public void Error(Exception ex)
+        {
+            Output($"##vso[task.logissue type=error;]{Escape(ex.Message)}");
+            Debug(ex.ToString());
+            Output($"##vso[task.complete result=Failed;]");
+        }
+
         public void Error(string message)
         {
             Output($"##vso[task.logissue type=error;]{Escape(message)}");
@@ -181,7 +188,7 @@ namespace Agent.Sdk
             Output($"##vso[telemetry.publish area={area};feature={feature}]{Escape(propertiesAsJson)}");
         }
 
-        public void PublishTelemetry(string area, string feature, TelemetryRecord record) 
+        public void PublishTelemetry(string area, string feature, TelemetryRecord record)
             => PublishTelemetry(area, feature, record.GetAssignedProperties());
 
         public void Output(string message)
@@ -297,6 +304,18 @@ namespace Agent.Sdk
             {
                 return null;
             }
+        }
+
+        public string GetVariableValueOrDefault(string variableName)
+        {
+            return Variables.GetValueOrDefault(variableName)?.Value;
+        }
+
+        public IEnumerable<KeyValuePair<string, string>> EnumeratePublicVariables()
+        {
+            return Variables
+                    .Where(x => !x.Value.IsSecret)
+                    .Select(x => new KeyValuePair<string, string>(x.Key, x.Value.Value));
         }
 
         private string Escape(string input)

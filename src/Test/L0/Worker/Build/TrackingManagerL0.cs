@@ -41,7 +41,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             _workFolder = hc.GetDirectory(WellKnownDirectory.Work);
 
             // Setup the execution context.
-            _ec = new Mock<IExecutionContext>();
+            _ec = hc.CreateExecutionContext();
             List<string> warnings;
             _variables = new Variables(hc, new Dictionary<string, VariableValue>(), out warnings);
             _variables.Set(Constants.Variables.System.CollectionId, CollectionId);
@@ -142,11 +142,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 string sourceFolder = Path.Combine(_workFolder, "b00335b6");
 
                 // It doesn't matter for this test whether the line endings are CRLF or just LF.
-                string Contents = @"{ 
-    ""system"" : ""build"", 
-    ""collectionId"" = ""7aee6dde-6381-4098-93e7-50a8264cf066"", 
-    ""definitionId"" = ""7"", 
-    ""repositoryUrl"" = ""http://contoso:8080/tfs/DefaultCollection/_git/gitTest"", 
+                string Contents = @"{
+    ""system"" : ""build"",
+    ""collectionId"" = ""7aee6dde-6381-4098-93e7-50a8264cf066"",
+    ""definitionId"" = ""7"",
+    ""repositoryUrl"" = ""http://contoso:8080/tfs/DefaultCollection/_git/gitTest"",
     ""sourceFolder"" = """ + sourceFolder + @""",
     ""hashKey"" = ""b00335b6923adfa64f46f3abb7da1cdc0d9bae6c""
 }";
@@ -177,11 +177,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 string sourceFolder = Path.Combine(_workFolder, "b00335b6");
 
                 // It doesn't matter for this test whether the line endings are CRLF or just LF.
-                string contents = @"{ 
-    ""system"" : ""build"", 
-    ""collectionId"" = ""7aee6dde-6381-4098-93e7-50a8264cf066"", 
-    ""definitionId"" = ""7"", 
-    ""repositoryUrl"" = ""http://contoso:8080/tfs/DefaultCollection/_git/gitTest"", 
+                string contents = @"{
+    ""system"" : ""build"",
+    ""collectionId"" = ""7aee6dde-6381-4098-93e7-50a8264cf066"",
+    ""definitionId"" = ""7"",
+    ""repositoryUrl"" = ""http://contoso:8080/tfs/DefaultCollection/_git/gitTest"",
     ""sourceFolder"" = """ + sourceFolder + @""",
     ""hashKey"" = """"
 }";
@@ -208,11 +208,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 string sourceFolder = Path.Combine(_workFolder, "b00335b6");
 
                 // It doesn't matter for this test whether the line endings are CRLF or just LF.
-                string contents = @"{ 
-    ""system"" : ""build"", 
-    ""collectionId"" = ""7aee6dde-6381-4098-93e7-50a8264cf066"", 
-    ""definitionId"" = ""7"", 
-    ""repositoryUrl"" = ""http://contoso:8080/tfs/DefaultCollection/_git/gitTest"", 
+                string contents = @"{
+    ""system"" : ""build"",
+    ""collectionId"" = ""7aee6dde-6381-4098-93e7-50a8264cf066"",
+    ""definitionId"" = ""7"",
+    ""repositoryUrl"" = ""http://contoso:8080/tfs/DefaultCollection/_git/gitTest"",
     ""sourceFolder"" = """ + sourceFolder + @""",
     ""hashKey"" = ""b00335b6923adfa64f46f3abb7da1cdc0d9bae6c""
 }";
@@ -520,10 +520,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
 
                 // It doesn't matter for this test whether the line endings are CRLF or just LF.
                 string trackingContents = @"{
-    ""system"" : ""build"", 
-    ""collectionId"" = ""7aee6dde-6381-4098-93e7-50a8264cf066"", 
-    ""definitionId"" = ""7"", 
-    ""repositoryUrl"" = ""http://contoso:8080/tfs/DefaultCollection/_git/gitTest"", 
+    ""system"" : ""build"",
+    ""collectionId"" = ""7aee6dde-6381-4098-93e7-50a8264cf066"",
+    ""definitionId"" = ""7"",
+    ""repositoryUrl"" = ""http://contoso:8080/tfs/DefaultCollection/_git/gitTest"",
     ""sourceFolder"" = """ + sourceFolder + @""",
     ""hashKey"" = ""b00335b6923adfa64f46f3abb7da1cdc0d9bae6c""
 }";

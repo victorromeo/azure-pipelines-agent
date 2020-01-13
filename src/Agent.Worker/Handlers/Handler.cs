@@ -271,8 +271,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         {
             // Validate args.
             Trace.Entering();
-            ArgUtil.NotNull(ExecutionContext.PrependPath, nameof(ExecutionContext.PrependPath));
-            if (ExecutionContext.PrependPath.Count == 0)
+            ArgUtil.NotNull(ExecutionContext.PrependPathList, nameof(ExecutionContext.PrependPathList));
+            if (ExecutionContext.PrependPathList.Count == 0)
             {
                 return;
             }
@@ -282,7 +282,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             if (containerStepHost != null)
             {
                 List<string> prepend = new List<string>();
-                foreach (var path in ExecutionContext.PrependPath)
+                foreach (var path in ExecutionContext.PrependPathList)
                 {
                     prepend.Add(ExecutionContext.TranslatePathForStepTarget(path));
                 }
@@ -290,7 +290,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             }
             else
             {
-                string prepend = string.Join(Path.PathSeparator.ToString(), ExecutionContext.PrependPath.Reverse<string>());
+                string prepend = string.Join(Path.PathSeparator.ToString(), ExecutionContext.PrependPathList.Reverse<string>());
                 string taskEnvPATH;
                 Environment.TryGetValue(Constants.PathVariable, out taskEnvPATH);
                 string originalPath = RuntimeVariables.Get(Constants.PathVariable) ?? // Prefer a job variable.
