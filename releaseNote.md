@@ -1,8 +1,16 @@
 ## Features
+ - Ensure agent does not receive new work in runOnce mode (#2728)
+ - Add info to help about --once (#2732)
+ - Allow users to specify tar location via environment variable (#2723)
 
 ## Bugs
+ - Translate variables on expand (#2739)
+ - Correctly updating the repository path in Multi-Checkout mode (#2735)
+ - Converted mkrelease script to node (#2733)
 
 ## Misc
+ - Fixed typo for string (CreateUserWithSameUIDInsideContainer). (#2724)
+ - Added more unit testing for AgentPluginManager (#2715)
 
 ## Agent Downloads
 
