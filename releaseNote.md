@@ -1,8 +1,11 @@
+
 ## Features
 
 ## Bugs
+ - Ensure sourcesToBuild is populated (#2741)
 
 ## Misc
+ - Minor updates to fix release process (#2742)
 
 ## Agent Downloads
 
