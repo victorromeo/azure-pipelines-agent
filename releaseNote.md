@@ -1,3 +1,9 @@
+ - Revert checkout changes (#2744)
+ - Forgot --depth on pull (#2743)
+
+ - Revert checkout changes (#2744)
+ - Forgot --depth on pull (#2743)
+
 ## Features
 
 ## Bugs
