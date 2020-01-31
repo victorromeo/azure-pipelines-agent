@@ -1,8 +1,17 @@
 ## Features
 
+ - Detect windows 10 sdk (#2754)
+ - Add support for user capabilities. (#1909)
+
 ## Bugs
 
+ - Fix issue where single repo with specified path broke pipeline (#2765)
+ - Calculating the right test outcome to set the context result. (#2749)
+
 ## Misc
+
+ - Fix release on windows (#2753)
+ - Add solution file for better building experience inside VS (#2612)
 
 ## Agent Downloads
 
