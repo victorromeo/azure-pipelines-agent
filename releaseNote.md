@@ -1,8 +1,12 @@
+
 ## Features
+ - Updated to use mingit 2.25.0 (#2760)
 
 ## Bugs
+ - Forcibly refresh connection for JobRequest at the beginning of a new job (#2759)
 
 ## Misc
+ - Updated to publish code coverage report during ci (#2731)
 
 ## Agent Downloads
 
