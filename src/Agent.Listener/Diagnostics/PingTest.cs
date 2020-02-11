@@ -12,7 +12,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
                 terminal.WriteLine(string.Format("Attempt to Ping: {0} with timeout {1}", c_hostname, c_timeout));
                 PingReply pingreply = ping.Send(c_hostname, c_timeout);
                 terminal.WriteLine(string.Format("Address: {0}", pingreply.Address));
-                terminal.WriteLine(string.Format("status: {0}", pingreply.Status));
+                terminal.WriteLine(string.Format("Status: {0}", pingreply.Status));
                 terminal.WriteLine(string.Format("Round trip time: {0}", pingreply.RoundtripTime));
 
                 if (pingreply.Status != IPStatus.Success)
