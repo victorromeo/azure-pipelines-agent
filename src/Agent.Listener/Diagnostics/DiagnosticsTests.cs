@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
 {
@@ -21,14 +22,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
             {
                 string testName = test.GetType().Name;
                 m_terminal.WriteLine(string.Format("*** Performing Test: {0} ***", testName));
-                if (!test.Execute(m_terminal))
+                try
                 {
-                    result = false;
-                    m_terminal.WriteLine(string.Format("*** Test: {0} Failed ***", testName));
+                    if (!test.Execute(m_terminal))
+                    {
+                        result = false;
+                        m_terminal.WriteError(string.Format("*** Test: {0} Failed ***", testName));
+                    }
+                    else
+                    {
+                        m_terminal.WriteLine(string.Format("*** Test: {0} Succeeded ***", testName));
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    m_terminal.WriteLine(string.Format("*** Test: {0} Succeeded ***", testName));
+                    m_terminal.WriteError(ex);
+                    m_terminal.WriteError(string.Format("*** Test: {0} Failed ***", testName));
                 }
                 m_terminal.WriteLine(string.Empty);
             }
