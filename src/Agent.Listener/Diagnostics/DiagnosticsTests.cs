@@ -36,6 +36,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
                 }
                 catch (Exception ex)
                 {
+                    result = false;
                     m_terminal.WriteError(ex);
                     m_terminal.WriteError(string.Format("*** Test: {0} Failed ***", testName));
                 }
