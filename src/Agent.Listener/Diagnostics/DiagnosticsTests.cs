@@ -8,10 +8,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
         public DiagnosticTests(ITerminal terminal)
         {
             m_terminal = terminal;
+
             m_diagnosticTests = new List<IDiagnostic>()
             {
                 new DnsTest(),
                 new PingTest(),
+            };
+
+            m_diagnosticInfo = new List<IDiagnostic>()
+            {
+                new MtuInfo()
             };
         }
 
@@ -51,8 +57,30 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
             {
                 m_terminal.WriteLine("1 or more diagnostics tests FAILED!");
             }
+            m_terminal.WriteLine(string.Empty);
+            m_terminal.WriteLine(string.Empty);
+            m_terminal.WriteLine(string.Empty);
+
+
+            m_terminal.WriteLine("--- Additional Information ---");
+            foreach (var info in m_diagnosticInfo)
+            {
+                string infoName = info.GetType().Name;
+                m_terminal.WriteLine(string.Format("*** Info: {0} ***", infoName));
+                try
+                {
+                    info.Execute(m_terminal);
+                }
+                catch (Exception ex)
+                {
+                    m_terminal.WriteError(ex);
+                    m_terminal.WriteError(string.Format("*** Info: {0} Failed ***", infoName));
+                }
+                m_terminal.WriteLine(string.Empty);
+            }
         }
 
+        private List<IDiagnostic> m_diagnosticInfo;
         private List<IDiagnostic> m_diagnosticTests;
         private ITerminal m_terminal;
     }
