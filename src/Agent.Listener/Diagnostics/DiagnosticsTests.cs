@@ -9,13 +9,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
         {
             m_terminal = terminal;
 
-            m_diagnosticTests = new List<IDiagnostic>()
+            m_diagnosticTests = new List<IDiagnosticTest>()
             {
                 new DnsTest(),
                 new PingTest(),
             };
 
-            m_diagnosticInfo = new List<IDiagnostic>()
+            m_diagnosticInfo = new List<IDiagnosticInfo>()
             {
                 new MtuInfo()
             };
@@ -80,8 +80,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
             }
         }
 
-        private List<IDiagnostic> m_diagnosticInfo;
-        private List<IDiagnostic> m_diagnosticTests;
+        private List<IDiagnosticInfo> m_diagnosticInfo;
+        private List<IDiagnosticTest> m_diagnosticTests;
         private ITerminal m_terminal;
     }
 }

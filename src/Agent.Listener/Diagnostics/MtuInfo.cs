@@ -2,9 +2,9 @@
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
 {
-    class MtuInfo : IDiagnostic
+    class MtuInfo : IDiagnosticInfo
     {
-        public bool Execute(ITerminal terminal)
+        public void Execute(ITerminal terminal)
         {
             NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
             IPGlobalProperties properties = IPGlobalProperties.GetIPGlobalProperties();
@@ -43,8 +43,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
                     }
                 }
             }
-
-            return true;
         }
     }
 }
