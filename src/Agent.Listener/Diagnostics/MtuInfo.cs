@@ -8,7 +8,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
         {
             NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
             IPGlobalProperties properties = IPGlobalProperties.GetIPGlobalProperties();
-            terminal.WriteLine(string.Format("IP interface information for {0}.{1}", properties.HostName, properties.DomainName));
+            terminal.WriteLine($"IP interface information for {properties?.HostName}.{properties?.HostName}");
             terminal.WriteLine();
 
             foreach (NetworkInterface adapter in nics)
@@ -25,7 +25,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
                     }
                     else
                     {
-                        terminal.WriteLine(string.Format("  IPv4 MTU ............................... : {0}", p.Mtu));
+                        terminal.WriteLine($"  IPv4 MTU ............................... : {p.Mtu}");
                     }
                 }
 
@@ -39,7 +39,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
                     }
                     else
                     {
-                        terminal.WriteLine(string.Format("  IPv6 MTU ............................... : {0}", p.Mtu));
+                        terminal.WriteLine($"  IPv6 MTU ............................... : {p.Mtu}");
                     }
                 }
             }
