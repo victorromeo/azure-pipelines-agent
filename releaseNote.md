@@ -1,3 +1,23 @@
+## Features
+ - Add Disk Heath to Diagnostics (#2792)
+ - Mtu Info on Diagnostics (#2784)
+ - New Diagnostics Framework and Tests (#2780)
+ - Allow builds from a tarball to succeed (#2777)
+ - Updated to .NET Core 3.1 (#2697)
+
+## Bugs
+ - Properly dispose Ping (#2787)
+ - Update job display name with late assigned variables. Fixes #2721 (#2783)
+ - Updated to set checkout variables if only one checkout task is specif… (#2772)
+ - mask secrets in URLs (#2791)
+
+## Misc
+ - Look at PR labels to auto-categorize for release notes (#2790)
+ - Static Analysis (#2781)
+ - Update release process to use sparse checkout (#2779)
+ - Removed temporary windows image fix (#2776)
+ - Add stalebot (#2775)
+
 
 ## Agent Downloads
 
