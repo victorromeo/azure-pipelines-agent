@@ -2,10 +2,14 @@
 // Licensed under the MIT License.
 
 using Agent.Sdk;
+using CommandLine;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -102,22 +106,90 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                     }
                 }
 
-                // Parse the command line args.
-                var command = new CommandSettings(context, args, new SystemEnvironment());
-                trace.Info("Arguments parsed");
+                Debugger.Launch();
 
-                // Up front validation, warn for unrecognized commandline args.
-                var unknownCommandlines = command.Validate();
-                if (unknownCommandlines.Count > 0)
+                // Accepted Commands
+                Type[] verbTypes = new Type[]
                 {
-                    terminal.WriteError(StringUtil.Loc("UnrecognizedCmdArgs", string.Join(", ", unknownCommandlines)));
+                    typeof(CommandArgs.ConfigureAgent),
+                    typeof(CommandArgs.RunAgent),
+                    typeof(CommandArgs.UnconfigureAgent),
+                    typeof(CommandArgs.WarmUpAgent),
+                };
+
+                // We have custom Help / Version functions
+                var parser = new Parser(config =>
+                    {
+                        config.AutoHelp = false;
+                        config.AutoVersion = false;
+
+                        // We should consider making this false, but it will break people adding unknown arguments
+                        config.IgnoreUnknownArguments = true;
+                    }
+                );
+
+                // Parse Arugments
+                parser
+                    .ParseArguments(args, verbTypes)
+                    .WithParsed<CommandArgs.ConfigureAgent>(
+                        x =>
+                        {
+                            s_commandArgs = new CommandArgs();
+                            s_commandArgs.Configure = x;
+                        })
+                    .WithParsed<CommandArgs.RunAgent>(
+                        x =>
+                        {
+                            s_commandArgs = new CommandArgs();
+                            s_commandArgs.Run = x;
+                        })
+                    .WithParsed<CommandArgs.UnconfigureAgent>(
+                        x =>
+                        {
+                            s_commandArgs = new CommandArgs();
+                            s_commandArgs.Remove = x;
+                        })
+                    .WithParsed<CommandArgs.WarmUpAgent>(
+                        x =>
+                        {
+                            s_commandArgs = new CommandArgs();
+                            s_commandArgs.Warmup = x;
+                        })
+                    .WithNotParsed(
+                        errors =>
+                        {
+                            terminal.WriteError("Error parsing arguments...");
+
+                            if (errors.Any(error => error is TokenError))
+                            {
+                                List<string> errorStr = new List<string>();
+                                foreach(var error in errors)
+                                {
+                                    if (error is TokenError tokenError)
+                                    {
+                                        errorStr.Add(tokenError.Token);
+                                    }
+                                }
+
+                                terminal.WriteError(
+                                    StringUtil.Loc("UnrecognizedCmdArgs", 
+                                    string.Join(", ", errorStr)));
+                            }
+                        });
+
+                // Arguments where not parsed successfully
+                if (s_commandArgs == null)
+                {
+                    return Constants.Agent.ReturnCode.TerminatedError;
                 }
 
                 // Defer to the Agent class to execute the command.
                 IAgent agent = context.GetService<IAgent>();
+                CommandSettings commandSettings = new CommandSettings(context, s_commandArgs, new SystemEnvironment());
+
                 try
                 {
-                    return await agent.ExecuteCommand(command);
+                    return await agent.ExecuteCommand(commandSettings);
                 }
                 catch (OperationCanceledException) when (context.AgentShutdownToken.IsCancellationRequested)
                 {
@@ -130,7 +202,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                     trace.Error(e);
                     return Constants.Agent.ReturnCode.TerminatedError;
                 }
-
             }
             catch (Exception e)
             {
@@ -139,5 +210,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 return Constants.Agent.ReturnCode.RetryableError;
             }
         }
+
+        public static CommandArgs s_commandArgs;
     }
 }
