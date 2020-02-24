@@ -278,7 +278,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     }
                     break;
                 }
-                catch (Exception e) when (!command.Unattended)
+                catch (Exception e) when (!command.Unattended())
                 {
                     _term.WriteError(e);
                     _term.WriteError(StringUtil.Loc("FailedToAddTags"));
