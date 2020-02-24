@@ -2,10 +2,14 @@
 // Licensed under the MIT License.
 
 using Agent.Sdk;
+using CommandLine;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -102,22 +106,39 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                     }
                 }
 
-                // Parse the command line args.
-                var command = new CommandSettings(context, args, new SystemEnvironment());
-                trace.Info("Arguments parsed");
+                Debugger.Launch();
 
-                // Up front validation, warn for unrecognized commandline args.
-                var unknownCommandlines = command.Validate();
-                if (unknownCommandlines.Count > 0)
+                CommandSettings commandSettings = new CommandSettings(context, args, new SystemEnvironment());
+
+                // Print any Parse Errros
+                if (commandSettings.ParseErrors != null && commandSettings.ParseErrors.Count() > 0)
                 {
-                    terminal.WriteError(StringUtil.Loc("UnrecognizedCmdArgs", string.Join(", ", unknownCommandlines)));
+                    List<string> errorStr = new List<string>();
+
+                    foreach (var error in commandSettings.ParseErrors)
+                    {
+                        if (error is TokenError tokenError)
+                        {
+                            errorStr.Add(tokenError.Token);
+                        }
+                        else
+                        {
+                            // Unknown type of error dump to log
+                            terminal.WriteError(StringUtil.Loc("ErrorOccurred", error.Tag));
+                        }
+                    }
+
+                    terminal.WriteError(
+                        StringUtil.Loc("UnrecognizedCmdArgs",
+                        string.Join(", ", errorStr)));
                 }
 
                 // Defer to the Agent class to execute the command.
                 IAgent agent = context.GetService<IAgent>();
+
                 try
                 {
-                    return await agent.ExecuteCommand(command);
+                    return await agent.ExecuteCommand(commandSettings);
                 }
                 catch (OperationCanceledException) when (context.AgentShutdownToken.IsCancellationRequested)
                 {
@@ -130,7 +151,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                     trace.Error(e);
                     return Constants.Agent.ReturnCode.TerminatedError;
                 }
-
             }
             catch (Exception e)
             {

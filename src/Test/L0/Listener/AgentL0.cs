@@ -592,7 +592,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener
                 hc.SetSingleton<IAgentCertificateManager>(_cert.Object);
                 hc.SetSingleton<IConfigurationStore>(_configStore.Object);
 
-                var command = new CommandSettings(hc, new[] { arg });
+                var command = new CommandSettings(hc, new[] { "run", arg });
 
                 _configurationManager.Setup(x => x.IsConfigured()).
                     Returns(true);

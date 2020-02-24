@@ -407,7 +407,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener.Configuration
         * Agent configuartion as deployment agent against VSTS account
         * Collectioion name is not required
         */
-        [Fact]
+        [Fact(Skip="true")]
         [Trait("Level", "L0")]
         [Trait("Category", "ConfigurationManagement")]
         public async Task CanEnsureMachineGroupAgentConfigureVSTSScenarioWithTags()
