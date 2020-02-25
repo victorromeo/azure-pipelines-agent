@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.Services.Agent;
 namespace Agent.Listener.CommandLine
 {
     [Verb(Constants.Agent.CommandLine.Commands.Configure)]
-    public class ConfigureAgent : BaseCommand
+    public class ConfigureAgent : ConfigureOrRemoveBase
     {
         [Option(Constants.Agent.CommandLine.Flags.AcceptTeeEula)]
         public bool AcceptTeeEula { get; set; }
@@ -20,9 +20,6 @@ namespace Agent.Listener.CommandLine
 
         [Option(Constants.Agent.CommandLine.Args.Agent)]
         public string Agent { get; set; }
-
-        [Option(Constants.Agent.CommandLine.Args.Auth)]
-        public string Auth { get; set; }
 
         [Option(Constants.Agent.CommandLine.Args.CollectionName)]
         public string CollectionName { get; set; }
@@ -54,9 +51,6 @@ namespace Agent.Listener.CommandLine
         [Option(Constants.Agent.CommandLine.Flags.GitUseSChannel)]
         public bool GitUseSChannel { get; set; }
 
-        [Option(Constants.Agent.CommandLine.Flags.LaunchBrowser)]
-        public bool LaunchBrowser { get; set; }
-
         [Option(Constants.Agent.CommandLine.Flags.MachineGroup)]
         public bool MachineGroup { get; set; }
 
@@ -80,9 +74,6 @@ namespace Agent.Listener.CommandLine
 
         [Option(Constants.Agent.CommandLine.Flags.OverwriteAutoLogon)]
         public bool OverwriteAutoLogon { get; set; }
-
-        [Option(Constants.Agent.CommandLine.Args.Password)]
-        public string Password { get; set; }
 
         [Option(Constants.Agent.CommandLine.Args.Pool)]
         public string Pool { get; set; }
@@ -129,14 +120,8 @@ namespace Agent.Listener.CommandLine
         [Option(Constants.Agent.CommandLine.Args.StartupType)]
         public string StartupType { get; set; }
 
-        [Option(Constants.Agent.CommandLine.Args.Token)]
-        public string Token { get; set; }
-
         [Option(Constants.Agent.CommandLine.Args.Url)]
         public string Url { get; set; }
-
-        [Option(Constants.Agent.CommandLine.Args.UserName)]
-        public string UserName { get; set; }
 
         [Option(Constants.Agent.CommandLine.Args.WindowsLogonAccount)]
         public string WindowsLogonAccount { get; set; }
@@ -145,9 +130,6 @@ namespace Agent.Listener.CommandLine
         public string WindowsLogonPassword { get; set; }
 
         [Option(Constants.Agent.CommandLine.Args.Work)]
-        public string Work { get; set; }
-        
-        [Option(Constants.Agent.CommandLine.Flags.Unattended)]
-        public bool Unattended { get; set; }
+        public string Work { get; set; }        
     }
 }

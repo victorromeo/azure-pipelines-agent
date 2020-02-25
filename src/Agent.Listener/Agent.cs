@@ -77,7 +77,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                     return Constants.Agent.ReturnCode.Success;
                 }
 
-                if (command.IsRunDiagnostics())
+                if (command.IsDiagnostics())
                 {
                     PrintBanner();
                     _term.WriteLine("Running Diagnostics Only...");

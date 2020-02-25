@@ -55,12 +55,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             _promptManager = context.GetService<IPromptManager>();
             _trace = context.GetTrace(nameof(CommandSettings));
 
-
-            // Parse once to record Errors
-            ParseArguments(args, false);
-
-            // Parse a second time to populate objects (even if there are errors)
-            ParseArguments(args, true);
+            ParseArguments(args);
 
             if (environmentScope == null)
             {
@@ -188,9 +183,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         public bool GetAutoLaunchBrowser()
         {
-            bool result = (Configure != null && Configure.LaunchBrowser) || (Run != null && Remove.LaunchBrowser); 
             return TestFlagOrPrompt(
-                value: result,
+                value: GetConfigureOrRemoveBase()?.LaunchBrowser,
                 name: Constants.Agent.CommandLine.Flags.LaunchBrowser,
                 description: StringUtil.Loc("LaunchBrowser"),
                 defaultValue: true);
@@ -201,7 +195,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
         public string GetAgentName()
         {
             return GetArgOrPrompt(
-                argValue: Configure.Agent,
+                argValue: Configure?.Agent,
                 name: Constants.Agent.CommandLine.Args.Agent,
                 description: StringUtil.Loc("AgentName"),
                 defaultValue: Environment.MachineName ?? "myagent",
@@ -210,19 +204,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         public string GetAuth(string defaultValue)
         {
-            string result = null;
-            if (Configure != null)
-            {
-                result = Configure.Auth;
-            }
-
-            if (Remove != null)
-            {
-                result = Remove.Auth;
-            }
-
             return GetArgOrPrompt(
-                argValue: result,
+                argValue: GetConfigureOrRemoveBase().Auth,
                 name: Constants.Agent.CommandLine.Args.Auth,
                 description: StringUtil.Loc("AuthenticationType"),
                 defaultValue: defaultValue,
@@ -231,19 +214,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         public string GetPassword()
         {
-            string value = null;
-
-            if (Configure != null)
-            {
-                value = Configure?.Password;
-            }
-            else if (Remove != null)
-            {
-                value = Remove?.Password;
-            }
-
             return GetArgOrPrompt(
-                argValue: value,
+                argValue: GetConfigureOrRemoveBase()?.Password,
                 name: Constants.Agent.CommandLine.Args.Password,
                 description: StringUtil.Loc("Password"),
                 defaultValue: string.Empty,
@@ -262,19 +234,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         public string GetToken()
         {
-            string value = null;
-
-            if (Configure != null)
-            {
-                value = Configure?.Token;
-            }
-            else if (Remove != null)
-            {
-                value = Remove?.Token;
-            }
-
             return GetArgOrPrompt(
-                argValue: value,
+                argValue: GetConfigureOrRemoveBase()?.Token,
                 name: Constants.Agent.CommandLine.Args.Token,
                 description: StringUtil.Loc("PersonalAccessToken"),
                 defaultValue: string.Empty,
@@ -402,19 +363,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         public string GetUserName()
         {
-            string value = null;
-
-            if (Configure != null)
-            {
-                value = Configure?.UserName;
-            }
-            else if (Remove != null)
-            {
-                value = Remove?.UserName;
-            }
-
             return GetArgOrPrompt(
-                argValue: value,
+                argValue: GetConfigureOrRemoveBase()?.UserName,
                 name: Constants.Agent.CommandLine.Args.UserName,
                 description: StringUtil.Loc("UserName"),
                 defaultValue: string.Empty,
@@ -434,7 +384,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
         public string GetWindowsLogonPassword(string accountName)
         {
             return GetArgOrPrompt(
-                argValue: Configure?.WindowsLogonAccount,
+                argValue: Configure?.WindowsLogonPassword,
                 name: Constants.Agent.CommandLine.Args.WindowsLogonPassword,
                 description: StringUtil.Loc("WindowsLogonPasswordDescription", accountName),
                 defaultValue: string.Empty,
@@ -539,8 +489,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         public bool GetDeploymentOrMachineGroup()
         {
-            if (TestFlag(Configure.DeploymentGroup, Constants.Agent.CommandLine.Flags.DeploymentGroup) || 
-                (Configure != null && Configure.MachineGroup))
+            if (TestFlag(Configure?.DeploymentGroup, Constants.Agent.CommandLine.Flags.DeploymentGroup) || 
+                (Configure?.MachineGroup == true))
             {
                 return true;
             }
@@ -550,8 +500,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         public bool Unattended()
         {
-            if (TestFlag(Configure?.Unattended, Constants.Agent.CommandLine.Flags.Unattended) ||
-                    (Remove != null && Remove.Unattended))
+            if (TestFlag(GetConfigureOrRemoveBase()?.Unattended, Constants.Agent.CommandLine.Flags.Unattended))
             {
                 return true;
             }
@@ -574,10 +523,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         public bool IsVersion()
         {
-            if ((Configure != null && Configure.Version) ||
-                (Remove != null && Remove.Version) ||
-                (Run != null && Run.Version) ||
-                (Warmup != null && Warmup.Version))
+            if ((Configure?.Version == true) ||
+                (Remove?.Version == true) ||
+                (Run?.Version == true) ||
+                (Warmup?.Version == true))
             {
                 return true;
             }
@@ -587,10 +536,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         public bool IsHelp()
         {
-            if ((Configure != null && Configure.Help) ||
-                (Remove != null && Remove.Help) ||
-                (Run != null && Run.Help) ||
-                (Warmup != null && Warmup.Help))
+            if ((Configure?.Help == true) ||
+                (Remove?.Help == true) ||
+                (Run?.Help == true) ||
+                (Warmup?.Help == true))
             {
                 return true;
             }
@@ -600,22 +549,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         public bool IsCommit()
         {
-            if (Run != null && Run.Commit)
-            {
-                return true;
-            }
-
-            return false;
+            return (Run?.Commit == true);
         }
 
-        public bool IsRunDiagnostics()
+        public bool IsDiagnostics()
         {
-            if (Run != null && Run.Diagnostics)
-            {
-                return true;
-            }
-
-            return false;
+            return (Run?.Diagnostics == true);
         }
 
         public bool IsConfigureCommand()
@@ -640,7 +579,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         public bool IsWarmupCommand()
         {
-            if (Remove != null)
+            if (Warmup != null)
             {
                 return true;
             }
@@ -766,6 +705,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             return args;
         }
 
+        private void ParseArguments(string[] args)
+        {
+            // Parse once to record Errors
+            ParseArguments(args, false);
+
+            if (ParseErrors != null)
+            {
+                // Parse a second time to populate objects (even if there are errors)
+                ParseArguments(args, true);
+            }
+        }
+
         private void ParseArguments(string[] args, bool ignoreErrors)
         {
             // We have custom Help / Version functions
@@ -833,7 +784,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             {
                 _trace.Info(string.Concat(nameof(Run), " ", ObjectAsJson(Run)));
             }
-
         }
 
         private string ObjectAsJson(object obj)
@@ -841,6 +791,21 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             return JsonConvert.SerializeObject(
                     obj, Formatting.Indented,
                     new JsonConverter[] { new StringEnumConverter() });
+        }
+
+        private ConfigureOrRemoveBase GetConfigureOrRemoveBase()
+        {
+            if (Configure != null)
+            {
+                return Configure as ConfigureOrRemoveBase;
+            }
+
+            if (Remove != null)
+            {
+                return Remove as ConfigureOrRemoveBase;
+            }
+
+            return null;
         }
     }
 }

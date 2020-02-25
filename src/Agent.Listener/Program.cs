@@ -110,7 +110,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 trace.Info("Arguments parsed");
 
                 // Print any Parse Errros
-                if (command.ParseErrors != null && command.ParseErrors.Count() > 0)
+                if (command.ParseErrors?.Any() == true)
                 {
                     List<string> errorStr = new List<string>();
 

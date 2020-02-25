@@ -126,6 +126,25 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", nameof(CommandSettings))]
+        public void GetsCommandDiagnostics()
+        {
+            using (TestHostContext hc = CreateTestContext())
+            {
+                // Arrange.
+                var command = new CommandSettings(hc, args: new string[] { "--diagnostics" });
+
+                // Act.
+                bool actual = command.IsDiagnostics();
+
+                // Assert.
+                Assert.True(actual);
+            }
+        }
+
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", nameof(CommandSettings))]
         public void GetsCommandRunWithoutRun()
         {
             using (TestHostContext hc = CreateTestContext())
@@ -171,6 +190,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
 
                 // Act.
                 bool actual = command.IsRemoveCommand();
+
+                // Assert.
+                Assert.True(actual);
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", nameof(CommandSettings))]
+        public void GetsCommandWarmup()
+        {
+            using (TestHostContext hc = CreateTestContext())
+            {
+                // Arrange.
+                var command = new CommandSettings(hc, args: new string[] { "warmup" });
+
+                // Act.
+                bool actual = command.IsWarmupCommand();
 
                 // Assert.
                 Assert.True(actual);
@@ -1129,6 +1166,27 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                         "test agent" });
 
                 // Assert.
+                Assert.True(command.ParseErrors == null);
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", nameof(CommandSettings))]
+        public void ValidatePasswordCanStartWithDash()
+        {
+            using (TestHostContext hc = CreateTestContext())
+            {
+                string password = "-pass^word";
+
+                // Arrange.
+                var command = new CommandSettings(hc,
+                    args: new string[] {
+                        "configure",
+                        "--windowslogonpassword=" + password});
+
+                // Assert.
+                Assert.Equal(password, command.GetWindowsLogonPassword(string.Empty));
                 Assert.True(command.ParseErrors == null);
             }
         }
