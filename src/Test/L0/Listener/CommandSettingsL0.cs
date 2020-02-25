@@ -141,7 +141,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             }
         }
 
-
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", nameof(CommandSettings))]

@@ -251,8 +251,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
         private async Task GetAndAddTags(DeploymentMachine deploymentMachine, AgentSettings agentSettings, CommandSettings command)
         {
             // Get and apply Tags in case agent is configured against Deployment Group
-            bool needToAddTags = command.GetDeploymentGroupTagsRequired();
-            while (needToAddTags)
+            if (command.GetDeploymentGroupTagsRequired())
             {
                 try
                 {
@@ -276,7 +275,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                             _term.WriteLine(StringUtil.Loc("DeploymentGroupTagsAddedMsg"));
                         }
                     }
-                    break;
                 }
                 catch (Exception e) when (!command.Unattended())
                 {
