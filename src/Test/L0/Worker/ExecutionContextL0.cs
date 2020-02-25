@@ -360,7 +360,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
 
                 // Assert.
                 Assert.NotNull(ec.JobSettings);
-                Assert.Equal("False", ec.JobSettings[WellKnownJobSettings.HasMultipleCheckouts]);
+                Assert.Equal(Boolean.FalseString, ec.JobSettings[WellKnownJobSettings.HasMultipleCheckouts]);
             }
         }
 
@@ -395,7 +395,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
 
                 // Assert.
                 Assert.NotNull(ec.JobSettings);
-                Assert.Equal("True", ec.JobSettings[WellKnownJobSettings.HasMultipleCheckouts]);
+                Assert.Equal(Boolean.TrueString, ec.JobSettings[WellKnownJobSettings.HasMultipleCheckouts]);
             }
         }
 
@@ -432,9 +432,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
 
                 // Assert.
                 Assert.NotNull(ec.JobSettings);
-                Assert.Equal("False", ec.JobSettings[WellKnownJobSettings.HasMultipleCheckouts]);
+                Assert.Equal(Boolean.FalseString, ec.JobSettings[WellKnownJobSettings.HasMultipleCheckouts]);
                 Assert.Equal("repo1", ec.JobSettings[WellKnownJobSettings.FirstRepositoryCheckedOut]);
-                Assert.Equal("True", repo1.Properties.Get<string>(RepositoryUtil.IsPrimaryRepository));
+                Assert.Equal(Boolean.TrueString, repo1.Properties.Get<string>(RepositoryUtil.IsPrimaryRepository));
             }
         }
 
@@ -477,11 +477,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
 
                 // Assert.
                 Assert.NotNull(ec.JobSettings);
-                Assert.Equal("True", ec.JobSettings[WellKnownJobSettings.HasMultipleCheckouts]);
+                Assert.Equal(Boolean.TrueString, ec.JobSettings[WellKnownJobSettings.HasMultipleCheckouts]);
                 Assert.Equal("repo2", ec.JobSettings[WellKnownJobSettings.FirstRepositoryCheckedOut]);
-                Assert.Equal("False", repo1.Properties.Get<string>(RepositoryUtil.IsPrimaryRepository, "False"));
-                Assert.Equal("True", repo2.Properties.Get<string>(RepositoryUtil.IsPrimaryRepository, "False"));
-                Assert.Equal("False", repo3.Properties.Get<string>(RepositoryUtil.IsPrimaryRepository, "False"));
+                Assert.Equal(Boolean.FalseString, repo1.Properties.Get<string>(RepositoryUtil.IsPrimaryRepository, Boolean.FalseString));
+                Assert.Equal(Boolean.TrueString, repo2.Properties.Get<string>(RepositoryUtil.IsPrimaryRepository, Boolean.FalseString));
+                Assert.Equal(Boolean.FalseString, repo3.Properties.Get<string>(RepositoryUtil.IsPrimaryRepository, Boolean.FalseString));
             }
         }
 
