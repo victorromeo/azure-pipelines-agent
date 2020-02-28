@@ -1,3 +1,24 @@
+## Features
+
+
+## Bugs
+ - Fixes task issue 11448. If running a task on a container, prefer node… (#2767)
+
+## Misc
+ - Make sure we get the actual most recent version of the branch (#2829)
+ - Remove flaky test (#2828)
+ - Add typed-rest-client back (#2826)
+ - Move release into pipeline (#2820)
+ - Fix test commands (#2818)
+ - Make CA1303 hidden (#2816)
+ - Fixing the logic that gets the "primary" repository (#2815)
+ - Promoted CA1823 to error (#2810)
+ - L1 Testing (#2806)
+ - Updated to honor no_proxy environment variable as well (#2800)
+ - Added initial rollrelease script to perform per-ring steps (#2796)
+ - Enforce readonly variables (#2771)
+ - Initial stab at centralized configuration system (#2769)
+
 
 ## Agent Downloads
 
