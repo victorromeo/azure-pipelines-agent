@@ -75,7 +75,7 @@ namespace Agent.Plugins.Repository
         }
     }
 
-    public sealed class BitbucketGitSourceProvider : AuthenticatedGitSourceProvider
+    public class BitbucketGitSourceProvider : AuthenticatedGitSourceProvider
     {
         public override bool GitSupportsFetchingCommitBySha1Hash
         {
@@ -86,7 +86,7 @@ namespace Agent.Plugins.Repository
         }
     }
 
-    public sealed class GitHubSourceProvider : AuthenticatedGitSourceProvider
+    public class GitHubSourceProvider : AuthenticatedGitSourceProvider
     {
         public override bool GitSupportsFetchingCommitBySha1Hash
         {
@@ -97,7 +97,7 @@ namespace Agent.Plugins.Repository
         }
     }
 
-    public sealed class TfsGitSourceProvider : GitSourceProvider
+    public class TfsGitSourceProvider : GitSourceProvider
     {
         public override bool GitSupportsFetchingCommitBySha1Hash
         {
@@ -191,9 +191,9 @@ namespace Agent.Plugins.Repository
 
         public abstract bool GitSupportsFetchingCommitBySha1Hash { get; }
 
-        public virtual bool UseBearerAuthenticationForOAuth() 
-        { 
-            return false; 
+        public virtual bool UseBearerAuthenticationForOAuth()
+        {
+            return false;
         }
 
         public string GenerateAuthHeader(AgentTaskPluginExecutionContext executionContext, string username, string password, bool isBearer)
@@ -382,7 +382,7 @@ namespace Agent.Plugins.Repository
                 gitEnv[formattedKey] = variable.Value?.Value ?? string.Empty;
             }
 
-            GitCliManager gitCommandManager = new GitCliManager(gitEnv);
+            GitCliManager gitCommandManager = GetCliManager(gitEnv);
             await gitCommandManager.LoadGitExecutionInfo(executionContext, useBuiltInGit: !preferGitFromPath);
 
             bool gitSupportAuthHeader = GitSupportUseAuthHeader(executionContext, gitCommandManager);
@@ -492,23 +492,25 @@ namespace Agent.Plugins.Repository
                             string argLine = $"775 {clientCertPrivateKeyAskPassFile}";
                             executionContext.Command($"chmod {argLine}");
 
-                            var processInvoker = new ProcessInvoker(executionContext);
-                            processInvoker.OutputDataReceived += (object sender, ProcessDataReceivedEventArgs args) =>
+                            using (var processInvoker = new ProcessInvoker(executionContext))
                             {
-                                if (!string.IsNullOrEmpty(args.Data))
+                                processInvoker.OutputDataReceived += (object sender, ProcessDataReceivedEventArgs args) =>
                                 {
-                                    executionContext.Output(args.Data);
-                                }
-                            };
-                            processInvoker.ErrorDataReceived += (object sender, ProcessDataReceivedEventArgs args) =>
-                            {
-                                if (!string.IsNullOrEmpty(args.Data))
+                                    if (!string.IsNullOrEmpty(args.Data))
+                                    {
+                                        executionContext.Output(args.Data);
+                                    }
+                                };
+                                processInvoker.ErrorDataReceived += (object sender, ProcessDataReceivedEventArgs args) =>
                                 {
-                                    executionContext.Output(args.Data);
-                                }
-                            };
+                                    if (!string.IsNullOrEmpty(args.Data))
+                                    {
+                                        executionContext.Output(args.Data);
+                                    }
+                                };
 
-                            await processInvoker.ExecuteAsync(executionContext.Variables.GetValueOrDefault("system.defaultworkingdirectory")?.Value, toolPath, argLine, null, true, CancellationToken.None);
+                                await processInvoker.ExecuteAsync(executionContext.Variables.GetValueOrDefault("system.defaultworkingdirectory")?.Value, toolPath, argLine, null, true, CancellationToken.None);
+                            }
                         }
                     }
                 }
@@ -858,7 +860,7 @@ namespace Agent.Plugins.Repository
             executionContext.Progress(80, "Starting checkout...");
             string sourcesToBuild;
             executionContext.Debug($"refFetchedByCommit : {refFetchedByCommit}");
-            
+
             if (refFetchedByCommit != null)
             {
                 sourcesToBuild = refFetchedByCommit;
@@ -1191,7 +1193,7 @@ namespace Agent.Plugins.Repository
                 bool preferGitFromPath = StringUtil.ConvertToBoolean(executionContext.TaskVariables.GetValueOrDefault("preferPath")?.Value);
 
                 // Initialize git command manager
-                GitCliManager gitCommandManager = new GitCliManager();
+                GitCliManager gitCommandManager = GetCliManager();
                 await gitCommandManager.LoadGitExecutionInfo(executionContext, useBuiltInGit: !preferGitFromPath);
 
                 executionContext.Debug("Remove any extraheader, proxy and client cert setting from git config.");
@@ -1217,6 +1219,11 @@ namespace Agent.Plugins.Repository
             {
                 IOUtil.DeleteFile(clientCertPrivateKeyAskPassFile);
             }
+        }
+
+        protected virtual GitCliManager GetCliManager(Dictionary<string, string> gitEnv = null)
+        {
+            return new GitCliManager(gitEnv);
         }
 
         private async Task<bool> IsRepositoryOriginUrlMatch(AgentTaskPluginExecutionContext context, GitCliManager gitCommandManager, string repositoryPath, Uri expectedRepositoryOriginUrl)
