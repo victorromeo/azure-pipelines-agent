@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
+using System.Net.Http;
 
 namespace Microsoft.VisualStudio.Services.Agent
 {
@@ -18,6 +19,8 @@ namespace Microsoft.VisualStudio.Services.Agent
 
         // task download
         Task<Stream> GetTaskContentZipAsync(Guid taskId, TaskVersion taskVersion, CancellationToken token);
+
+        Task<HttpResponseMessage> UploadTaskZipAsync(Guid taskId, Stream fileStream, bool overwrite, CancellationToken token);
 
         Task<bool> TaskDefinitionEndpointExist();
     }
@@ -69,6 +72,12 @@ namespace Microsoft.VisualStudio.Services.Agent
         {
             CheckConnection();
             return _taskAgentClient.GetTaskContentZipAsync(taskId, taskVersion, cancellationToken: token);
+        }
+
+        public Task<HttpResponseMessage> UploadTaskZipAsync(Guid taskId, Stream fileStream, bool overwrite, CancellationToken token)
+        {
+            CheckConnection();
+            return _taskAgentClient.UploadTaskZipAsync(taskId, fileStream, overwrite, cancellationToken: token);
         }
 
         public async Task<bool> TaskDefinitionEndpointExist()

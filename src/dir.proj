@@ -7,6 +7,7 @@
     <ProjectFiles Include="Agent.PluginHost/Agent.PluginHost.csproj" />
     <ProjectFiles Include="Agent.Sdk/Agent.Sdk.csproj" />
     <ProjectFiles Include="Agent.Plugins/Agent.Plugins.csproj" />
+    <ProjectFiles Include="Task.Util/Task.Util.csproj" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(LayoutRoot)'==''">
@@ -132,6 +133,8 @@
     <RemoveDir  Directories="Agent.Sdk/obj" />
     <RemoveDir  Directories="Agent.Plugins/bin" />
     <RemoveDir  Directories="Agent.Plugins/obj" />
+    <RemoveDir  Directories="Task.Util/bin" />
+    <RemoveDir  Directories="Task.Util/obj" />
     <RemoveDir  Directories="Test/bin" />
     <RemoveDir  Directories="Test/obj" />
   </Target>

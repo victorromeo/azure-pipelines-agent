@@ -167,6 +167,34 @@ namespace Microsoft.VisualStudio.Services.Agent
             }
         }
 
+        public static class TaskUtil
+        {
+            public static class CommandLine
+            {
+                public static class Args
+                {
+                    public const string Server = "server";
+                    public const string FolderPath = "folder-path";
+                    public const string PAT = "pat";
+                    public const string SigningThumprint = "signing-thumbprint";
+                    public const string TaskId = "task-id";
+                    public const string TaskName = "task-name";
+                    public const string ZipPath = "zip-path";
+                }
+
+                public static class Commands
+                {
+                    public const string Generate = "generate";
+                    public const string Upload = "upload";
+                }
+
+                public static class Flags
+                {
+                    public const string Overwrite = "overwrite";
+                }
+            }
+        }
+
         public static class Build
         {
             public static readonly string NoCICheckInComment = "***NO_CI***";
