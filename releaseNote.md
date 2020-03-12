@@ -3,6 +3,7 @@
 
 ## Bugs
  - Fixes task issue 11448. If running a task on a container, prefer node… (#2767)
+ - fix for Build.Repository.Name in multi-checkout scenario (#2852)
 
 ## Misc
  - Make sure we get the actual most recent version of the branch (#2829)
