@@ -2,6 +2,40 @@
 
 
 ## Bugs
+ - fix for Build.Repository.Name in multi-checkout scenario (#2852)
+ - Fix multiline masking issue (#2844)
+ - Fixing bug, where while downloading commits for jenkins artifact we were creating releaseWorkingFolder inside the bin directory (#2838)
+
+## Misc
+ - Add scripts for querying pipelines that target retired images (#2851)
+ - Updated to use mingit 2.25.1 (#2843)
+ - Enable hotfixing from release branch (#2841)
+ - Add back compat comment (#2840)
+ - Get release branch when creating GitHub release (#2836)
+ - Enable agent rollbacks (#2833)
+ - More aggressively mask secrets (#2832)
+ - Marked rules as Error we are not violating, and waived two others (#2831)
+ - Updated to use new docker image (#2830)
+ - Make sure we get the actual most recent version of the branch (#2829)
+ - Remove flaky test (#2828)
+ - Add typed-rest-client back (#2826)
+ - Add AGENT_TOOLSDIRECTORY to .env (#2825)
+ - Move release into pipeline (#2820)
+ - Fix test commands (#2818)
+ - Make CA1303 hidden (#2816)
+ - Fixing the logic that gets the "primary" repository (#2815)
+ - Replace custom parser with the .net core library CommandLineParser (#2812)
+ - Promoted CA1063 to error (#2811)
+ - Promoted CA1823 to error (#2810)
+ - L1 Testing (#2806)
+ - Updated to honor no_proxy environment variable as well (#2800)
+ - Added initial rollrelease script to perform per-ring steps (#2796)
+ - Enforce readonly variables (#2771)
+
+## Features
+
+
+## Bugs
  - Fixes task issue 11448. If running a task on a container, prefer node… (#2767)
  - fix for Build.Repository.Name in multi-checkout scenario (#2852)
 
