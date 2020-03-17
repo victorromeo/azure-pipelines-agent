@@ -8,7 +8,7 @@ pr:
 
 resources:
   containers:
-  - container:
+  - container: dotnetcore_arm
     image: azpagentinfra/arm:latest
   - container: dotnetcore_centos6
     image: azpagentinfra/centos6:latest
