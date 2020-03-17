@@ -8,11 +8,10 @@ pr:
 
 resources:
   containers:
-  - container: dotnetcore_arm
-    image: huangtingluo/azure-pipelines-agent-eng:arm
-
+  - container:
+    image: azpagentinfra/arm:latest
   - container: dotnetcore_centos6
-    image: huangtingluo/azure-pipelines-agent-eng:centos6
+    image: azpagentinfra/centos6:latest
 
 jobs:
 
@@ -29,6 +28,19 @@ jobs:
     parameters:
       componentDetection: 'true'
       testLogTitle: 'Windows-x64'
+
+  - script: dotnet tool install --global dotnet-reportgenerator-globaltool
+    displayName: Install Report Generator
+
+  - script: dev.cmd report
+    displayName: Generate Code Coverage report
+    workingDirectory: src
+
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: 'cobertura'
+      summaryFileLocation: _reports/**/Cobertura.xml
+      pathToSources: src
 
   # Package .NET Core Windows dependency (VC++ Redistributable)
   - template: .azure-pipelines/package-vcredist.yml
@@ -101,6 +113,7 @@ jobs:
     parameters:
       componentDetection: 'true'
       testLogTitle: 'Linux-x64'
+      enableADOLogIssue: 'true'
 
   # Create agent package zip
   - script: ./dev.sh package Release
@@ -182,7 +195,7 @@ jobs:
 ################################################################################
   displayName: macOS Agent (x64)
   pool:
-    vmImage: macOS-10.13
+    vmImage: macOS-10.14
   steps:
 
   # Steps template for non-windows platform
