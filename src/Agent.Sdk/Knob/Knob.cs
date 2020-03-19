@@ -29,6 +29,8 @@ namespace Agent.Sdk.Knob
         public string Name { get; private set; }
         public IKnobSource Source { get; private set;}
         public string Description { get; private set; }
+        public string TaskVariableName { get; private set; }
+        public bool TaskVariableIsSecret { get; private set; } = false;
         public virtual bool IsDeprecated => false;  // is going away at a future date
         public virtual bool IsExperimental => false; // may go away at a future date
 
@@ -49,6 +51,27 @@ namespace Agent.Sdk.Knob
             ArgUtil.NotNull(Source, nameof(Source));
 
             return Source.GetValue(context);
+        }
+
+        public void PublishToTaskVariable(IKnobValueContext context, ITaskVariableStore store)
+        {
+            ArgUtil.NotNull(context, nameof(context));
+            ArgUtil.NotNull(store, nameof(store));
+
+            if (string.IsNullOrWhiteSpace(TaskVariableName))
+            {
+                return;
+            }
+            var value = GetValue(context).AsString();
+            store.SetTaskVariable(TaskVariableName, value, TaskVariableIsSecret);
+        }
+
+        public Knob AssociateWithTaskVariable(string name, bool isSecret=false)
+        {
+            ArgUtil.NotNull(name, nameof(name));
+            TaskVariableName = name;
+            TaskVariableIsSecret = isSecret;
+            return this;
         }
 
         public static List<Knob> GetAllKnobsFor<T>()

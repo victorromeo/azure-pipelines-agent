@@ -32,7 +32,7 @@ namespace Agent.Sdk
         public static readonly string FirstRepositoryCheckedOut = "FirstRepositoryCheckedOut";
     }
 
-    public class AgentTaskPluginExecutionContext : ITraceWriter
+    public class AgentTaskPluginExecutionContext : ITraceWriter, ITaskVariableStore
     {
         private VssConnection _connection;
         private readonly object _stdoutLock = new object();
