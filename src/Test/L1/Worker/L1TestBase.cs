@@ -30,7 +30,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         public bool TimedOut { get; internal set; }
     }
 
-    public class L1TestBase
+    public class L1TestBase : IDisposable
     {
         protected TimeSpan ChannelTimeout = TimeSpan.FromSeconds(100);
         protected TimeSpan JobTimeout = TimeSpan.FromSeconds(100);
@@ -212,6 +212,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
                     };
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            this._l1hc?.Dispose();
         }
 
         protected static readonly String JobMessageTemplate = @"
