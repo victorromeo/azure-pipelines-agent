@@ -115,7 +115,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
             config.WorkingDirectoryName = testName;
         }
 
-        private L1HostContext _l1hc;
+        protected L1HostContext _l1hc;
 
         protected async Task<TestResults> RunWorker(Pipelines.AgentJobRequestMessage message)
         {

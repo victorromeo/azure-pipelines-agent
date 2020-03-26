@@ -36,6 +36,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
             {
                 Assert.Equal(expectedSteps[idx], steps[idx].Name);
             }
+            TearDown();
         }
 
         [Fact]
@@ -66,6 +67,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
             var steps = GetSteps();
             Assert.Equal(3, steps.Count()); // Init, CmdLine, Finalize
             Assert.Equal(0, steps.Where(x => x.Name == "Checkout").Count());
+            TearDown();
         }
 
         [Fact]
@@ -96,6 +98,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
             var log = GetTimelineLogLines(outputStep);
 
             Assert.True(log.Where(x => x.Contains("TestVar=b")).Count() > 0);
+            TearDown();
         }
 
         [Fact]
@@ -125,6 +128,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
             Assert.Equal(4, steps.Count()); // Init, CmdLine, CmdLine, Finalize
             var faiLStep = steps[2];
             Assert.Equal(TaskResult.Skipped, faiLStep.Result);
+            TearDown();
         }
 
         [Fact]
@@ -156,6 +160,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
             var log = GetTimelineLogLines(steps[1]);
             Assert.Equal(1, log.Where(x => x.Contains("##vso[build.addbuildtag] is not allowed in this step due to policy restrictions.")).Count());
             Assert.Equal(0, GetMockedService<FakeBuildServer>().BuildTags.Count);
+            TearDown();
         }
 
         [Fact]
@@ -183,6 +188,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
             // Assert
             AssertJobCompleted();
             Assert.Equal(TaskResult.Succeeded, results.Result);
+            TearDown();
         }
 
         [Fact]
@@ -207,6 +213,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
             // Assert
             AssertJobCompleted();
             Assert.Equal(TaskResult.Failed, results.Result);
+            TearDown();
         }
 
         private static TaskStep GetSignedTask()
@@ -230,6 +237,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
             step.Inputs.Add("ServiceTreeGateway", "Foo");
 
             return step;
+        }
+
+        private void TearDown()
+        {
+            this._l1hc?.Dispose();
         }
 
         // Enable this test when read only variable enforcement is added
