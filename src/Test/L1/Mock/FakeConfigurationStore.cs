@@ -9,6 +9,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
 
         public string RootFolder => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "/TestRuns/" + WorkingDirectoryName;
 
+        private AgentSettings _agentSettings;
+
         public bool IsConfigured()
         {
             return true;
@@ -33,8 +35,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         {
             return null;
         }
-
-        private AgentSettings _agentSettings;
 
         public AgentSettings GetSettings()
         {
