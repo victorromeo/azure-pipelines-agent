@@ -166,10 +166,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Trait("SkipOn", "linux")]
         public async Task SignatureEnforcementMode_PassesWhenAllTasksAreSigned()
         {
-            // Can we ensure that the certs are always trusted? That's trickier.
-            // We could require a min nuget version, then dump a nuget config file in the folder we are runing the tests. That should work?
-            // System.Diagnostics.Debugger.Launch();
-
             // Arrange
             SetupL1();
             FakeConfigurationStore fakeConfigurationStore = GetMockedService<FakeConfigurationStore>();
@@ -178,7 +174,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
             fakeConfigurationStore.UpdateSettings(settings);
 
             var message = LoadTemplateMessage();
-            // Clear steps then add a signed one
             message.Steps.Clear();
             message.Steps.Add(GetSignedTask());
 
@@ -187,14 +182,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
 
             // Assert
             AssertJobCompleted();
-
-            var fakeJobService = GetMockedService<FakeJobServer>();
-
-
             Assert.Equal(TaskResult.Succeeded, results.Result);
         }
-
-        private static string _fingerprint = "3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE";
 
         [Fact]
         [Trait("Level", "L1")]
@@ -222,10 +211,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
 
         private static TaskStep GetSignedTask()
         {
-            // TODO: Manually copy into D:\github\vsts-agent\_l1\externals\Tasks\5515f72c-5faa-4121-8a46-8f42a8f42132 for now
-            // Then publish to CIPlat.Externals and get it from there
-            // Test on clean install
-
             var step = new TaskStep
             {
                 Reference = new TaskStepDefinitionReference
@@ -239,11 +224,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
                 Id = Guid.NewGuid()
             };
 
+            // These inputs let the task itself succeed.
             step.Inputs.Add("Service", "23ddace0-0682-541f-bfa9-6cbc76d9c051");
             step.Inputs.Add("ServiceTreeLinkNotRequiredIds", "2"); // Set to system.definitionId
-            // TODO: This should be an array? What is type? Need example
-            // This isn't actually an input but it's referenced in code...
-            // ServiceTreeGateway
             step.Inputs.Add("ServiceTreeGateway", "Foo");
 
             return step;
@@ -282,5 +265,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
             var log = GetTimelineLogLines(outputStep);
             Assert.True(log.Where(x => x.Contains("SystemVariableValue=build")).Count() == 1);
         }*/
+
+        private static string _fingerprint = "3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE";
     }
 }
