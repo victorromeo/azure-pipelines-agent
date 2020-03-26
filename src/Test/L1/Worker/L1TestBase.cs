@@ -216,7 +216,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
 
         public void Dispose()
         {
-            this._l1hc?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing) 
+            {
+                this._l1hc?.Dispose();
+            }
         }
 
         protected static readonly String JobMessageTemplate = @"
