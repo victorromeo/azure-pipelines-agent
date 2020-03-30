@@ -218,6 +218,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
                 var results = await RunWorker(message);
 
                 // Assert
+                FakeJobServer fakeJobServer = GetMockedService<FakeJobServer>();
+                Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(fakeJobServer.Timelines));
+
                 AssertJobCompleted();
                 Assert.Equal(TaskResult.Succeeded, results.Result);
             }
