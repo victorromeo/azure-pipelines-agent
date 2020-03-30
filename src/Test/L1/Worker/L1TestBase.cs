@@ -107,29 +107,29 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
             var stringFile = Path.Combine(assemblyLocation, "en-US", "strings.json");
             StringUtil.LoadExternalLocalization(stringFile);
 
-            _l1hc = new L1HostContext("Agent", GetLogFile(this, testName));
-            SetupMocks(_l1hc);
+            _l1HostContext = new L1HostContext("Agent", GetLogFile(this, testName));
+            SetupMocks(_l1HostContext);
 
             // Use different working directories for each test
             var config = GetMockedService<FakeConfigurationStore>(); // TODO: Need to update this. can hack it for now.
             config.WorkingDirectoryName = testName;
         }
 
-        protected L1HostContext _l1hc;
+        protected L1HostContext _l1HostContext;
 
         protected async Task<TestResults> RunWorker(Pipelines.AgentJobRequestMessage message)
         {
-            if (_l1hc == null)
+            if (_l1HostContext == null)
             {
                 throw new InvalidOperationException("Must call SetupL1() to initialize L1HostContext before calling RunWorker()");
             }
 
-            await SetupMessage(_l1hc, message);
+            await SetupMessage(_l1HostContext, message);
 
             using (var cts = new CancellationTokenSource())
             {
               cts.CancelAfter((int)JobTimeout.TotalMilliseconds);
-              return await RunWorker(_l1hc, message, cts.Token);
+              return await RunWorker(_l1HostContext, message, cts.Token);
             }
         }
 
@@ -224,7 +224,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         {
             if (disposing) 
             {
-                this._l1hc?.Dispose();
+                this._l1HostContext?.Dispose();
             }
         }
 
