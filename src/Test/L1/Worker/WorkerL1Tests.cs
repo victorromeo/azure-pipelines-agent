@@ -283,7 +283,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
 
         private void TearDown()
         {
-            this._l1hc?.Dispose();
+            this._l1HostContext?.Dispose();
         }
 
         // Enable this test when read only variable enforcement is added
