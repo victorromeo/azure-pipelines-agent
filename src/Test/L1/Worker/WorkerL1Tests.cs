@@ -18,25 +18,31 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Trait("Category", "Worker")]
         public async Task Test_Base()
         {
-            // Arrange
-            SetupL1();
-            var message = LoadTemplateMessage();
-
-            // Act
-            var results = await RunWorker(message);
-
-            // Assert
-            AssertJobCompleted();
-            Assert.Equal(TaskResult.Succeeded, results.Result);
-
-            var steps = GetSteps();
-            var expectedSteps = new[] { "Initialize job", "Checkout MyFirstProject@master to s", "CmdLine", "Post-job: Checkout MyFirstProject@master to s", "Finalize Job" };
-            Assert.Equal(5, steps.Count()); // Init, Checkout, CmdLine, Post, Finalize
-            for (var idx = 0; idx < steps.Count; idx++)
+            try
             {
-                Assert.Equal(expectedSteps[idx], steps[idx].Name);
+                // Arrange
+                SetupL1();
+                var message = LoadTemplateMessage();
+
+                // Act
+                var results = await RunWorker(message);
+
+                // Assert
+                AssertJobCompleted();
+                Assert.Equal(TaskResult.Succeeded, results.Result);
+
+                var steps = GetSteps();
+                var expectedSteps = new[] { "Initialize job", "Checkout MyFirstProject@master to s", "CmdLine", "Post-job: Checkout MyFirstProject@master to s", "Finalize Job" };
+                Assert.Equal(5, steps.Count()); // Init, Checkout, CmdLine, Post, Finalize
+                for (var idx = 0; idx < steps.Count; idx++)
+                {
+                    Assert.Equal(expectedSteps[idx], steps[idx].Name);
+                }
             }
-            TearDown();
+            finally
+            {
+                TearDown();
+            }
         }
 
         [Fact]
@@ -44,30 +50,36 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Trait("Category", "Worker")]
         public async Task NoCheckout()
         {
-            // Arrange
-            SetupL1();
-            var message = LoadTemplateMessage();
-            // Remove checkout
-            for (var i = message.Steps.Count - 1; i >= 0; i--)
+            try
             {
-                var step = message.Steps[i];
-                if (step is TaskStep && ((TaskStep)step).Reference.Name == "Checkout")
+                // Arrange
+                SetupL1();
+                var message = LoadTemplateMessage();
+                // Remove checkout
+                for (var i = message.Steps.Count - 1; i >= 0; i--)
                 {
-                    message.Steps.RemoveAt(i);
+                    var step = message.Steps[i];
+                    if (step is TaskStep && ((TaskStep)step).Reference.Name == "Checkout")
+                    {
+                        message.Steps.RemoveAt(i);
+                    }
                 }
+
+                // Act
+                var results = await RunWorker(message);
+
+                // Assert
+                AssertJobCompleted();
+                Assert.Equal(TaskResult.Succeeded, results.Result);
+
+                var steps = GetSteps();
+                Assert.Equal(3, steps.Count()); // Init, CmdLine, Finalize
+                Assert.Equal(0, steps.Where(x => x.Name == "Checkout").Count());
             }
-
-            // Act
-            var results = await RunWorker(message);
-
-            // Assert
-            AssertJobCompleted();
-            Assert.Equal(TaskResult.Succeeded, results.Result);
-
-            var steps = GetSteps();
-            Assert.Equal(3, steps.Count()); // Init, CmdLine, Finalize
-            Assert.Equal(0, steps.Where(x => x.Name == "Checkout").Count());
-            TearDown();
+            finally
+            {
+                TearDown();
+            }
         }
 
         [Fact]
@@ -75,30 +87,36 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Trait("Category", "Worker")]
         public async Task SetVariable_ReadVariable()
         {
-            // Arrange
-            SetupL1();
-            var message = LoadTemplateMessage();
-            // Remove all tasks
-            message.Steps.Clear();
-            // Add variable setting tasks
-            message.Steps.Add(CreateScriptTask("echo \"##vso[task.setvariable variable=testVar]b\""));
-            message.Steps.Add(CreateScriptTask("echo TestVar=$(testVar)"));
-            message.Variables.Add("testVar", new Pipelines.VariableValue("a", false, false));
+            try
+            {
+                // Arrange
+                SetupL1();
+                var message = LoadTemplateMessage();
+                // Remove all tasks
+                message.Steps.Clear();
+                // Add variable setting tasks
+                message.Steps.Add(CreateScriptTask("echo \"##vso[task.setvariable variable=testVar]b\""));
+                message.Steps.Add(CreateScriptTask("echo TestVar=$(testVar)"));
+                message.Variables.Add("testVar", new Pipelines.VariableValue("a", false, false));
 
-            // Act
-            var results = await RunWorker(message);
+                // Act
+                var results = await RunWorker(message);
 
-            // Assert
-            AssertJobCompleted();
-            Assert.Equal(TaskResult.Succeeded, results.Result);
+                // Assert
+                AssertJobCompleted();
+                Assert.Equal(TaskResult.Succeeded, results.Result);
 
-            var steps = GetSteps();
-            Assert.Equal(4, steps.Count()); // Init, CmdLine, CmdLine, Finalize
-            var outputStep = steps[2];
-            var log = GetTimelineLogLines(outputStep);
+                var steps = GetSteps();
+                Assert.Equal(4, steps.Count()); // Init, CmdLine, CmdLine, Finalize
+                var outputStep = steps[2];
+                var log = GetTimelineLogLines(outputStep);
 
-            Assert.True(log.Where(x => x.Contains("TestVar=b")).Count() > 0);
-            TearDown();
+                Assert.True(log.Where(x => x.Contains("TestVar=b")).Count() > 0);
+            }
+            finally
+            {
+                TearDown();
+            }
         }
 
         [Fact]
@@ -106,29 +124,35 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Trait("Category", "Worker")]
         public async Task Conditions_Failed()
         {
-            // Arrange
-            SetupL1();
-            var message = LoadTemplateMessage();
-            // Remove all tasks
-            message.Steps.Clear();
-            // Add a normal step and one that only runs on failure
-            message.Steps.Add(CreateScriptTask("echo This will run"));
-            var failStep = CreateScriptTask("echo This shouldn't...");
-            failStep.Condition = "failed()";
-            message.Steps.Add(failStep);
+            try
+            {
+                // Arrange
+                SetupL1();
+                var message = LoadTemplateMessage();
+                // Remove all tasks
+                message.Steps.Clear();
+                // Add a normal step and one that only runs on failure
+                message.Steps.Add(CreateScriptTask("echo This will run"));
+                var failStep = CreateScriptTask("echo This shouldn't...");
+                failStep.Condition = "failed()";
+                message.Steps.Add(failStep);
 
-            // Act
-            var results = await RunWorker(message);
+                // Act
+                var results = await RunWorker(message);
 
-            // Assert
-            AssertJobCompleted();
-            Assert.Equal(TaskResult.Succeeded, results.Result);
+                // Assert
+                AssertJobCompleted();
+                Assert.Equal(TaskResult.Succeeded, results.Result);
 
-            var steps = GetSteps();
-            Assert.Equal(4, steps.Count()); // Init, CmdLine, CmdLine, Finalize
-            var faiLStep = steps[2];
-            Assert.Equal(TaskResult.Skipped, faiLStep.Result);
-            TearDown();
+                var steps = GetSteps();
+                Assert.Equal(4, steps.Count()); // Init, CmdLine, CmdLine, Finalize
+                var faiLStep = steps[2];
+                Assert.Equal(TaskResult.Skipped, faiLStep.Result);
+            }
+            finally
+            {
+                TearDown();
+            }
         }
 
         [Fact]
@@ -136,31 +160,37 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Trait("Category", "Worker")]
         public async Task StepTarget_RestrictedMode()
         {
-            // Arrange
-            SetupL1();
-            var message = LoadTemplateMessage();
-            // Remove all tasks
-            message.Steps.Clear();
-            var tagStep = CreateScriptTask("echo \"##vso[build.addbuildtag]sometag\"");
-            tagStep.Target = new StepTarget
+            try
             {
-                Commands = "restricted"
-            };
-            message.Steps.Add(tagStep);
+                // Arrange
+                SetupL1();
+                var message = LoadTemplateMessage();
+                // Remove all tasks
+                message.Steps.Clear();
+                var tagStep = CreateScriptTask("echo \"##vso[build.addbuildtag]sometag\"");
+                tagStep.Target = new StepTarget
+                {
+                    Commands = "restricted"
+                };
+                message.Steps.Add(tagStep);
 
-            // Act
-            var results = await RunWorker(message);
+                // Act
+                var results = await RunWorker(message);
 
-            // Assert
-            AssertJobCompleted();
-            Assert.Equal(TaskResult.Succeeded, results.Result);
+                // Assert
+                AssertJobCompleted();
+                Assert.Equal(TaskResult.Succeeded, results.Result);
 
-            var steps = GetSteps();
-            Assert.Equal(3, steps.Count()); // Init, CmdLine, Finalize
-            var log = GetTimelineLogLines(steps[1]);
-            Assert.Equal(1, log.Where(x => x.Contains("##vso[build.addbuildtag] is not allowed in this step due to policy restrictions.")).Count());
-            Assert.Equal(0, GetMockedService<FakeBuildServer>().BuildTags.Count);
-            TearDown();
+                var steps = GetSteps();
+                Assert.Equal(3, steps.Count()); // Init, CmdLine, Finalize
+                var log = GetTimelineLogLines(steps[1]);
+                Assert.Equal(1, log.Where(x => x.Contains("##vso[build.addbuildtag] is not allowed in this step due to policy restrictions.")).Count());
+                Assert.Equal(0, GetMockedService<FakeBuildServer>().BuildTags.Count);
+            }
+            finally
+            {
+                TearDown();
+            }
         }
 
         [Fact]
@@ -171,24 +201,30 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Trait("SkipOn", "linux")]
         public async Task SignatureEnforcementMode_PassesWhenAllTasksAreSigned()
         {
-            // Arrange
-            SetupL1();
-            FakeConfigurationStore fakeConfigurationStore = GetMockedService<FakeConfigurationStore>();
-            AgentSettings settings = fakeConfigurationStore.GetSettings();
-            settings.Fingerprint = _fingerprint;
-            fakeConfigurationStore.UpdateSettings(settings);
+            try
+            {
+                // Arrange
+                SetupL1();
+                FakeConfigurationStore fakeConfigurationStore = GetMockedService<FakeConfigurationStore>();
+                AgentSettings settings = fakeConfigurationStore.GetSettings();
+                settings.Fingerprint = _fingerprint;
+                fakeConfigurationStore.UpdateSettings(settings);
 
-            var message = LoadTemplateMessage();
-            message.Steps.Clear();
-            message.Steps.Add(GetSignedTask());
+                var message = LoadTemplateMessage();
+                message.Steps.Clear();
+                message.Steps.Add(GetSignedTask());
 
-            // Act
-            var results = await RunWorker(message);
+                // Act
+                var results = await RunWorker(message);
 
-            // Assert
-            AssertJobCompleted();
-            Assert.Equal(TaskResult.Succeeded, results.Result);
-            TearDown();
+                // Assert
+                AssertJobCompleted();
+                Assert.Equal(TaskResult.Succeeded, results.Result);
+            }
+            finally
+            {
+                TearDown();
+            }
         }
 
         [Fact]
@@ -199,21 +235,27 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Trait("SkipOn", "linux")]
         public async Task SignatureEnforcementMode_FailsWhenTasksArentSigned()
         {
-            // Arrange
-            SetupL1();
-            FakeConfigurationStore fakeConfigurationStore = GetMockedService<FakeConfigurationStore>();
-            AgentSettings settings = fakeConfigurationStore.GetSettings();
-            settings.Fingerprint = _fingerprint;
-            fakeConfigurationStore.UpdateSettings(settings);
-            var message = LoadTemplateMessage();
+            try
+            {
+                // Arrange
+                SetupL1();
+                FakeConfigurationStore fakeConfigurationStore = GetMockedService<FakeConfigurationStore>();
+                AgentSettings settings = fakeConfigurationStore.GetSettings();
+                settings.Fingerprint = _fingerprint;
+                fakeConfigurationStore.UpdateSettings(settings);
+                var message = LoadTemplateMessage();
 
-            // Act
-            var results = await RunWorker(message);
+                // Act
+                var results = await RunWorker(message);
 
-            // Assert
-            AssertJobCompleted();
-            Assert.Equal(TaskResult.Failed, results.Result);
-            TearDown();
+                // Assert
+                AssertJobCompleted();
+                Assert.Equal(TaskResult.Failed, results.Result);
+            }
+            finally
+            {
+                TearDown();
+            }
         }
 
         private static TaskStep GetSignedTask()
