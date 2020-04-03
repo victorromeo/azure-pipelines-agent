@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -123,7 +124,7 @@ namespace Agent.Plugins.Repository
 
             await UpdateToRevisionAsync(oldMappings, newMappings, maxRevision);
 
-            return maxRevision > 0 ? maxRevision.ToString() : "HEAD";
+            return maxRevision > 0 ? maxRevision.ToString(CultureInfo.CurrentCulture) : "HEAD";
         }
 
         private async Task<Dictionary<string, Uri>> GetOldMappings(string rootPath)
@@ -350,6 +351,7 @@ namespace Agent.Plugins.Repository
                 if (!Directory.Exists(Path.Combine(localPath, ".svn")))
                 {
                     _context.Debug(String.Format(
+                        CultureInfo.CurrentCulture,
                         "Checking out with depth: {0}, revision: {1}, ignore externals: {2}",
                         mappingDetails.Depth,
                         effectiveRevision,
@@ -361,6 +363,7 @@ namespace Agent.Plugins.Repository
                 else if (oldMappings.ContainsKey(localPath) && oldMappings[localPath].Equals(new Uri(effectiveServerUri)))
                 {
                     _context.Debug(String.Format(
+                        CultureInfo.CurrentCulture,
                         "Updating with depth: {0}, revision: {1}, ignore externals: {2}",
                         mappingDetails.Depth,
                         mappingDetails.Revision,
@@ -371,6 +374,7 @@ namespace Agent.Plugins.Repository
                 else
                 {
                     _context.Debug(String.Format(
+                        CultureInfo.CurrentCulture,
                         "Switching to {0}  with depth: {1}, revision: {2}, ignore externals: {3}",
                         mappingDetails.ServerPath,
                         mappingDetails.Depth,
@@ -396,7 +400,7 @@ namespace Agent.Plugins.Repository
             }
             else
             {
-                return maxRevision.ToString();
+                return maxRevision.ToString(CultureInfo.CurrentCulture);
             }
         }
 

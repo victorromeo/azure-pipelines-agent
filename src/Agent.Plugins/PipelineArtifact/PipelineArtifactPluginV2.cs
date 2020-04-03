@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -192,7 +193,7 @@ namespace Agent.Plugins.PipelineArtifact
 
                     if (!string.IsNullOrEmpty(triggeringPipeline))
                     {
-                        pipelineId = int.Parse(triggeringPipeline);
+                        pipelineId = int.Parse(triggeringPipeline, CultureInfo.CurrentCulture);
                     }
                 }
 

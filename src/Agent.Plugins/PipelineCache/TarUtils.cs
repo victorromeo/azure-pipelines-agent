@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.ExceptionServices;
@@ -241,7 +242,7 @@ namespace Agent.Plugins.PipelineCache
 
         private static string CreateArchiveFileName()
         {
-            return $"{Guid.NewGuid().ToString("N")}_{archive}";
+            return $"{Guid.NewGuid().ToString("N", CultureInfo.CurrentCulture)}_{archive}";
         }
 
         private static bool IsSystemDebugTrue(AgentTaskPluginExecutionContext context)

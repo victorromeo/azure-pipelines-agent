@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
@@ -32,7 +33,7 @@ namespace Agent.Plugins.PipelineArtifact
                     parallelism = DefaultDedupStoreClientMaxParallelism;
                 }
             }
-            context.Info(string.Format("Dedup parallelism: {0}", parallelism));
+            context.Info(string.Format(CultureInfo.CurrentCulture, "Dedup parallelism: {0}", parallelism));
             return parallelism;
         } 
 

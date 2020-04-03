@@ -267,7 +267,7 @@ namespace Agent.Plugins.PipelineArtifact
 
                     if (!string.IsNullOrEmpty(triggeringPipeline))
                     {
-                        pipelineId = int.Parse(triggeringPipeline);
+                        pipelineId = int.Parse(triggeringPipeline, CultureInfo.CurrentCulture);
                     }
                 }
 
@@ -279,7 +279,7 @@ namespace Agent.Plugins.PipelineArtifact
                     }
                     else if (buildVersionToDownload == buildVersionToDownloadSpecific)
                     {
-                        pipelineId = Int32.Parse(userSpecifiedpipelineId);
+                        pipelineId = Int32.Parse(userSpecifiedpipelineId, CultureInfo.CurrentCulture);
                     }
                     else if (buildVersionToDownload == buildVersionToDownloadLatestFromBranch)
                     {
@@ -344,7 +344,7 @@ namespace Agent.Plugins.PipelineArtifact
 
         private async Task<int> GetpipelineIdAsync(AgentTaskPluginExecutionContext context, string buildPipelineDefinition, string buildVersionToDownload, string project, string[] tagFilters, string branchName = null)
         {
-            var definitions = new List<int>() { Int32.Parse(buildPipelineDefinition) };
+            var definitions = new List<int>() { Int32.Parse(buildPipelineDefinition, CultureInfo.CurrentCulture) };
             VssConnection connection = context.VssConnection;
             BuildHttpClient buildHttpClient = connection.GetClient<BuildHttpClient>();
             List<Build> list;
