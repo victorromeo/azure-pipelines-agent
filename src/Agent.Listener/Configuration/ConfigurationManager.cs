@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Services.OAuth;
 using Microsoft.VisualStudio.Services.WebApi;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -365,7 +366,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     Scheme = Constants.Configuration.OAuth,
                     Data =
                     {
-                        { "clientId", agent.Authorization.ClientId.ToString("D") },
+                        { "clientId", agent.Authorization.ClientId.ToString("D", CultureInfo.CurrentCulture) },
                         { "authorizationUrl", agent.Authorization.AuthorizationUrl.AbsoluteUri },
                         { "oauthEndpointUrl", oauthEndpointUrlBuilder.Uri.AbsoluteUri },
                     },
@@ -554,7 +555,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                         isEnvironmentVMResource = settings.EnvironmentId > 0;
                     }
 
-                    Trace.Info("Agent configured for deploymentGroup : {0}", isDeploymentGroup.ToString());
+                    Trace.Info("Agent configured for deploymentGroup : {0}", isDeploymentGroup.ToString(CultureInfo.CurrentCulture));
 
                     string agentType = isDeploymentGroup
                    ? Constants.Agent.AgentConfigurationProvider.DeploymentAgentConfiguration

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Security;
 using System.Security.Principal;
@@ -60,7 +61,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
             if ((string.IsNullOrEmpty(domainName) || domainName.Equals(".", StringComparison.CurrentCultureIgnoreCase)) && !logonAccount.Contains('@'))
             {
-                logonAccount = String.Format("{0}\\{1}", Environment.MachineName, userName);
+                logonAccount = String.Format(CultureInfo.CurrentCulture, "{0}\\{1}", Environment.MachineName, userName);
                 domainName = Environment.MachineName;
             }
 

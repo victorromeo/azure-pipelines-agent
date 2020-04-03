@@ -6,6 +6,7 @@ using Agent.Sdk.Knob;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -55,7 +56,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 StringBuilder sBuilder = new StringBuilder();
                 for (int i = 0; i < data.Length; i++)
                 {
-                    sBuilder.Append(data[i].ToString("x2"));
+                    sBuilder.Append(data[i].ToString("x2", CultureInfo.CurrentCulture));
                 }
 
                 string hash = sBuilder.ToString();

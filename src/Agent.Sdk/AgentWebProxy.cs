@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.Services.Agent.Util;
@@ -93,7 +94,7 @@ namespace Agent.Sdk
         {
             string matchUriString = input.IsDefaultPort ?
                 input.Scheme + "://" + input.Host :
-                input.Scheme + "://" + input.Host + ":" + input.Port.ToString();
+                input.Scheme + "://" + input.Host + ":" + input.Port.ToString(CultureInfo.CurrentCulture);
 
             foreach (Regex r in _regExBypassList)
             {

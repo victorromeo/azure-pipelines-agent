@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 
@@ -271,7 +272,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 _terminal.WriteError(StringUtil.Loc("AutoLogonPoliciesWarningsHeader"));
                 for (int i=0; i < warningReasons.Count; i++)
                 {
-                    var msg = String.Format("{0} - {1}", i + 1, warningReasons[i]);
+                    var msg = String.Format(CultureInfo.CurrentCulture, "{0} - {1}", i + 1, warningReasons[i]);
                     Trace.Warning(msg);
                     _terminal.WriteError(msg);
                 }

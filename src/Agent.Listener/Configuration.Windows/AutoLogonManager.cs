@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,7 +57,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
                 if ((string.IsNullOrEmpty(domainName) || domainName.Equals(".", StringComparison.CurrentCultureIgnoreCase)) && !logonAccount.Contains("@"))
                 {
-                    logonAccount = String.Format("{0}\\{1}", Environment.MachineName, userName);
+                    logonAccount = String.Format(CultureInfo.CurrentCulture, "{0}\\{1}", Environment.MachineName, userName);
                     domainName = Environment.MachineName;
                 }
                 Trace.Info("LogonAccount after transforming: {0}, user: {1}, domain: {2}", logonAccount, userName, domainName);
@@ -83,10 +84,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     && !userName.Equals(currentAutoLogonUserName, StringComparison.CurrentCultureIgnoreCase)
                     && !domainName.Equals(currentAutoLogonUserDomainName, StringComparison.CurrentCultureIgnoreCase))
             {
-                string currentAutoLogonAccount = String.Format("{0}\\{1}", currentAutoLogonUserDomainName, currentAutoLogonUserName);
+                string currentAutoLogonAccount = String.Format(CultureInfo.CurrentCulture, "{0}\\{1}", currentAutoLogonUserDomainName, currentAutoLogonUserName);
                 if (string.IsNullOrEmpty(currentAutoLogonUserDomainName) || currentAutoLogonUserDomainName.Equals(".", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    currentAutoLogonAccount = String.Format("{0}\\{1}", Environment.MachineName, currentAutoLogonUserName);
+                    currentAutoLogonAccount = String.Format(CultureInfo.CurrentCulture, "{0}\\{1}", Environment.MachineName, currentAutoLogonUserName);
                 }
 
                 Trace.Warning($"AutoLogon already enabled for {currentAutoLogonAccount}.");

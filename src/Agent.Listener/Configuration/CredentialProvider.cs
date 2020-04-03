@@ -4,6 +4,7 @@
 using Agent.Sdk;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -135,7 +136,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             trace.Info(nameof(EnsureCredential));
             ArgUtil.NotNull(command, nameof(command));
             CredentialData.Data[Constants.Agent.CommandLine.Args.Url] = serverUrl;
-            CredentialData.Data[Constants.Agent.CommandLine.Flags.LaunchBrowser] = command.GetAutoLaunchBrowser().ToString();
+            CredentialData.Data[Constants.Agent.CommandLine.Flags.LaunchBrowser] = command.GetAutoLaunchBrowser().ToString(CultureInfo.CurrentCulture);
         }
 
         private Uri GetTenantAuthorityUrl(IHostContext context, string serverUrl)

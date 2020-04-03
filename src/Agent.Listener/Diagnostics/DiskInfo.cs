@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Globalization;
+using System.IO;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
 {
@@ -20,9 +21,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
                     {
                         terminal.WriteLine($"  Volume label: {d.VolumeLabel}");
                         terminal.WriteLine($"  File system: {d.DriveFormat}");
-                        terminal.WriteLine(string.Format("  Available space to current user:{0, 15:N0} KB", d.AvailableFreeSpace / c_kb));
-                        terminal.WriteLine(string.Format("  Total available space:          {0, 15:N0} KB", d.TotalFreeSpace / c_kb));
-                        terminal.WriteLine(string.Format("  Total size of drive:            {0, 15:N0} KB", d.TotalSize/ c_kb));
+                        terminal.WriteLine(string.Format(CultureInfo.CurrentCulture, "  Available space to current user:{0, 15:N0} KB", d.AvailableFreeSpace / c_kb));
+                        terminal.WriteLine(string.Format(CultureInfo.CurrentCulture, "  Total available space:          {0, 15:N0} KB", d.TotalFreeSpace / c_kb));
+                        terminal.WriteLine(string.Format(CultureInfo.CurrentCulture, "  Total size of drive:            {0, 15:N0} KB", d.TotalSize/ c_kb));
                     }
                     else
                     {

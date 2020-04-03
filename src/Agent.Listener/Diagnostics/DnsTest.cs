@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Net;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
@@ -11,7 +12,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
             {
                 IPHostEntry host = Dns.GetHostEntry(c_hostname);
 
-                terminal.WriteLine(string.Format("GetHostEntry: {0} returns:", c_hostname));
+                terminal.WriteLine(string.Format(CultureInfo.CurrentCulture, "GetHostEntry: {0} returns:", c_hostname));
                 foreach (IPAddress address in host.AddressList)
                 {
                     terminal.WriteLine($"    {address}");

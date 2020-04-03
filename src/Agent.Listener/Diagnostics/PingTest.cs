@@ -1,4 +1,5 @@
-﻿using System.Net.NetworkInformation;
+﻿using System.Globalization;
+using System.Net.NetworkInformation;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
 {
@@ -10,15 +11,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
             {
                 try
                 {
-                    terminal.WriteLine(string.Format("Attempt to Ping: {0} with timeout {1}", c_hostname, c_timeout));
+                    terminal.WriteLine(string.Format(CultureInfo.CurrentCulture, "Attempt to Ping: {0} with timeout {1}", c_hostname, c_timeout));
                     PingReply pingreply = ping.Send(c_hostname, c_timeout);
-                    terminal.WriteLine(string.Format("Address: {0}", pingreply.Address));
-                    terminal.WriteLine(string.Format("Status: {0}", pingreply.Status));
-                    terminal.WriteLine(string.Format("Round trip time: {0}", pingreply.RoundtripTime));
+                    terminal.WriteLine(string.Format(CultureInfo.CurrentCulture, "Address: {0}", pingreply.Address));
+                    terminal.WriteLine(string.Format(CultureInfo.CurrentCulture, "Status: {0}", pingreply.Status));
+                    terminal.WriteLine(string.Format(CultureInfo.CurrentCulture, "Round trip time: {0}", pingreply.RoundtripTime));
 
                     if (pingreply.Status != IPStatus.Success)
                     {
-                        terminal.WriteError(string.Format("Unsuccessful status response from {0}.  Verify internet connection is working", c_hostname));
+                        terminal.WriteError(string.Format(CultureInfo.CurrentCulture, "Unsuccessful status response from {0}.  Verify internet connection is working", c_hostname));
                         return false;
                     }
                 }

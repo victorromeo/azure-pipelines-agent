@@ -3,6 +3,7 @@
 
 using Agent.Sdk;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -72,7 +73,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 string procFilePath = $"/proc/{processId}/oom_score_adj";
                 if (File.Exists(procFilePath))
                 {
-                    File.WriteAllText(procFilePath, oomScoreAdj.ToString());
+                    File.WriteAllText(procFilePath, oomScoreAdj.ToString(CultureInfo.CurrentCulture));
                     Trace.Info($"Updated oom_score_adj to {oomScoreAdj} for PID: {processId}.");
                 }
             }

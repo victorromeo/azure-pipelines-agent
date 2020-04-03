@@ -557,7 +557,7 @@ namespace Microsoft.TeamFoundation.DistributedTask.Orchestration.Server.Pipeline
                     String line = reader.ReadLine();
                     while (line != null)
                     {
-                        result.AppendLine($"{lineNumber.ToString().PadLeft(4)}: {line}");
+                        result.AppendLine($"{lineNumber.ToString(CultureInfo.CurrentCulture).PadLeft(4)}: {line}");
                         line = reader.ReadLine();
                         lineNumber++;
                     }

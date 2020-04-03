@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 using System;
+using System.Globalization;
 using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Sdk.Knob
@@ -29,7 +30,7 @@ namespace Agent.Sdk.Knob
 
         public int AsInt()
         {
-            return Int32.Parse(_value);
+            return Int32.Parse(_value, CultureInfo.CurrentCulture);
         }
     }
 

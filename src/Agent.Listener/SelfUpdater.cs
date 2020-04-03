@@ -7,6 +7,7 @@ using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -459,7 +460,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
         private string GenerateUpdateScript(bool restartInteractiveAgent)
         {
             int processId = Process.GetCurrentProcess().Id;
-            string updateLog = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Diag), $"SelfUpdate-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss")}.log");
+            string updateLog = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Diag), $"SelfUpdate-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss", CultureInfo.CurrentCulture)}.log");
             string agentRoot = HostContext.GetDirectory(WellKnownDirectory.Root);
 
             string templateName = "update.sh.template";
@@ -471,7 +472,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             string templatePath = Path.Combine(agentRoot, $"bin.{_targetPackage.Version}", templateName);
             string template = File.ReadAllText(templatePath);
 
-            template = template.Replace("_PROCESS_ID_", processId.ToString());
+            template = template.Replace("_PROCESS_ID_", processId.ToString(CultureInfo.CurrentCulture));
             template = template.Replace("_AGENT_PROCESS_NAME_", $"Agent.Listener{IOUtil.ExeExtension}");
             template = template.Replace("_ROOT_FOLDER_", agentRoot);
             template = template.Replace("_EXIST_AGENT_VERSION_", BuildConstants.AgentPackage.Version);

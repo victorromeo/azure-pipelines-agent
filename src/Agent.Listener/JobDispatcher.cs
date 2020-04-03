@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -360,7 +361,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                     return;
                 }
 
-                HostContext.WritePerfCounter($"JobRequestRenewed_{requestId.ToString()}");
+                HostContext.WritePerfCounter($"JobRequestRenewed_{requestId.ToString(CultureInfo.CurrentCulture)}");
 
                 Task<int> workerProcessTask = null;
                 object _outputLock = new object();
@@ -490,7 +491,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
                     await notification.JobStarted(message.JobId, accessToken, systemConnection.Url, message.Plan.PlanId, identifier.Value, definitionId.Value, message.Plan.PlanType);
 
-                    HostContext.WritePerfCounter($"SentJobToWorker_{requestId.ToString()}");
+                    HostContext.WritePerfCounter($"SentJobToWorker_{requestId.ToString(CultureInfo.CurrentCulture)}");
 
                     try
                     {

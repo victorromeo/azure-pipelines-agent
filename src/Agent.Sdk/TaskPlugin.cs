@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -240,7 +241,7 @@ namespace Agent.Sdk
             ArgUtil.NotNull(variable, nameof(variable));
             ArgUtil.NotNull(value, nameof(value));
             this.Variables[variable] = new VariableValue(value, isSecret);
-            Output($"##vso[task.setvariable variable={Escape(variable)};issecret={isSecret.ToString()};]{Escape(value)}");
+            Output($"##vso[task.setvariable variable={Escape(variable)};issecret={isSecret.ToString(CultureInfo.CurrentCulture)};]{Escape(value)}");
         }
 
         public void SetTaskVariable(string variable, string value, bool isSecret = false)
@@ -248,7 +249,7 @@ namespace Agent.Sdk
             ArgUtil.NotNull(variable, nameof(variable));
             ArgUtil.NotNull(value, nameof(value));
             this.TaskVariables[variable] = new VariableValue(value, isSecret);
-            Output($"##vso[task.settaskvariable variable={Escape(variable)};issecret={isSecret.ToString()};]{Escape(value)}");
+            Output($"##vso[task.settaskvariable variable={Escape(variable)};issecret={isSecret.ToString(CultureInfo.CurrentCulture)};]{Escape(value)}");
         }
 
         public void Command(string command)

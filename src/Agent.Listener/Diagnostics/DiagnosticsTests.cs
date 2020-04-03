@@ -1,6 +1,7 @@
 ﻿using Agent.Listener.Diagnostics;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
 {
@@ -48,24 +49,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
                     foreach (var test in suite.DiagnosticTests)
                     {
                         string testName = test.GetType().Name;
-                        m_terminal.WriteLine(string.Format("*** {0} ***", testName));
+                        m_terminal.WriteLine(string.Format(CultureInfo.CurrentCulture, "*** {0} ***", testName));
                         try
                         {
                             if (!test.Execute(m_terminal))
                             {
                                 result = false;
-                                m_terminal.WriteError(string.Format("*** {0} Failed ***", testName));
+                                m_terminal.WriteError(string.Format(CultureInfo.CurrentCulture, "*** {0} Failed ***", testName));
                             }
                             else
                             {
-                                m_terminal.WriteLine(string.Format("*** {0} Succeeded ***", testName));
+                                m_terminal.WriteLine(string.Format(CultureInfo.CurrentCulture, "*** {0} Succeeded ***", testName));
                             }
                         }
                         catch (Exception ex)
                         {
                             result = false;
                             m_terminal.WriteError(ex);
-                            m_terminal.WriteError(string.Format("***  {0} Failed ***", testName));
+                            m_terminal.WriteError(string.Format(CultureInfo.CurrentCulture, "***  {0} Failed ***", testName));
                         }
                         m_terminal.WriteLine(string.Empty);
                     }
@@ -74,16 +75,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics
                 foreach (var info in suite.DiagnosticInfo)
                 {
                     string infoName = info.GetType().Name;
-                    m_terminal.WriteLine(string.Format("*** {0} ***", infoName));
+                    m_terminal.WriteLine(string.Format(CultureInfo.CurrentCulture, "*** {0} ***", infoName));
                     try
                     {
                         info.Execute(m_terminal);
-                        m_terminal.WriteLine(string.Format("*** {0} Completed ***", infoName));
+                        m_terminal.WriteLine(string.Format(CultureInfo.CurrentCulture, "*** {0} Completed ***", infoName));
                     }
                     catch (Exception ex)
                     {
                         m_terminal.WriteError(ex);
-                        m_terminal.WriteError(string.Format("*** {0} Failed ***", infoName));
+                        m_terminal.WriteError(string.Format(CultureInfo.CurrentCulture, "*** {0} Failed ***", infoName));
                     }
                     m_terminal.WriteLine(string.Empty);
                 }

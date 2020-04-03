@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.Services.Agent.Listener.Configuration;
 using Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Services.WebApi;
@@ -530,7 +531,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             _term.WriteLine(_banner);
         }
 
-        private static string _banner = string.Format(@"
+        private static string _banner = string.Format(CultureInfo.CurrentCulture, @"
   ___                      ______ _            _ _
  / _ \                     | ___ (_)          | (_)
 / /_\ \_____   _ _ __ ___  | |_/ /_ _ __   ___| |_ _ __   ___  ___
