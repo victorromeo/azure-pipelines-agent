@@ -86,7 +86,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
         public static string Format(string format, params object[] args)
         {
-            return Format(CultureInfo.InvariantCulture, format, args);
+            return FormatWithCulture(CultureInfo.InvariantCulture, format, args);
         }
 
         public static Encoding GetSystemEncoding()
@@ -151,10 +151,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
         // Do not combine the non-format overload with the format overload.
         public static string Loc(string locKey, params object[] args)
         {
-            return Format(CultureInfo.CurrentCulture, Loc(locKey), args);
+            return FormatWithCulture(CultureInfo.CurrentCulture, Loc(locKey), args);
         }
 
-        private static string Format(CultureInfo culture, string format, params object[] args)
+        private static string FormatWithCulture(CultureInfo culture, string format, params object[] args)
         {
             try
             {

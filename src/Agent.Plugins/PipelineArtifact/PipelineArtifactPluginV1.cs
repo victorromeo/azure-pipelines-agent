@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -79,7 +80,7 @@ namespace Agent.Plugins.PipelineArtifact
             }
             string targetPath = context.GetInput(TargetPath, required: true);
             string artifactType = context.GetInput(ArtifactEventProperties.ArtifactType, required: false);
-            artifactType = string.IsNullOrEmpty(artifactType) ? pipelineType : artifactType.ToLower();
+            artifactType = string.IsNullOrEmpty(artifactType) ? pipelineType : artifactType.ToLower(CultureInfo.CurrentCulture);
 
             string defaultWorkingDirectory = context.Variables.GetValueOrDefault("system.defaultworkingdirectory").Value;
 

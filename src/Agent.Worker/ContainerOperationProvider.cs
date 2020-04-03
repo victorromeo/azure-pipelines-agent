@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.ServiceProcess;
 using System.Threading.Tasks;
@@ -162,7 +163,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     string loginServer = string.Empty;
                     registryEndpoint.Authorization?.Parameters?.TryGetValue("loginServer", out loginServer);
                     if (loginServer != null) {
-                        loginServer = loginServer.ToLower();
+                        loginServer = loginServer.ToLower(CultureInfo.CurrentCulture);
                     }
 
                     registryEndpoint.Authorization?.Parameters?.TryGetValue("serviceprincipalid", out username);

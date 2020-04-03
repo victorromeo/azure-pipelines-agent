@@ -4,6 +4,7 @@
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -90,7 +91,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.CodeCoverage
         {
             if (!string.IsNullOrEmpty(coverageUnit))
             {
-                switch (coverageUnit.ToLower())
+                switch (coverageUnit.ToLower(CultureInfo.CurrentCulture))
                 {
                     case "instruction":
                         return (int)Priority.Instruction;

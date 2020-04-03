@@ -5,6 +5,7 @@ using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -100,11 +101,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.CodeCoverage
                 }
                 if (newWord)
                 {
-                    outputString += char.ToUpper(inputString[i]);
+                    outputString += char.ToUpper(inputString[i], CultureInfo.CurrentCulture);
                 }
                 else
                 {
-                    outputString += char.ToLower(inputString[i]);
+                    outputString += char.ToLower(inputString[i], CultureInfo.CurrentCulture);
                 }
 
                 newWord = false;
