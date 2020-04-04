@@ -277,6 +277,7 @@ namespace Agent.Plugins.Repository
                 }
             }
 
+            executionContext.Debug($"total endpoints={executionContext.Endpoints.Count}");
             // retrieve credential from endpoint.
             ServiceEndpoint endpoint = null;
             if (repository.Endpoint != null)
@@ -287,6 +288,11 @@ namespace Agent.Plugins.Repository
                     x => (repository.Endpoint.Id != Guid.Empty && x.Id == repository.Endpoint.Id) ||
                     (repository.Endpoint.Id == Guid.Empty && string.Equals(x.Name, repository.Endpoint.Name.ToString(), StringComparison.OrdinalIgnoreCase)));
             }
+
+            executionContext.Debug($"endpoint auth scheme={endpoint.Authorization.Scheme}");
+            executionContext.Debug($"endpoint Id={endpoint.Id}");
+            executionContext.Debug($"endpoint Name={endpoint.Name}");
+            executionContext.Debug($"Access Token={endpoint.Authorization.Parameters[EndpointAuthorizationParameters.AccessToken]}");
 
             if (endpoint != null && endpoint.Data.TryGetValue(EndpointData.AcceptUntrustedCertificates, out string endpointAcceptUntrustedCerts))
             {
@@ -399,6 +405,7 @@ namespace Agent.Plugins.Repository
                 switch (endpoint.Authorization.Scheme)
                 {
                     case EndpointAuthorizationSchemes.OAuth:
+                        executionContext.Debug($"Inside OAuth");
                         username = EndpointAuthorizationSchemes.OAuth;
                         useBearerAuthType = UseBearerAuthenticationForOAuth();
                         if (!endpoint.Authorization.Parameters.TryGetValue(EndpointAuthorizationParameters.AccessToken, out password))
@@ -407,6 +414,7 @@ namespace Agent.Plugins.Repository
                         }
                         break;
                     case EndpointAuthorizationSchemes.PersonalAccessToken:
+                        executionContext.Debug($"Inside PAT");
                         username = EndpointAuthorizationSchemes.PersonalAccessToken;
                         if (!endpoint.Authorization.Parameters.TryGetValue(EndpointAuthorizationParameters.AccessToken, out password))
                         {
@@ -414,6 +422,7 @@ namespace Agent.Plugins.Repository
                         }
                         break;
                     case EndpointAuthorizationSchemes.Token:
+                        executionContext.Debug($"Inside Token");
                         username = "x-access-token";
                         if (!endpoint.Authorization.Parameters.TryGetValue(EndpointAuthorizationParameters.AccessToken, out password))
                         {
@@ -425,6 +434,7 @@ namespace Agent.Plugins.Repository
                         }
                         break;
                     case EndpointAuthorizationSchemes.UsernamePassword:
+                        executionContext.Debug($"Inside UserNamePassword");
                         if (!endpoint.Authorization.Parameters.TryGetValue(EndpointAuthorizationParameters.Username, out username))
                         {
                             // leave the username as empty, the username might in the url, like: http://username@repository.git
