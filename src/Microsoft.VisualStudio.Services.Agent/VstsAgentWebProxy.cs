@@ -3,6 +3,7 @@
 
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.IO;
@@ -79,7 +80,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 IOUtil.DeleteFile(proxyCredFile);
                 if (!string.IsNullOrEmpty(ProxyUsername) && !string.IsNullOrEmpty(ProxyPassword))
                 {
-                    string lookupKey = Guid.NewGuid().ToString("D").ToUpperInvariant();
+                    string lookupKey = Guid.NewGuid().ToString("D", CultureInfo.CurrentCulture).ToUpperInvariant();
                     Trace.Info($"Store proxy credential lookup key '{lookupKey}' to '{proxyCredFile}'");
                     File.WriteAllText(proxyCredFile, lookupKey);
                     File.SetAttributes(proxyCredFile, File.GetAttributes(proxyCredFile) | FileAttributes.Hidden);

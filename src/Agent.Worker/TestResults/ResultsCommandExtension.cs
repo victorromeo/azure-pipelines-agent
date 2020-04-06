@@ -5,6 +5,7 @@ using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Services.WebApi;
@@ -214,7 +215,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
 
             // If runName is not provided by the task, then create runName from testRunner name and buildId.
             string runName = String.IsNullOrWhiteSpace(_runTitle)
-                ? String.Format("{0}_TestResults_{1}", _testRunner, buildId)
+                ? String.Format(CultureInfo.CurrentCulture, "{0}_TestResults_{1}", _testRunner, buildId)
                 : _runTitle;
 
             StageReference stageReference = new StageReference() { StageName = stageName, Attempt = Convert.ToInt32(stageAttempt) };

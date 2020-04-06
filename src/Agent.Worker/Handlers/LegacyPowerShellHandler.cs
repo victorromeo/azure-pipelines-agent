@@ -5,6 +5,7 @@ using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -374,7 +375,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                     }
                     else
                     {
-                        partialKey = endpoint.Id.ToString("D").ToUpperInvariant();
+                        partialKey = endpoint.Id.ToString("D", CultureInfo.CurrentCulture).ToUpperInvariant();
                     }
 
                     ids.Add(partialKey);

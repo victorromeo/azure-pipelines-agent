@@ -35,7 +35,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             base.Initialize(hostContext);
             _dockerManger = HostContext.GetService<IDockerCommandManager>();
-            _containerNetwork = $"vsts_network_{Guid.NewGuid().ToString("N")}";
+            _containerNetwork = $"vsts_network_{Guid.NewGuid().ToString("N", CultureInfo.CurrentCulture)}";
         }
 
         public async Task StartContainersAsync(IExecutionContext executionContext, object data)

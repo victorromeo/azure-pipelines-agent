@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -54,8 +55,8 @@ namespace Microsoft.VisualStudio.Services.Agent
                 !string.IsNullOrEmpty(vssRequestDelayed.FirstOrDefault()) &&
                 !string.IsNullOrEmpty(vssRequestQuotaReset.FirstOrDefault()))
             {
-                TimeSpan delay = TimeSpan.FromSeconds(double.Parse(vssRequestDelayed.First()));
-                int expirationEpoch = int.Parse(vssRequestQuotaReset.First());
+                TimeSpan delay = TimeSpan.FromSeconds(double.Parse(vssRequestDelayed.First(), CultureInfo.CurrentCulture));
+                int expirationEpoch = int.Parse(vssRequestQuotaReset.First(), CultureInfo.CurrentCulture);
                 DateTime expiration = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(expirationEpoch);
 
                 _throttlingReporter.ReportThrottling(delay, expiration);

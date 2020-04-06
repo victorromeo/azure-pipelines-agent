@@ -7,6 +7,7 @@ using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using System.Linq;
 using System.IO;
@@ -270,11 +271,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 {
                     prepend.Add(ExecutionContext.TranslatePathForStepTarget(path));
                 }
-                containerStepHost.PrependPath = string.Join(Path.PathSeparator.ToString(), prepend.Reverse<string>());
+                containerStepHost.PrependPath = string.Join(Path.PathSeparator.ToString(CultureInfo.CurrentCulture), prepend.Reverse<string>());
             }
             else
             {
-                string prepend = string.Join(Path.PathSeparator.ToString(), ExecutionContext.PrependPath.Reverse<string>());
+                string prepend = string.Join(Path.PathSeparator.ToString(CultureInfo.CurrentCulture), ExecutionContext.PrependPath.Reverse<string>());
                 string taskEnvPATH;
                 Environment.TryGetValue(Constants.PathVariable, out taskEnvPATH);
                 string originalPath = RuntimeVariables.Get(Constants.PathVariable) ?? // Prefer a job variable.

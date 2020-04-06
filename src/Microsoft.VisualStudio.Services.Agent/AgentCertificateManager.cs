@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.VisualStudio.Services.Agent.Util;
+using System.Globalization;
 using System.IO;
 using System.Runtime.Serialization;
 using Microsoft.VisualStudio.Services.Common;
@@ -111,7 +112,7 @@ namespace Microsoft.VisualStudio.Services.Agent
 
                 if (!string.IsNullOrEmpty(ClientCertificatePassword))
                 {
-                    string lookupKey = Guid.NewGuid().ToString("D").ToUpperInvariant();
+                    string lookupKey = Guid.NewGuid().ToString("D", CultureInfo.CurrentCulture).ToUpperInvariant();
                     Trace.Info($"Store client cert private key password with lookup key {lookupKey}");
 
                     var credStore = HostContext.GetService<IAgentCredentialStore>();

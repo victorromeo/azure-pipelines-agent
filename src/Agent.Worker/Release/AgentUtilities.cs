@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -22,6 +23,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release
                 {
                     string varName = pair.Key.ToUpperInvariant().Replace(".", "_").Replace(" ", "_");
                     builder.AppendFormat(
+                        CultureInfo.CurrentCulture,
                         "{0}\t\t\t\t[{1}] --> [{2}]",
                         Environment.NewLine,
                         varName,

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -93,7 +94,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 ArgUtil.File(file, $"Agent.PluginHost{Util.IOUtil.ExeExtension}");
 
                 // Agent.PluginHost's arguments
-                string arguments = $"log \"{_instanceId.ToString("D")}\"";
+                string arguments = $"log \"{_instanceId.ToString("D", CultureInfo.CurrentCulture)}\"";
 
                 var processInvoker = HostContext.CreateService<IProcessInvoker>();
 
@@ -157,7 +158,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     var taskStep = step as ITaskRunner;
                     if (taskStep != null)
                     {
-                        pluginContext.Steps[taskStep.ExecutionContext.Id.ToString("D")] = taskStep.Task.Reference;
+                        pluginContext.Steps[taskStep.ExecutionContext.Id.ToString("D", CultureInfo.CurrentCulture)] = taskStep.Task.Reference;
                     }
                 }
 
@@ -182,7 +183,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Trace.Info("Send instruction code through STDIN to stop plugin host");
 
                 // plugin host will stop the routine process and give every plugin a chance to participate into job finalization
-                _redirectedStdin.Enqueue($"##vso[logplugin.finish]{_instanceId.ToString("D")}");
+                _redirectedStdin.Enqueue($"##vso[logplugin.finish]{_instanceId.ToString("D", CultureInfo.CurrentCulture)}");
 
                 // print out outputs from plugin host and wait for plugin finish
                 Trace.Info("Waiting for plugin host exit");

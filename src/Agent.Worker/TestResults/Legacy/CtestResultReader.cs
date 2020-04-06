@@ -73,8 +73,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             //create test run data object
             TestRunData testRunData = new TestRunData(
                 name: runName,
-                startedDate: (_runStartDate == DateTime.MinValue) ? string.Empty : _runStartDate.ToString("o"),
-                completedDate: (_runFinishDate == DateTime.MinValue) ? string.Empty : _runFinishDate.ToString("o"),
+                startedDate: (_runStartDate == DateTime.MinValue) ? string.Empty : _runStartDate.ToString("o", CultureInfo.CurrentCulture),
+                completedDate: (_runFinishDate == DateTime.MinValue) ? string.Empty : _runFinishDate.ToString("o", CultureInfo.CurrentCulture),
                 state: TestRunState.InProgress.ToString(),
                 isAutomated: true,
                 buildId: runContext != null ? runContext.BuildId : 0,
@@ -152,7 +152,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                 resultCreateModel.Outcome = GetTestCaseOutcome(testCaseNode).ToString();
 
                 // If test outcome is failed, fill stacktrace and error message
-                if (resultCreateModel.Outcome.ToString().Equals(TestOutcome.Failed.ToString()))
+                if (resultCreateModel.Outcome.ToString(CultureInfo.CurrentCulture).Equals(TestOutcome.Failed.ToString()))
                 {
                     XmlNode failure;
                     // Stacktrace

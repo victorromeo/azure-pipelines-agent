@@ -3,6 +3,7 @@
 
 using Newtonsoft.Json;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -49,6 +50,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release
                 var releaseDirectorySuffix = ComputeFolderInteger(workingDirectory);
                 trackingConfig = new ReleaseTrackingConfig();
                 trackingConfig.ReleaseDirectory = string.Format(
+                    CultureInfo.CurrentCulture,
                     "{0}{1}",
                     Constants.Release.Path.ReleaseDirectoryPrefix,
                     releaseDirectorySuffix);
@@ -92,14 +94,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release
             Trace.Entering();
             if (Directory.Exists(workingDirectory))
             {
-                Regex regex = new Regex(string.Format(@"^{0}[0-9]*$", Constants.Release.Path.ReleaseDirectoryPrefix));
+                Regex regex = new Regex(string.Format(CultureInfo.CurrentCulture, @"^{0}[0-9]*$", Constants.Release.Path.ReleaseDirectoryPrefix));
                 var dirs = Directory.GetDirectories(workingDirectory);
                 var folderNames = dirs.Select(Path.GetFileName).Where(name => regex.IsMatch(name));
                 Trace.Verbose($"Number of folder with integer names: {folderNames.Count()}");
 
                 if (folderNames.Any())
                 {
-                    return folderNames.Select(x => Int32.Parse(x.Substring(1))).Max() + 1;
+                    return folderNames.Select(x => Int32.Parse(x.Substring(1), CultureInfo.CurrentCulture)).Max() + 1;
                 }
             }
 

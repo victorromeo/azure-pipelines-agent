@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Services.Agent.Util;
@@ -79,7 +80,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release
                 Comment = StringUtil.Loc("RMUpdateReleaseNameForReleaseComment", releaseName)
             };
 
-            return await _releaseHttpClient.UpdateReleaseResourceAsync(updateMetadata, projectId, int.Parse(releaseId), cancellationToken: cancellationToken);
+            return await _releaseHttpClient.UpdateReleaseResourceAsync(updateMetadata, projectId, int.Parse(releaseId, CultureInfo.CurrentCulture), cancellationToken: cancellationToken);
         }
     }
 }

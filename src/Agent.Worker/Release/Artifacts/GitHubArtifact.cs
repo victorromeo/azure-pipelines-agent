@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -103,7 +104,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release.Artifacts
                 Trace.Info($"Found github repository url {repository.Clone_url}");
                 return new GitHubArtifactDetails
                 {
-                    RelativePath = Path.DirectorySeparatorChar.ToString(),
+                    RelativePath = Path.DirectorySeparatorChar.ToString(CultureInfo.CurrentCulture),
                     ConnectionName = connectionName,
                     CloneUrl = new Uri(repository.Clone_url),
                     Branch = branch,

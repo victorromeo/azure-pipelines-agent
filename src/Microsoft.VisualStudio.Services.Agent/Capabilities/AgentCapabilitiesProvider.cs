@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,7 +30,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Capabilities
                 Add(capabilities, "Agent.OSVersion", GetOSVersionString());
                 Add(capabilities, "Cmd", Environment.GetEnvironmentVariable("comspec"));
             }
-            Add(capabilities, "InteractiveSession", (HostContext.StartupType != StartupType.Service).ToString());
+            Add(capabilities, "InteractiveSession", (HostContext.StartupType != StartupType.Service).ToString(CultureInfo.CurrentCulture));
             Add(capabilities, "Agent.Version", BuildConstants.AgentPackage.Version);
             Add(capabilities, "Agent.ComputerName", Environment.MachineName ?? string.Empty);
             Add(capabilities, "Agent.HomeDirectory", HostContext.GetDirectory(WellKnownDirectory.Root));

@@ -7,9 +7,9 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
-using System.Globalization;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Release
 {
@@ -70,7 +70,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release
             Trace.Verbose($"Find {allTrackingFiles.Count()} tracking files.");
 
             executionContext.Output(StringUtil.Loc("DirExpireLimit", expiration.TotalDays));
-            executionContext.Output(StringUtil.Loc("CurrentUTC", DateTime.UtcNow.ToString("o")));
+            executionContext.Output(StringUtil.Loc("CurrentUTC", DateTime.UtcNow.ToString("o", CultureInfo.CurrentCulture)));
 
             // scan all sourcefolder tracking file, find which folder has never been used since UTC-expiration
             // the scan and garbage discovery should be best effort.
@@ -94,7 +94,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release
                     {
                         Trace.Verbose($"{trackingFile} is a new format tracking file.");
                         ArgUtil.NotNull(tracking.LastRunOn, nameof(tracking.LastRunOn));
-                        executionContext.Output(StringUtil.Loc("ReleaseDirLastUseTIme", Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), tracking.ReleaseDirectory), tracking.LastRunOn?.ToString("u")));
+                        executionContext.Output(StringUtil.Loc("ReleaseDirLastUseTIme", Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), tracking.ReleaseDirectory), tracking.LastRunOn?.ToString("u", CultureInfo.CurrentCulture)));
                         if (DateTime.UtcNow - expiration > tracking.LastRunOn)
                         {
                             executionContext.Output(StringUtil.Loc("GCUnusedTrackingFile", trackingFile, expiration.TotalDays));

@@ -133,7 +133,6 @@ namespace Microsoft.VisualStudio.Services.Agent
             _vssTrace = GetTrace(nameof(VisualStudio) + nameof(VisualStudio.Services));  // VisualStudioService
 
             // Enable Http trace
-            bool enableHttpTrace;
             if (AgentKnobs.HttpTrace.GetValue(this).AsBoolean())
             {
                 _trace.Warning("*****************************************************************************************");
@@ -512,7 +511,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 {
                     try
                     {
-                        File.AppendAllLines(_perfFile, new[] { $"{normalizedCounter}:{DateTime.UtcNow.ToString("O")}" });
+                        File.AppendAllLines(_perfFile, new[] { $"{normalizedCounter}:{DateTime.UtcNow.ToString("O", CultureInfo.CurrentCulture)}" });
                     }
                     catch (Exception ex)
                     {
@@ -628,16 +627,16 @@ namespace Microsoft.VisualStudio.Services.Agent
             {
                 if (_vssHttpMethodEventIds.Contains(eventData.EventId))
                 {
-                    payload[0] = Enum.Parse(typeof(VssHttpMethod), ((int)payload[0]).ToString());
+                    payload[0] = Enum.Parse(typeof(VssHttpMethod), ((int)payload[0]).ToString(CultureInfo.CurrentCulture));
                 }
                 else if (_vssHttpCredentialEventIds.Contains(eventData.EventId))
                 {
-                    payload[0] = Enum.Parse(typeof(VisualStudio.Services.Common.VssCredentialsType), ((int)payload[0]).ToString());
+                    payload[0] = Enum.Parse(typeof(VisualStudio.Services.Common.VssCredentialsType), ((int)payload[0]).ToString(CultureInfo.CurrentCulture));
                 }
 
                 if (payload.Length > 0)
                 {
-                    message = String.Format(eventData.Message.Replace("%n", Environment.NewLine), payload);
+                    message = String.Format(CultureInfo.CurrentCulture, eventData.Message.Replace("%n", Environment.NewLine), payload);
                 }
 
                 switch (eventData.Level)

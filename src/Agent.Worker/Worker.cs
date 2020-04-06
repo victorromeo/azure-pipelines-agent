@@ -6,6 +6,7 @@ using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Services.WebApi;
@@ -57,7 +58,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 ArgUtil.NotNullOrEmpty(channelMessage.Body, nameof(channelMessage.Body));
                 var jobMessage = JsonUtility.FromString<Pipelines.AgentJobRequestMessage>(channelMessage.Body);
                 ArgUtil.NotNull(jobMessage, nameof(jobMessage));
-                HostContext.WritePerfCounter($"WorkerJobMessageReceived_{jobMessage.RequestId.ToString()}");
+                HostContext.WritePerfCounter($"WorkerJobMessageReceived_{jobMessage.RequestId.ToString(CultureInfo.CurrentCulture)}");
 
                 // Initialize the secret masker and set the thread culture.
                 InitializeSecretMasker(jobMessage);

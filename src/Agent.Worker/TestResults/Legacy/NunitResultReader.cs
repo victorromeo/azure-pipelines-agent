@@ -117,8 +117,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             //create test run data
             TestRunData testRunData = new TestRunData(
                 name: runName,
-                startedDate: (runStartTime == DateTime.MinValue) ? string.Empty : runStartTime.ToString("o"),
-                completedDate: (runStartTime == DateTime.MinValue) ? string.Empty : runStartTime.Add(totalRunDuration).ToString("o"),
+                startedDate: (runStartTime == DateTime.MinValue) ? string.Empty : runStartTime.ToString("o", CultureInfo.CurrentCulture),
+                completedDate: (runStartTime == DateTime.MinValue) ? string.Empty : runStartTime.Add(totalRunDuration).ToString("o", CultureInfo.CurrentCulture),
                 state: TestRunState.InProgress.ToString(),
                 isAutomated: true,
                 buildId: runContext != null ? runContext.BuildId : 0,
@@ -408,8 +408,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             }
             TestRunData testRunData = new TestRunData(
                 name: runContext != null && !string.IsNullOrWhiteSpace(runContext.RunName) ? runContext.RunName : _defaultRunName,
-                startedDate: (testRunStartedOn == DateTime.MinValue ? string.Empty : testRunStartedOn.ToString("o")),
-                completedDate: (testRunEndedOn == DateTime.MinValue ? string.Empty : testRunEndedOn.ToString("o")),
+                startedDate: (testRunStartedOn == DateTime.MinValue ? string.Empty : testRunStartedOn.ToString("o", CultureInfo.CurrentCulture)),
+                completedDate: (testRunEndedOn == DateTime.MinValue ? string.Empty : testRunEndedOn.ToString("o", CultureInfo.CurrentCulture)),
                 state: TestRunState.InProgress.ToString(),
                 isAutomated: true,
                 buildId: runContext != null ? runContext.BuildId : 0,

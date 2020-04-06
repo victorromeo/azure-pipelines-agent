@@ -74,7 +74,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             await jobServer.ConnectAsync(jobConnection);
 
             _jobServerQueue.Start(message);
-            HostContext.WritePerfCounter($"WorkerJobServerQueueStarted_{message.RequestId.ToString()}");
+            HostContext.WritePerfCounter($"WorkerJobServerQueueStarted_{message.RequestId.ToString(CultureInfo.CurrentCulture)}");
 
             IExecutionContext jobContext = null;
             CancellationTokenRegistration? agentShutdownRegistration = null;
@@ -137,7 +137,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
                 if (!PlatformUtil.RunningOnWindows)
                 {
-                    jobContext.SetVariable(Constants.Variables.Agent.AcceptTeeEula, settings.AcceptTeeEula.ToString());
+                    jobContext.SetVariable(Constants.Variables.Agent.AcceptTeeEula, settings.AcceptTeeEula.ToString(CultureInfo.CurrentCulture));
                 }
                 jobContext.SetVariable(Constants.Variables.Agent.WorkFolder, HostContext.GetDirectory(WellKnownDirectory.Work), isFilePath: true);
                 jobContext.SetVariable(Constants.Variables.System.WorkFolder, HostContext.GetDirectory(WellKnownDirectory.Work), isFilePath: true);
@@ -266,7 +266,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // trace out all steps
                 Trace.Info($"Total job steps: {jobSteps.Count}.");
                 Trace.Verbose($"Job steps: '{string.Join(", ", jobSteps.Select(x => x.DisplayName))}'");
-                HostContext.WritePerfCounter($"WorkerJobInitialized_{message?.RequestId.ToString()}");
+                HostContext.WritePerfCounter($"WorkerJobInitialized_{message?.RequestId.ToString(CultureInfo.CurrentCulture)}");
 
                 // Run all job steps
                 Trace.Info("Run all job steps.");

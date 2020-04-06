@@ -356,9 +356,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release.Artifacts
 
             if (repoResult != null)
             {
-                executionContext.Debug($"repo query result from Jenkins api {repoResult.ToString()}");
+                executionContext.Debug($"repo query result from Jenkins api {repoResult.ToString(CultureInfo.CurrentCulture)}");
 
-                var repoKindResult = ParseToken(repoResult.ToString(), "$.changeSet.kind");
+                var repoKindResult = ParseToken(repoResult.ToString(CultureInfo.CurrentCulture), "$.changeSet.kind");
                 if (repoKindResult != null && repoKindResult.Any()) {
                     string repoKind = repoKindResult.First().ToString();
                     executionContext.Debug($"Parsed repo result {repoKind}");
@@ -366,7 +366,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release.Artifacts
                     if (!string.IsNullOrEmpty(repoKind) && repoKind.Equals(GitRepoName, StringComparison.OrdinalIgnoreCase))
                     {
                         executionContext.Debug("Its a git repo, checking if it has root url");
-                        var rootUrlResult = ParseToken(repoResult.ToString(), "$.actions[?(@.remoteUrls)]");
+                        var rootUrlResult = ParseToken(repoResult.ToString(CultureInfo.CurrentCulture), "$.actions[?(@.remoteUrls)]");
                         if (rootUrlResult != null && rootUrlResult.Any())
                         {
                             var resultDictionary = JsonConvert.DeserializeObject<Dictionary<string, JToken>>(rootUrlResult.First().ToString());

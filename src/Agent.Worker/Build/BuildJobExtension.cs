@@ -5,6 +5,7 @@ using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.TeamFoundation.DistributedTask.Pipelines;
@@ -201,7 +202,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 // Update the checkout "Clean" property for all repos, if the variable was set by the server.
                 if (repoClean != null)
                 {
-                    checkoutTask.Inputs[PipelineConstants.CheckoutTaskInputs.Clean] = repoClean.Value.ToString();
+                    checkoutTask.Inputs[PipelineConstants.CheckoutTaskInputs.Clean] = repoClean.Value.ToString(CultureInfo.CurrentCulture);
                 }
 
                 Trace.Info($"Checking repository name {repositoryAlias}");
@@ -246,12 +247,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             // Set variables
             if (submoduleCheckout.HasValue)
             {
-                executionContext.SetVariable(Constants.Variables.Build.RepoGitSubmoduleCheckout, submoduleCheckout.Value.ToString());
+                executionContext.SetVariable(Constants.Variables.Build.RepoGitSubmoduleCheckout, submoduleCheckout.Value.ToString(CultureInfo.CurrentCulture));
             }
 
             if (repoClean.HasValue)
             {
-                executionContext.SetVariable(Constants.Variables.Build.RepoClean, repoClean.Value.ToString());
+                executionContext.SetVariable(Constants.Variables.Build.RepoClean, repoClean.Value.ToString(CultureInfo.CurrentCulture));
             }
         }
 

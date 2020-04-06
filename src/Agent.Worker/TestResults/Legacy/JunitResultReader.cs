@@ -148,8 +148,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             //create test run data
             var testRunData = new TestRunData(
                 name: runSummary.Name,
-                startedDate: runSummary.TimeStamp != DateTime.MinValue ? runSummary.TimeStamp.ToString("o") : null,
-                completedDate: maxCompletedTime != DateTime.MinValue ? maxCompletedTime.ToString("o") : null,
+                startedDate: runSummary.TimeStamp != DateTime.MinValue ? runSummary.TimeStamp.ToString("o", CultureInfo.CurrentCulture) : null,
+                completedDate: maxCompletedTime != DateTime.MinValue ? maxCompletedTime.ToString("o", CultureInfo.CurrentCulture) : null,
                 state: TestRunState.InProgress.ToString(),
                 isAutomated: true,
                 buildId: runContext != null ? runContext.BuildId : 0,

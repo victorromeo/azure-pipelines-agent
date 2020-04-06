@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.TeamFoundation.DistributedTask.Expressions;
@@ -262,7 +263,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             JobExtensionRunner extensionStep = step as JobExtensionRunner;
                             ArgUtil.NotNull(extensionStep, extensionStep.DisplayName);
                             Guid stepId = Guid.NewGuid();
-                            extensionStep.ExecutionContext = jobContext.CreateChild(stepId, extensionStep.DisplayName, stepId.ToString("N"));
+                            extensionStep.ExecutionContext = jobContext.CreateChild(stepId, extensionStep.DisplayName, stepId.ToString("N", CultureInfo.CurrentCulture));
                         }
                         else if (step is ITaskRunner)
                         {
@@ -295,7 +296,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             JobExtensionRunner extensionStep = step as JobExtensionRunner;
                             ArgUtil.NotNull(extensionStep, extensionStep.DisplayName);
                             Guid stepId = Guid.NewGuid();
-                            extensionStep.ExecutionContext = jobContext.CreateChild(stepId, extensionStep.DisplayName, stepId.ToString("N"));
+                            extensionStep.ExecutionContext = jobContext.CreateChild(stepId, extensionStep.DisplayName, stepId.ToString("N", CultureInfo.CurrentCulture));
                         }
                         else if (step is ITaskRunner)
                         {

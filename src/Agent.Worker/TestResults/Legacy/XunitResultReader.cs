@@ -216,7 +216,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                     if (priorityTrait != null && priorityTrait.Attributes["value"] != null)
                     {
                         var priorityValue = priorityTrait.Attributes["value"].Value;
-                        resultCreateModel.Priority = !string.IsNullOrEmpty(priorityValue) ? Convert.ToInt32(priorityValue)
+                        resultCreateModel.Priority = !string.IsNullOrEmpty(priorityValue) ? Convert.ToInt32(priorityValue, CultureInfo.CurrentCulture)
                                                         : TestManagementConstants.UnspecifiedPriority;
                     }
 
@@ -259,12 +259,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             //if assembly run time cannot be obtained even for one assembly then fallback duration to total test run
             maxCompletedTime = dateTimeParseError || assemblyRunDateTimeAttributesNotPresent || maxCompletedTime == DateTime.MinValue ? minStartTime.Add(assemblyTimeAttributeNotPresent ? TimeSpan.FromSeconds(testRunDuration) : TimeSpan.FromSeconds(assemblyRunDuration)) : maxCompletedTime;
 
-            executionContext.Output(string.Format("Obtained XUnit Test Run Start Date: {0} and Completed Date: {1}", minStartTime.ToString("o"), maxCompletedTime.ToString("o")));
+            executionContext.Output(string.Format(CultureInfo.CurrentCulture, "Obtained XUnit Test Run Start Date: {0} and Completed Date: {1}", minStartTime.ToString("o", CultureInfo.CurrentCulture), maxCompletedTime.ToString("o", CultureInfo.CurrentCulture)));
             TestRunData testRunData = new TestRunData(
                 name: runName,
                 buildId: runContext != null ? runContext.BuildId : 0,
-                startedDate: minStartTime != DateTime.MinValue ? minStartTime.ToString("o") : null,
-                completedDate: maxCompletedTime != DateTime.MinValue ? maxCompletedTime.ToString("o") : null,
+                startedDate: minStartTime != DateTime.MinValue ? minStartTime.ToString("o", CultureInfo.CurrentCulture) : null,
+                completedDate: maxCompletedTime != DateTime.MinValue ? maxCompletedTime.ToString("o", CultureInfo.CurrentCulture) : null,
                 state: TestRunState.InProgress.ToString(),
                 isAutomated: true,
                 buildFlavor: runContext != null ? runContext.Configuration : null,

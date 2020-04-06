@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Common;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -243,7 +244,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
         {
             var fileContainerHelper = new FileContainerServer(connection, projectId, containerId, containerPath);
             var size = await fileContainerHelper.CopyToContainerAsync(context, source, cancellationToken);
-            propertiesDictionary.Add(ArtifactUploadEventProperties.ArtifactSize, size.ToString());
+            propertiesDictionary.Add(ArtifactUploadEventProperties.ArtifactSize, size.ToString(CultureInfo.CurrentCulture));
 
             var fileContainerFullPath = StringUtil.Format($"#/{containerId}/{containerPath}");
             context.Output(StringUtil.Loc("UploadToFileContainer", source, fileContainerFullPath));

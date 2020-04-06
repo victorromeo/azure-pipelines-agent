@@ -6,6 +6,7 @@ using Agent.Sdk.Knob;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -313,7 +314,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 if (!string.IsNullOrEmpty(issue.Message))
                 {
                     long logLineNumber = Write(WellKnownTags.Error, issue.Message);
-                    issue.Data["logFileLineNumber"] = logLineNumber.ToString();
+                    issue.Data["logFileLineNumber"] = logLineNumber.ToString(CultureInfo.CurrentCulture);
                 }
 
                 if (_record.ErrorCount < _maxIssueCount)
@@ -330,7 +331,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 if (!string.IsNullOrEmpty(issue.Message))
                 {
                     long logLineNumber = Write(WellKnownTags.Warning, issue.Message);
-                    issue.Data["logFileLineNumber"] = logLineNumber.ToString();
+                    issue.Data["logFileLineNumber"] = logLineNumber.ToString(CultureInfo.CurrentCulture);
                 }
 
                 if (_record.WarningCount < _maxIssueCount)
@@ -545,7 +546,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 if (PlatformUtil.RunningOnWindows && runtimeOptions.GitUseSecureChannel)
                 {
-                    Variables.Set(Constants.Variables.Agent.GitUseSChannel, runtimeOptions.GitUseSecureChannel.ToString());
+                    Variables.Set(Constants.Variables.Agent.GitUseSChannel, runtimeOptions.GitUseSecureChannel.ToString(CultureInfo.CurrentCulture));
                 }
             }
 
@@ -663,7 +664,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     UriBuilder uriBuilder = new UriBuilder(Variables.System_TFCollectionUrl);
                     NameValueCollection query = HttpUtility.ParseQueryString(uriBuilder.Query);
                     DateTime endTime = DateTime.UtcNow;
-                    string queryDate = endTime.AddHours(-1).ToString("s") + "," + endTime.ToString("s");
+                    string queryDate = endTime.AddHours(-1).ToString("s", CultureInfo.CurrentCulture) + "," + endTime.ToString("s", CultureInfo.CurrentCulture);
 
                     uriBuilder.Path += (Variables.System_TFCollectionUrl.EndsWith("/") ? "" : "/") + "_usersSettings/usage";
                     query["tab"] = "pipelines";

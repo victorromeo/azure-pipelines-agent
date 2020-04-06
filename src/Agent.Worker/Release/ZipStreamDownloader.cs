@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -72,8 +73,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release
                     }
 
                     if (!string.IsNullOrWhiteSpace(relativePathWithinStream)
-                        && !relativePathWithinStream.Equals(ForwardSlash.ToString())
-                        && !relativePathWithinStream.Equals(Backslash.ToString()))
+                        && !relativePathWithinStream.Equals(ForwardSlash.ToString(CultureInfo.CurrentCulture))
+                        && !relativePathWithinStream.Equals(Backslash.ToString(CultureInfo.CurrentCulture)))
                     {
                         var normalizedRelativePath =
                             relativePathWithinStream.Replace(Backslash, ForwardSlash).TrimStart(ForwardSlash).TrimEnd(ForwardSlash)

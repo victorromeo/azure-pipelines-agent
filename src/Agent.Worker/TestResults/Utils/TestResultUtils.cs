@@ -6,6 +6,7 @@ using Microsoft.TeamFoundation.TestClient.PublishTestResults;
 using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.TeamFoundation.Core.WebApi;
+using System.Globalization;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading;
@@ -111,7 +112,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults.Utils
                 }
 
                 bool isBuild = string.Equals(hostType, "build", StringComparison.OrdinalIgnoreCase);
-                string pipeLineId = isBuild ? executionContext.Variables.Build_BuildId.Value.ToString() : executionContext.Variables.Release_ReleaseId;
+                string pipeLineId = isBuild ? executionContext.Variables.Build_BuildId.Value.ToString(CultureInfo.CurrentCulture) : executionContext.Variables.Release_ReleaseId;
                 if(string.IsNullOrEmpty(pipeLineId))
                 {
                     return string.Empty;
@@ -175,7 +176,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults.Utils
             this.TestId = testId;
             this.TestTool = testTool;
             this.TestResultAttestation = testRunSummary;
-            this.TestPassPercentage = (testRunSummary.Total > 0 && testRunSummary.Total - testRunSummary.Skipped > 0 ? ((double)testRunSummary.Passed/(testRunSummary.Total-testRunSummary.Skipped)) * 100 : 0).ToString();
+            this.TestPassPercentage = (testRunSummary.Total > 0 && testRunSummary.Total - testRunSummary.Skipped > 0 ? ((double)testRunSummary.Passed/(testRunSummary.Total-testRunSummary.Skipped)) * 100 : 0).ToString(CultureInfo.CurrentCulture);
             // Will populate this in separate PR. As it required change in logic at client side.
             this.TestDurationSeconds = 0.0;
         }

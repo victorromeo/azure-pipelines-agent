@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -312,7 +313,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release
             if (string.IsNullOrEmpty(releaseDefinition))
             {
                 string pattern = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
-                Regex regex = new Regex(string.Format("[{0}]", Regex.Escape(pattern)));
+                Regex regex = new Regex(string.Format(CultureInfo.CurrentCulture, "[{0}]", Regex.Escape(pattern)));
                 releaseDefinition = regex.Replace(releaseDefinitionName, string.Empty);
             }
 

@@ -5,6 +5,7 @@ using Microsoft.TeamFoundation.TestManagement.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -119,7 +120,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.CodeCoverage
                         // user gave a invalid report directory. Write warning and continue.
                         executionContext.Warning(StringUtil.Loc("DirectoryNotFound", newReportDirectory));
                     }
-                    newReportDirectory = GetCoverageDirectory(_buildId.ToString(), CodeCoverageConstants.ReportDirectory);
+                    newReportDirectory = GetCoverageDirectory(_buildId.ToString(CultureInfo.CurrentCulture), CodeCoverageConstants.ReportDirectory);
                     Directory.CreateDirectory(newReportDirectory);
                 }
 
@@ -131,13 +132,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.CodeCoverage
                 commandContext.Output(StringUtil.Loc("ModifyingCoberturaIndexFile"));
                 ModifyCoberturaIndexDotHTML(newReportDirectory, executionContext);
 
-                filesToPublish.Add(new Tuple<string, string>(newReportDirectory, GetCoverageDirectoryName(_buildId.ToString(), CodeCoverageConstants.ReportDirectory)));
+                filesToPublish.Add(new Tuple<string, string>(newReportDirectory, GetCoverageDirectoryName(_buildId.ToString(CultureInfo.CurrentCulture), CodeCoverageConstants.ReportDirectory)));
 
                 if (_additionalCodeCoverageFiles != null && _additionalCodeCoverageFiles.Count != 0)
                 {
-                    additionalCodeCoverageFilePath = GetCoverageDirectory(_buildId.ToString(), CodeCoverageConstants.RawFilesDirectory);
+                    additionalCodeCoverageFilePath = GetCoverageDirectory(_buildId.ToString(CultureInfo.CurrentCulture), CodeCoverageConstants.RawFilesDirectory);
                     CodeCoverageUtilities.CopyFilesFromFileListWithDirStructure(_additionalCodeCoverageFiles, ref additionalCodeCoverageFilePath);
-                    filesToPublish.Add(new Tuple<string, string>(additionalCodeCoverageFilePath, GetCoverageDirectoryName(_buildId.ToString(), CodeCoverageConstants.RawFilesDirectory)));
+                    filesToPublish.Add(new Tuple<string, string>(additionalCodeCoverageFilePath, GetCoverageDirectoryName(_buildId.ToString(CultureInfo.CurrentCulture), CodeCoverageConstants.RawFilesDirectory)));
                 }
                 commandContext.Output(StringUtil.Loc("PublishingCodeCoverageFiles"));
 

@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.Services.Agent.Util;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -136,7 +137,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Directory.CreateDirectory(destinationDirectory);
             ZipFile.ExtractToDirectory(zipFile, destinationDirectory);
             Trace.Verbose("Creating watermark file to indicate the task extracted successfully.");
-            File.WriteAllText(destinationDirectory + ".completed", DateTime.UtcNow.ToString());
+            File.WriteAllText(destinationDirectory + ".completed", DateTime.UtcNow.ToString(CultureInfo.CurrentCulture));
         }
 
         private async Task DownloadAsync(IExecutionContext executionContext, Pipelines.TaskStepDefinitionReference task)
@@ -211,7 +212,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     {
                         try
                         {
-                            zipFile = Path.Combine(tempDirectory, string.Format("{0}.zip", Guid.NewGuid()));
+                            zipFile = Path.Combine(tempDirectory, string.Format(CultureInfo.CurrentCulture, "{0}.zip", Guid.NewGuid()));
 
                             //open zip stream in async mode
                             using (FileStream fs = new FileStream(zipFile, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: _defaultFileStreamBufferSize, useAsync: true))
@@ -298,7 +299,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             ZipFile.ExtractToDirectory(zipFile, destinationDirectory);
             Trace.Verbose("Create watermark file to indicate task download succeed.");
-            File.WriteAllText(destinationDirectory + ".completed", DateTime.UtcNow.ToString());
+            File.WriteAllText(destinationDirectory + ".completed", DateTime.UtcNow.ToString(CultureInfo.CurrentCulture));
         }
 
         private string GetDirectory(Pipelines.TaskStepDefinitionReference task)

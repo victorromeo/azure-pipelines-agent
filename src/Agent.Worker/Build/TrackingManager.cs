@@ -265,7 +265,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             }
 
             executionContext.Output(StringUtil.Loc("DirExpireLimit", expiration.TotalDays));
-            executionContext.Output(StringUtil.Loc("CurrentUTC", DateTime.UtcNow.ToString("o")));
+            executionContext.Output(StringUtil.Loc("CurrentUTC", DateTime.UtcNow.ToString("o", CultureInfo.CurrentCulture)));
 
             // scan all sourcefolder tracking file, find which folder has never been used since UTC-expiration
             // the scan and garbage discovery should be best effort.
@@ -278,7 +278,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
                     // Check the last run on time against the expiration
                     ArgUtil.NotNull(config.LastRunOn, nameof(config.LastRunOn));
-                    executionContext.Output(StringUtil.Loc("BuildDirLastUseTIme", Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), config.BuildDirectory), config.LastRunOn?.ToString("u")));
+                    executionContext.Output(StringUtil.Loc("BuildDirLastUseTIme", Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), config.BuildDirectory), config.LastRunOn?.ToString("u", CultureInfo.CurrentCulture)));
                     if (DateTime.UtcNow - expiration > config.LastRunOn)
                     {
                         // The config has expired, clean it up

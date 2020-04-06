@@ -96,8 +96,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
             TestRunData testRunData = new TestRunData(
                 name: runName,
                 buildId: runContext.BuildId,
-                startedDate: runStartDate != DateTime.MinValue ? runStartDate.ToString("o") : null,
-                completedDate: runFinishDate != DateTime.MinValue ? runFinishDate.ToString("o") : null,
+                startedDate: runStartDate != DateTime.MinValue ? runStartDate.ToString("o", CultureInfo.CurrentCulture) : null,
+                completedDate: runFinishDate != DateTime.MinValue ? runFinishDate.ToString("o", CultureInfo.CurrentCulture) : null,
                 state: TestRunState.InProgress.ToString(),
                 isAutomated: true,
                 dueDate: string.Empty,
@@ -372,7 +372,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                             }
                             if (definition.Priority != null)
                             {
-                                resultCreateModel.Priority = !string.IsNullOrEmpty(definition.Priority) ? Convert.ToInt32(definition.Priority) : TestManagementConstants.UnspecifiedPriority;
+                                resultCreateModel.Priority = !string.IsNullOrEmpty(definition.Priority) ? Convert.ToInt32(definition.Priority, CultureInfo.CurrentCulture) : TestManagementConstants.UnspecifiedPriority;
                             }
                             if (definition.Owner != null)
                             {

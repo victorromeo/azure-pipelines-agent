@@ -60,7 +60,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 StringBuilder hexString = new StringBuilder();
                 for (int i = 0; i < data.Length; i++)
                 {
-                    hexString.Append(data[i].ToString("x2"));
+                    hexString.Append(data[i].ToString("x2", CultureInfo.CurrentCulture));
                 }
 
                 return hexString.ToString();

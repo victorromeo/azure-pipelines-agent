@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Globalization;
 using System.IO;
 using Microsoft.VisualStudio.Services.Agent.Util;
 
@@ -70,7 +71,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 Create();
             }
 
-            string line = $"{DateTime.UtcNow.ToString("O")} {message}";
+            string line = $"{DateTime.UtcNow.ToString("O", CultureInfo.CurrentCulture)} {message}";
             _pageWriter.WriteLine(line);
 
             _totalLines++;

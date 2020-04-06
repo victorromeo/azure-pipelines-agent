@@ -183,8 +183,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
                     // create test run
                     TestRunData testRunData = new TestRunData(
                         name: runName,
-                        startedDate: minStartDate.ToString("o"),
-                        completedDate: maxCompleteDate.ToString("o"),
+                        startedDate: minStartDate.ToString("o", CultureInfo.CurrentCulture),
+                        completedDate: maxCompleteDate.ToString("o", CultureInfo.CurrentCulture),
                         state: "InProgress",
                         isAutomated: true,
                         buildId: runContext != null ? runContext.BuildId : 0,
