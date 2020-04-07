@@ -113,6 +113,11 @@ namespace Agent.Plugins.Repository
             return true;
         }
 
+         public override bool UseSystemVssConnectionForForkedBuilds()
+        {
+            return true;
+        }
+
         public override bool GitSupportUseAuthHeader(AgentTaskPluginExecutionContext executionContext, GitCliManager gitCommandManager)
         {
             // v2.9 git exist use auth header for tfsgit repository.
@@ -197,6 +202,11 @@ namespace Agent.Plugins.Repository
             return false;
         }
 
+        public virtual bool UseSystemVssConnectionForForkedBuilds()
+        {
+            return false;
+        }
+
         public string GenerateAuthHeader(AgentTaskPluginExecutionContext executionContext, string username, string password, bool isBearer)
         {
             if (isBearer)
@@ -277,7 +287,6 @@ namespace Agent.Plugins.Repository
                 }
             }
 
-            executionContext.Debug($"total endpoints={executionContext.Endpoints.Count}");
             // retrieve credential from endpoint.
             ServiceEndpoint endpoint = null;
             if (repository.Endpoint != null)
@@ -289,11 +298,22 @@ namespace Agent.Plugins.Repository
                     (repository.Endpoint.Id == Guid.Empty && string.Equals(x.Name, repository.Endpoint.Name.ToString(), StringComparison.OrdinalIgnoreCase)));
             }
 
-            executionContext.Debug($"endpoint auth scheme={endpoint.Authorization.Scheme}");
-            executionContext.Debug($"endpoint Id={endpoint.Id}");
-            executionContext.Debug($"endpoint Name={endpoint.Name}");
-            executionContext.Debug($"Access Token={endpoint.Authorization.Parameters[EndpointAuthorizationParameters.AccessToken]}");
-
+            bool isForkedBuild = StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("System.PullRequest.IsFork")?.Value);
+            executionContext.Debug($"isForkedBuild: {isForkedBuild}");
+            // use the SystemVssConnection for Azure Repos forked builds
+            if(endpoint == null && isForkedBuild && UseSystemVssConnectionForForkedBuilds())
+            {
+                endpoint = executionContext.Endpoints.Single();
+            }                    
+            
+            // endpoint debug logs
+            if(endpoint != null)
+            {
+                executionContext.Debug($"endpoint auth scheme={endpoint.Authorization.Scheme}");
+                executionContext.Debug($"endpoint Id={endpoint.Id}");
+                executionContext.Debug($"endpoint Name={endpoint.Name}");
+            }
+            
             if (endpoint != null && endpoint.Data.TryGetValue(EndpointData.AcceptUntrustedCertificates, out string endpointAcceptUntrustedCerts))
             {
                 acceptUntrustedCerts = StringUtil.ConvertToBoolean(endpointAcceptUntrustedCerts);
@@ -405,7 +425,6 @@ namespace Agent.Plugins.Repository
                 switch (endpoint.Authorization.Scheme)
                 {
                     case EndpointAuthorizationSchemes.OAuth:
-                        executionContext.Debug($"Inside OAuth");
                         username = EndpointAuthorizationSchemes.OAuth;
                         useBearerAuthType = UseBearerAuthenticationForOAuth();
                         if (!endpoint.Authorization.Parameters.TryGetValue(EndpointAuthorizationParameters.AccessToken, out password))
@@ -414,7 +433,6 @@ namespace Agent.Plugins.Repository
                         }
                         break;
                     case EndpointAuthorizationSchemes.PersonalAccessToken:
-                        executionContext.Debug($"Inside PAT");
                         username = EndpointAuthorizationSchemes.PersonalAccessToken;
                         if (!endpoint.Authorization.Parameters.TryGetValue(EndpointAuthorizationParameters.AccessToken, out password))
                         {
@@ -422,7 +440,6 @@ namespace Agent.Plugins.Repository
                         }
                         break;
                     case EndpointAuthorizationSchemes.Token:
-                        executionContext.Debug($"Inside Token");
                         username = "x-access-token";
                         if (!endpoint.Authorization.Parameters.TryGetValue(EndpointAuthorizationParameters.AccessToken, out password))
                         {
@@ -434,7 +451,6 @@ namespace Agent.Plugins.Repository
                         }
                         break;
                     case EndpointAuthorizationSchemes.UsernamePassword:
-                        executionContext.Debug($"Inside UserNamePassword");
                         if (!endpoint.Authorization.Parameters.TryGetValue(EndpointAuthorizationParameters.Username, out username))
                         {
                             // leave the username as empty, the username might in the url, like: http://username@repository.git
@@ -454,6 +470,7 @@ namespace Agent.Plugins.Repository
 
             // prepare credentail embedded urls
             repositoryUrlWithCred = UrlUtil.GetCredentialEmbeddedUrl(repositoryUrl, username, password);
+            executionContext.Debug($"repositoryUrlWithCred: {repositoryUrlWithCred}"); 
             var agentProxy = executionContext.GetProxyConfiguration();
             if (agentProxy != null && !string.IsNullOrEmpty(agentProxy.ProxyAddress) && !agentProxy.WebProxy.IsBypassed(repositoryUrl))
             {
@@ -471,7 +488,8 @@ namespace Agent.Plugins.Repository
                     proxyUrlWithCredString = proxyUrlWithCred.OriginalString;
                 }
             }
-
+            executionContext.Debug($"proxyUrlWithCredString: {proxyUrlWithCredString}"); 
+            executionContext.Debug("Before agent cert");    
             // prepare askpass for client cert private key, if the repository's endpoint url match the TFS/VSTS url
             var systemConnection = executionContext.Endpoints.Single(x => string.Equals(x.Name, WellKnownServiceEndpointNames.SystemVssConnection, StringComparison.OrdinalIgnoreCase));
             if (agentCert != null && Uri.Compare(repositoryUrl, systemConnection.Url, UriComponents.SchemeAndServer, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) == 0)
@@ -486,6 +504,7 @@ namespace Agent.Plugins.Repository
                 {
                     useClientCert = true;
 
+                    executionContext.Debug($"agentCert.ClientCertificatePassword: {agentCert.ClientCertificatePassword}");
                     // prepare askpass for client cert password
                     if (!string.IsNullOrEmpty(agentCert.ClientCertificatePassword))
                     {
@@ -497,6 +516,7 @@ namespace Agent.Plugins.Repository
 
                         if (!PlatformUtil.RunningOnWindows)
                         {
+                            executionContext.Debug("Inside !PlatformUtil.RunningOnWindows");
                             string toolPath = WhichUtil.Which("chmod", true);
                             string argLine = $"775 {clientCertPrivateKeyAskPassFile}";
                             executionContext.Command($"chmod {argLine}");
