@@ -470,7 +470,6 @@ namespace Agent.Plugins.Repository
 
             // prepare credentail embedded urls
             repositoryUrlWithCred = UrlUtil.GetCredentialEmbeddedUrl(repositoryUrl, username, password);
-            executionContext.Debug($"repositoryUrlWithCred: {repositoryUrlWithCred}"); 
             var agentProxy = executionContext.GetProxyConfiguration();
             if (agentProxy != null && !string.IsNullOrEmpty(agentProxy.ProxyAddress) && !agentProxy.WebProxy.IsBypassed(repositoryUrl))
             {
@@ -488,8 +487,7 @@ namespace Agent.Plugins.Repository
                     proxyUrlWithCredString = proxyUrlWithCred.OriginalString;
                 }
             }
-            executionContext.Debug($"proxyUrlWithCredString: {proxyUrlWithCredString}"); 
-            executionContext.Debug("Before agent cert");    
+    
             // prepare askpass for client cert private key, if the repository's endpoint url match the TFS/VSTS url
             var systemConnection = executionContext.Endpoints.Single(x => string.Equals(x.Name, WellKnownServiceEndpointNames.SystemVssConnection, StringComparison.OrdinalIgnoreCase));
             if (agentCert != null && Uri.Compare(repositoryUrl, systemConnection.Url, UriComponents.SchemeAndServer, UriFormat.Unescaped, StringComparison.OrdinalIgnoreCase) == 0)
@@ -504,7 +502,6 @@ namespace Agent.Plugins.Repository
                 {
                     useClientCert = true;
 
-                    executionContext.Debug($"agentCert.ClientCertificatePassword: {agentCert.ClientCertificatePassword}");
                     // prepare askpass for client cert password
                     if (!string.IsNullOrEmpty(agentCert.ClientCertificatePassword))
                     {
@@ -516,7 +513,6 @@ namespace Agent.Plugins.Repository
 
                         if (!PlatformUtil.RunningOnWindows)
                         {
-                            executionContext.Debug("Inside !PlatformUtil.RunningOnWindows");
                             string toolPath = WhichUtil.Which("chmod", true);
                             string argLine = $"775 {clientCertPrivateKeyAskPassFile}";
                             executionContext.Command($"chmod {argLine}");
