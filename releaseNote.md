@@ -1,11 +1,30 @@
 ## Features
-
+ - Sign 3rd party CommandLine.dll (#2880)
+ - Add a warning message to Download Pipeline Artifact task (#2855)
 
 ## Bugs
-
+ - Fix overly stict null check (#2909)
+ - Fix issue where agent configuration errors out when trying to look up pool (#2861)
+ - fix for Build.Repository.Name in multi-checkout scenario (#2852)
+ - Fix multiline masking issue (#2844)
+ - Fixing bug, where while downloading commits for jenkins artifact we were creating releaseWorkingFolder inside the bin directory (#2838)
 
 ## Misc
-
+ - Typo fix (#2859)
+ - Partial fix of CA1062, which forces validation of arguments for publi… (#2856)
+ - Add scripts for querying pipelines that target retired images (#2851)
+ - Updated to use mingit 2.25.1 (#2843)
+ - Enable hotfixing from release branch (#2841)
+ - Add back compat comment (#2840)
+ - Get release branch when creating GitHub release (#2836)
+ - Enable agent rollbacks (#2833)
+ - More aggressively mask secrets (#2832)
+ - Marked rules as Error we are not violating, and waived two others (#2831)
+ - Updated to use new docker image (#2830)
+ - Add AGENT_TOOLSDIRECTORY to .env (#2825)
+ - Replace custom parser with the .net core library CommandLineParser (#2812)
+ - Promoted CA1063 to error (#2811)
+ - Skip masking single space character secrets (#2809)
 
 
 ## Agent Downloads
