@@ -3,6 +3,7 @@
  - Add a warning message to Download Pipeline Artifact task (#2855)
 
 ## Bugs
+ - Fix mistaken object Dispose call (#2925)
  - Fix overly stict null check (#2909)
  - Fix issue where agent configuration errors out when trying to look up pool (#2861)
  - fix for Build.Repository.Name in multi-checkout scenario (#2852)
