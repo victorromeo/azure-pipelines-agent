@@ -266,7 +266,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Fact]
         [Trait("Level", "L1")]
         [Trait("Category", "Worker")]
-        public async Task TrackingConfigs_should_be_consistent_across_runs()
+        public async Task TrackingConfigsShouldBeConsistentAcrossRuns()
         {
             try
             {
@@ -302,7 +302,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Fact]
         [Trait("Level", "L1")]
         [Trait("Category", "Worker")]
-        public async Task TrackingConfigs_should_be_consistent_across_multicheckout_runs()
+        public async Task TrackingConfigsShouldBeConsistentAcrossMulticheckoutRuns()
         {
             try
             {
@@ -345,7 +345,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
         [Fact]
         [Trait("Level", "L1")]
         [Trait("Category", "Worker")]
-        public async Task TrackingConfigs_should_be_consistent_across_runs_with_different_checkouts()
+        public async Task TrackingConfigsShouldBeConsistentAcrossRunsWithDifferentCheckouts()
         {
             try
             {
