@@ -36,6 +36,15 @@ pr:
     exclude:
     - 'docs/*'
 
+trigger:
+  batch: true
+  branches:
+    include:
+    - master
+  paths:
+    exclude:
+    - 'docs/*'
+
 extends:
   template: .azure-pipelines/pipeline.yml
   parameters:
