@@ -1,3 +1,24 @@
+## Features
+ - Adding Repos hash to the config folder structure under SourceRootMapping (#2768)
+ - Add signature verification mode and support for multiple fingerprints (#2947)
+ - Add an ARM64 agent (#2881)
+ - Move proxy vars to knobs (#2883)
+ - Move some util configurations to knobs (#2889)
+ - Convert some more vars to knobs and remove legacy code (#2898)
+ - More knobs (#2907)
+ - Mover prefergitfrompath to knob (#2908)
+ - More configurations to knobs and make preferPowerShellOnContainers true by default (#2913)
+ - A few more knobs (#2917)
+ - Add parameter for build target selection (#2919)
+ - Flaky Implementation for PTR in linux agent (#2926)
+
+## Bugs
+ - Default System.PreferGitFromPath to false (#2958)
+ - #2801 update NODE10_VERSION to version 10.19.0 to resolved vulnerability (#2879)
+
+## Misc
+ - Adding troubleshooting section to contribute.md (#2936)
+ - control log output: decorations (#2097)
 
 ## Agent Downloads
 
