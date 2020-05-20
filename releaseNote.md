@@ -1,3 +1,13 @@
+## Features
+ - Added some additional, automated secrets maskers (#2959)
+ - Retry TFVC Gets (#2972)
+
+## Bugs
+ - Fix ARM64 link in releaseNote.md (#2965)
+
+## Misc
+
+
 
 ## Agent Downloads
 
