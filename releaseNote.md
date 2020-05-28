@@ -1,5 +1,5 @@
 ## Features
- - Added some additional, automated secrets maskers (#2959)
+ - Added some additional, optional automated secrets maskers (#2959, #2987)
  - Retry TFVC Gets (#2972)
 
 ## Bugs
