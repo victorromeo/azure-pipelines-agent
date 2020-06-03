@@ -1,3 +1,14 @@
+## Features
+ - Update vswhere to 2.8.4. (#2981)
+
+## Bugs
+ - Using Execution context GetVariables instead of environment variable (#2983)
+ - Disable masking with the new regexes from CredScan (#2987)
+ - Reverse order of libcurl install (#2998)
+
+## Misc
+
+
 
 ## Agent Downloads
 
