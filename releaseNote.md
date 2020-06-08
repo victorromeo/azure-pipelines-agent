@@ -7,6 +7,7 @@
 
 ## Misc
  - Localize (#3008)
+ - Update dotnet-install.ps1 (#3003)
 
 
 ## Agent Downloads
