@@ -3,11 +3,10 @@
 
 ## Bugs
  - Using Execution context GetVariables instead of environment variable (#2983)
- - Disable masking with the new regexes from CredScan (#2987)
  - Reverse order of libcurl install (#2998)
 
 ## Misc
-
+ - Localize (#3008)
 
 
 ## Agent Downloads
