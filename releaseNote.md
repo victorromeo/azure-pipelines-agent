@@ -1,3 +1,14 @@
+## Features
+ - Upload even with 0 result (#2979)
+ - Support AutoLogon + RunOnce (#3018)
+ - Add Agent.OSVersion support of Mac OS X agents. (#3024)
+
+## Bugs
+
+
+## Misc
+
+
 
 ## Agent Downloads
 
