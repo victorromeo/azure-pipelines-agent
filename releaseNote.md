@@ -1,3 +1,13 @@
+## Features
+ - Upload even with 0 result (#2979)
+ - Support AutoLogon + RunOnce (#3018)
+
+## Bugs
+
+
+## Misc
+
+
 
 ## Agent Downloads
 
