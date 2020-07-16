@@ -5,7 +5,6 @@
  - Propagate system.debug to Pipeline Artifact logging (#3036)
 
 ## Bugs
- - Dont trim line break characters from inputs (#3025)
  - Grammer and casing. (#3030)
 
 ## Misc
