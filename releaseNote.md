@@ -1,3 +1,16 @@
+## Features
+ - Retry over workfoldmap (#3032)
+
+## Bugs
+ - Fix RunCommandAsync retry logic (#3050)
+ - Add option to not trim inputs (#3051)
+ - Correct Move behavior for Multi-Repo Checkout (#3052)
+ - added retry to tf workspaces (#3055)
+ - Allow Checkout to continue if "git lfs fetch" fails (#3060)
+
+## Misc
+
+
 
 ## Agent Downloads
 
