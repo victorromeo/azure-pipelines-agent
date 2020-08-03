@@ -330,7 +330,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                         //Act
                         //first invocation will download and unzip the task from mocked IJobServer
                         await _taskManager.DownloadAsync(_ec.Object, tasks);
-                        //second and third invocations should find the task in the cache and do nothing
+                        //second and third invocations should find the task in the cache and only unzip
                         await _taskManager.DownloadAsync(_ec.Object, tasks);
                         await _taskManager.DownloadAsync(_ec.Object, tasks);
 
@@ -358,7 +358,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Trait("Category", "Worker")]
         public void PreservesTaskZipTaskWhenInSignatureVerification()
         {
-            PreservesTaskZipTask(true, false);
+            PreservesTaskZipTask(signatureVerification: true);
         }
 
         [Fact]
@@ -366,7 +366,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Trait("Category", "Worker")]
         public void PreservesTaskZipTaskWhenAlwaysExtractTask()
         {
-            PreservesTaskZipTask(true, false);
+            PreservesTaskZipTask(alwaysExtractTask: true);
         }
 
         // TODO: Add test for Extract
@@ -375,7 +375,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Trait("Category", "Worker")]
         public void ExtractsAnAlreadyDownloadedZipToTheCorrectLocationWhenInSignatureVerification()
         {
-            ExtractsAnAlreadyDownloadedZipToTheCorrectLocation(true, false);
+            ExtractsAnAlreadyDownloadedZipToTheCorrectLocation(signatureVerification: true);
         }
 
         [Fact]
@@ -383,7 +383,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Trait("Category", "Worker")]
         public void ExtractsAnAlreadyDownloadedZipToTheCorrectLocationWhenExtractTask()
         {
-            ExtractsAnAlreadyDownloadedZipToTheCorrectLocation(true, false);
+            ExtractsAnAlreadyDownloadedZipToTheCorrectLocation(alwaysExtractTask: true);
         }
 
 
@@ -756,7 +756,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             }
         }
 
-        private async void PreservesTaskZipTask(bool signatureVerification, bool alwaysExtractTask)
+        private async void PreservesTaskZipTask(bool signatureVerification = false, bool alwaysExtractTask = false)
         {
             try
             {
@@ -841,7 +841,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             }
         }
 
-        private void ExtractsAnAlreadyDownloadedZipToTheCorrectLocation(bool signatureVerification, bool alwaysExtractTask)
+        private void ExtractsAnAlreadyDownloadedZipToTheCorrectLocation(bool signatureVerification = true, bool alwaysExtractTask = true)
         {
             try
             {
