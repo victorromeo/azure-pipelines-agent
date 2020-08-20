@@ -1,3 +1,17 @@
+## Features
+ - Support read-only default mounts (#3061)
+ - added ability to suppress the error form unshelve command during getSource (#3064)
+
+## Bugs
+ - Retry Pipeline Artifact Uploads to prevent failing builds on transient errors (#3067)
+ - Handle Workspace ID errors and update feature flag name (#3077)
+ - Fix null ref exceptions on artifact deletion jobs (#3079)
+ - Throw an actionable error message for pipeline not found instead of object null reference (#3080)
+ - Force Git to HTTP/1.1 as part of checkout (#3083)
+
+## Misc
+
+
 
 ## Agent Downloads
 
