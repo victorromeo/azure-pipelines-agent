@@ -1,6 +1,7 @@
 ## Features
  - Support read-only default mounts (#3061)
  - added ability to suppress the error form unshelve command during getSource (#3064)
+ - added retry to WorkfoldCloakAsync and WorkfoldCloakAsync (#3087)
 
 ## Bugs
  - Retry Pipeline Artifact Uploads to prevent failing builds on transient errors (#3067)
