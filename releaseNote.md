@@ -9,6 +9,7 @@
  - Fix null ref exceptions on artifact deletion jobs (#3079)
  - Throw an actionable error message for pipeline not found instead of object null reference (#3080)
  - Force Git to HTTP/1.1 as part of checkout (#3083)
+ - Set ProvisioningState when creating an agent (#3105)
 
 ## Misc
 
