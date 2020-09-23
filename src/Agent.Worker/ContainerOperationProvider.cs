@@ -336,7 +336,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     File.WriteAllText(taskKeyFile, string.Empty);
                 }
-                container.MountVolumes.Add(new MountVolume(taskKeyFile, container.TranslateToContainerPath(taskKeyFile), readOnly: true));
+                container.MountVolumes.Add(new MountVolume(taskKeyFile, container.TranslateToContainerPath(taskKeyFile)));
             }
 
             if (container.IsJobContainer)
@@ -474,7 +474,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     // Create a new user with same UID
                     if (string.IsNullOrEmpty(containerUserName))
                     {
-                        containerUserName = $"{container.CurrentUserName}_azpcontainer";
+                        string userNameSuffix = "_azpcontainer";
+                        // Linux allows for a 32-character username
+                        int keepLength = Math.Min(32 - userNameSuffix.Length, container.CurrentUserName.Length);
+                        containerUserName = $"{container.CurrentUserName.Substring(0, keepLength)}{userNameSuffix}";
                         int execUseraddExitCode = await _dockerManger.DockerExec(executionContext, container.ContainerId, string.Empty, $"useradd -m -u {container.CurrentUserId} {containerUserName}");
                         if (execUseraddExitCode != 0)
                         {
