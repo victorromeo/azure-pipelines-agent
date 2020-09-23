@@ -1,15 +1,7 @@
 ## Features
- - Support read-only default mounts (#3061)
- - added ability to suppress the error form unshelve command during getSource (#3064)
- - added retry to WorkfoldCloakAsync and WorkfoldCloakAsync (#3087)
 
 ## Bugs
- - Retry Pipeline Artifact Uploads to prevent failing builds on transient errors (#3067)
- - Handle Workspace ID errors and update feature flag name (#3077)
- - Fix null ref exceptions on artifact deletion jobs (#3079)
- - Throw an actionable error message for pipeline not found instead of object null reference (#3080)
- - Force Git to HTTP/1.1 as part of checkout (#3083)
- - Set ProvisioningState when creating an agent (#3105)
+ - Don't set taskkey to read only (#3116)
 
 ## Misc
 
