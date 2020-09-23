@@ -3,7 +3,7 @@
  - Added retries over WorkspaceNewAsync (#3108)
 
 ## Bugs
-
+ - Revert "Turn on Fetch By Commit For GitHub (#3092)" (#3115)
 
 ## Misc
 
