@@ -4,6 +4,7 @@
 
 ## Bugs
  - Revert "Turn on Fetch By Commit For GitHub (#3092)" (#3115)
+ - Fix node existance check: (#3122)
 
 ## Misc
 
