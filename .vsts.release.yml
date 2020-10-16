@@ -26,7 +26,7 @@ extends:
   parameters:
     branch:  ${{ variables.releaseBranch }}
     componentDetection: false
-    test: ${{ not(parameters.skipTests) }}
+    test: true #${{ not(parameters.skipTests) }}
     sign: true
     publishArtifacts: true
 
