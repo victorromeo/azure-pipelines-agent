@@ -9,7 +9,7 @@ steps:
 - ${{ if parameters.isWindows }}:
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
     inputs:
-      ConnectedServiceName: PipelinesAgentESRP
+      ConnectedServiceName: VSTSAgentESRP
       FolderPath: '${{ parameters.layoutRoot }}/bin'
       Pattern: AgentService.exe
       signConfigType: inlineSignParams
@@ -33,7 +33,7 @@ steps:
 
 - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
   inputs:
-    ConnectedServiceName: PipelinesAgentESRP
+    ConnectedServiceName: VSTSAgentESRP
     FolderPath: '${{ parameters.layoutRoot }}/bin'
     Pattern: |
       Agent.*.dll
@@ -82,7 +82,7 @@ steps:
 
 - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
   inputs:
-    ConnectedServiceName: PipelinesAgentESRP
+    ConnectedServiceName: VSTSAgentESRP
     FolderPath: '${{ parameters.layoutRoot }}'
     Pattern: |
       bin\powershell\**\*.ps1
@@ -132,7 +132,7 @@ steps:
 
 - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
   inputs:
-    ConnectedServiceName: PipelinesAgentESRP
+    ConnectedServiceName: VSTSAgentESRP
     FolderPath: '${{ parameters.layoutRoot }}'
     Pattern: |
       bin\Ben.Demystifier.dll
