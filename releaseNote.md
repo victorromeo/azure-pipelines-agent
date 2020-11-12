@@ -1,5 +1,4 @@
 ## Features
- - Multiple directories and path glob pattern support for pipeline caching (#2834)
  - Extract a new zip every time for Tasks (#3065)
  - Added retry for workfold unmap (#3114)
  - Turn on Fetch By Commit For GitHub (#3127)
