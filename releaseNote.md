@@ -8,8 +8,6 @@
  - Bump the vss-api-netcore package version (#3153)
 
 ## Bugs
- - Revert "Turn on Fetch By Commit For GitHub (#3092)" (#3115)
- - Fix node existence check (#3122)
  - Upgrade tee to 14.135.0 (#3154)
 
 ## Misc
