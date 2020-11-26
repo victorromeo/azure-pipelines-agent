@@ -16,6 +16,8 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
+using System.Security.Principal;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 {
@@ -65,9 +67,67 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             return settings;
         }
 
+        public bool isAgentRootDirectorySecure()
+        {
+            Trace.Info(nameof(isAgentRootDirectorySecure));
+
+            bool isSecure = false;
+            string rootDirPath = HostContext.GetDirectory(WellKnownDirectory.Root);
+            try
+            {
+                if (!String.IsNullOrEmpty(rootDirPath))
+                {
+                    DirectoryInfo dirInfo = new DirectoryInfo(rootDirPath);
+                    DirectorySecurity directorySecurityInfo = dirInfo.GetAccessControl();
+                    AuthorizationRuleCollection dirAccessRules = directorySecurityInfo.GetAccessRules(true, true, typeof(NTAccount));
+
+                    IdentityReference bulitInUsersGroup = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null).Translate(typeof(NTAccount));
+
+                    List<FileSystemAccessRule> potentiallyInsecureRules = new List<FileSystemAccessRule>();
+
+                    foreach (FileSystemAccessRule accessRule in dirAccessRules)
+                    {
+                        if (accessRule.IdentityReference == bulitInUsersGroup)
+                        {
+                            if (accessRule.FileSystemRights.HasFlag(FileSystemRights.Write) || accessRule.FileSystemRights.HasFlag(FileSystemRights.Modify))
+                            {
+                                potentiallyInsecureRules.Add(accessRule);
+                            }
+                        }
+                    }
+
+                    isSecure = (potentiallyInsecureRules.Count == 0);
+
+                    if (!isSecure)
+                    {
+                        Trace.Warning("The {0} group have the following right to the agent root folder: ", bulitInUsersGroup.ToString());
+                        foreach (FileSystemAccessRule accessRule in potentiallyInsecureRules)
+                        {
+                            Trace.Warning("- {0} ", accessRule.FileSystemRights.ToString());
+                        }
+
+                        _term.WriteError(StringUtil.Loc("agentRootFolderInsecure", bulitInUsersGroup.ToString()));
+                    }
+                }
+            }
+            catch (Exception ex) {
+                Trace.Error("Catch exception during checking access right of the agent root folder.");
+                Trace.Error(ex);
+                _term.WriteError(StringUtil.Loc("agentRootFolderCheckError"));
+            }
+
+            return isSecure;
+        }
+
         public async Task ConfigureAsync(CommandSettings command)
         {
             ArgUtil.NotNull(command, nameof(command));
+
+            if (PlatformUtil.RunningOnWindows)
+            { 
+                isAgentRootDirectorySecure();
+            }
+
             Trace.Info(nameof(ConfigureAsync));
             if (IsConfigured())
             {

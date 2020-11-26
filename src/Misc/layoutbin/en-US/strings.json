@@ -636,5 +636,7 @@
   "WorkFolderDescription": "work folder",
   "WorkspaceMappingNotMatched": "Workspace mappings are not matched for workspace {0}",
   "Y": "Y",
-  "ZipSlipFailure": "Entry is outside of the target dir: {0}"
+  "ZipSlipFailure": "Entry is outside of the target dir: {0}",
+  "agentRootFolderInsecure": "Security warning! The group {0} has access to write/modify to the agent folder. Please check out the logs for more details.",
+  "agentRootFolderCheckError": "Unable to check access right of the agent root folder, please investigated diag logs for more details."
 }
