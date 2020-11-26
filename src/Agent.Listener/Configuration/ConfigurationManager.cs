@@ -106,19 +106,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     if (potentiallyInsecureRules.Count != 0)
                     {
                         Trace.Warning("The {0} group have the following right to the agent root folder: ", bulitInUsersGroup.ToString());
+
                         foreach (FileSystemAccessRule accessRule in potentiallyInsecureRules)
                         {
-                            Trace.Warning("- {0} ", accessRule.FileSystemRights.ToString());
+                            Trace.Warning("- {0}", accessRule.FileSystemRights.ToString());
                         }
 
-                        _term.WriteError(StringUtil.Loc("agentRootFolderInsecure", bulitInUsersGroup.ToString()));
+                        _term.Write(StringUtil.Loc("agentRootFolderInsecure", bulitInUsersGroup.ToString()));
                     }
                 }
             }
             catch (Exception ex) {
-                Trace.Error("Catch exception during checking access right of the agent root folder.");
-                Trace.Error(ex);
-                _term.WriteError(StringUtil.Loc("agentRootFolderCheckError"));
+                Trace.Warning("Catch exception during checking access right of the agent root folder.");
+                Trace.Warning(ex.Message);
+                _term.Write(StringUtil.Loc("agentRootFolderCheckError"));
             }
         }
 
