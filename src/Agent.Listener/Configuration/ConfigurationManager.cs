@@ -67,24 +67,30 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             return settings;
         }
 
-        public bool isAgentRootDirectorySecure()
+        public void checkAgentRootDirectorySecure()
         {
-            Trace.Info(nameof(isAgentRootDirectorySecure));
+            Trace.Info(nameof(checkAgentRootDirectorySecure));
 
-            bool isSecure = false;
             string rootDirPath = HostContext.GetDirectory(WellKnownDirectory.Root);
+
             try
             {
                 if (!String.IsNullOrEmpty(rootDirPath))
                 {
+                    // Get info about root folder
                     DirectoryInfo dirInfo = new DirectoryInfo(rootDirPath);
+
+                    // Get directory access control list 
                     DirectorySecurity directorySecurityInfo = dirInfo.GetAccessControl();
                     AuthorizationRuleCollection dirAccessRules = directorySecurityInfo.GetAccessRules(true, true, typeof(NTAccount));
 
+
+                    // Get identity reference of the BUILTIN\Users group
                     IdentityReference bulitInUsersGroup = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null).Translate(typeof(NTAccount));
 
                     List<FileSystemAccessRule> potentiallyInsecureRules = new List<FileSystemAccessRule>();
 
+                    // Check if BUILTIN\Users group have modify/write rights for the agent root folder
                     foreach (FileSystemAccessRule accessRule in dirAccessRules)
                     {
                         if (accessRule.IdentityReference == bulitInUsersGroup)
@@ -96,9 +102,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                         }
                     }
 
-                    isSecure = (potentiallyInsecureRules.Count == 0);
-
-                    if (!isSecure)
+                    // Notify user if there are some potentially insecure access rules for the agent root folder
+                    if (potentiallyInsecureRules.Count != 0)
                     {
                         Trace.Warning("The {0} group have the following right to the agent root folder: ", bulitInUsersGroup.ToString());
                         foreach (FileSystemAccessRule accessRule in potentiallyInsecureRules)
@@ -115,8 +120,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 Trace.Error(ex);
                 _term.WriteError(StringUtil.Loc("agentRootFolderCheckError"));
             }
-
-            return isSecure;
         }
 
         public async Task ConfigureAsync(CommandSettings command)
@@ -125,7 +128,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
             if (PlatformUtil.RunningOnWindows)
             { 
-                isAgentRootDirectorySecure();
+                checkAgentRootDirectorySecure();
             }
 
             Trace.Info(nameof(ConfigureAsync));
