@@ -71,10 +71,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
         {
             Trace.Info(nameof(checkAgentRootDirectorySecure));
 
-            string rootDirPath = HostContext.GetDirectory(WellKnownDirectory.Root);
-
             try
             {
+                string rootDirPath = HostContext.GetDirectory(WellKnownDirectory.Root);
+
                 if (!String.IsNullOrEmpty(rootDirPath))
                 {
                     // Get info about root folder
@@ -115,9 +115,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                         _term.Write(StringUtil.Loc("agentRootFolderInsecure", bulitInUsersGroup.ToString()));
                     }
                 }
+                else 
+                {
+                    Trace.Warning("Can't get path to the agent root folder, check was skipped.");
+                }
             }
             catch (Exception ex) {
-                Trace.Warning("Catch exception during checking access right of the agent root folder.");
+                Trace.Warning("Can't check permissions for agent root folder:");
                 Trace.Warning(ex.Message);
                 _term.Write(StringUtil.Loc("agentRootFolderCheckError"));
             }
