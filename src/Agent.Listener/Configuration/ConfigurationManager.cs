@@ -67,7 +67,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             return settings;
         }
 
-        public void checkAgentRootDirectorySecure()
+        private void checkAgentRootDirectorySecure()
         {
             Trace.Info(nameof(checkAgentRootDirectorySecure));
 
