@@ -4,6 +4,7 @@
 using System;
 using System.Runtime.Serialization;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 {
@@ -21,7 +22,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
         /// key is returned to the caller.
         /// </summary>
         /// <returns>An <c>RSACryptoServiceProvider</c> instance representing the key for the agent</returns>
-        RSACryptoServiceProvider CreateKey();
+        Task<RSACryptoServiceProvider> CreateKey();
 
         /// <summary>
         /// Deletes the RSA key managed by the key manager.

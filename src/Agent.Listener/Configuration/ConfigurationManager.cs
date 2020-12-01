@@ -237,7 +237,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             // We want to use the native CSP of the platform for storage, so we use the RSACSP directly
             RSAParameters publicKey;
             var keyManager = HostContext.GetService<IRSAKeyManager>();
-            using (var rsa = keyManager.CreateKey())
+            using (var rsa = await keyManager.CreateKey())
             {
                 publicKey = rsa.ExportParameters(false);
             }

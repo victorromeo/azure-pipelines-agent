@@ -279,7 +279,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             // Hook up the events.
             _proc.EnableRaisingEvents = true;
             _proc.Exited += ProcessExitedHandler;
-
+ 
             // Start the process.
             _stopWatch = Stopwatch.StartNew();
             _proc.Start();
@@ -295,7 +295,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             {
                 StartReadStream(_proc.StandardError, _errorData);
             }
-
+            
             // Start the standard output notifications, if appropriate.
             if (_proc.StartInfo.RedirectStandardOutput)
             {

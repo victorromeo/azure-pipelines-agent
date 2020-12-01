@@ -4,6 +4,7 @@
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
@@ -13,7 +14,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
         private string _keyFile;
         private IHostContext _context;
 
-        public RSACryptoServiceProvider CreateKey()
+        public async Task<RSACryptoServiceProvider> CreateKey()
         {
             RSACryptoServiceProvider rsa = null;
             if (!File.Exists(_keyFile))

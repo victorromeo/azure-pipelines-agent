@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
@@ -14,7 +15,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
         private string _keyFile;
         private IHostContext _context;
 
-        public RSACryptoServiceProvider CreateKey()
+        public async Task<RSACryptoServiceProvider> CreateKey()
         {
             RSACryptoServiceProvider rsa = null;
             if (!File.Exists(_keyFile))
@@ -34,7 +35,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     var arguments = $"600 {new FileInfo(_keyFile).FullName}";
                     using (var invoker = _context.CreateService<IProcessInvoker>())
                     {
-                        var exitCode = invoker.ExecuteAsync(HostContext.GetDirectory(WellKnownDirectory.Root), chmodPath, arguments, null, default(CancellationToken)).GetAwaiter().GetResult();
+                        var exitCode = await invoker.ExecuteAsync(HostContext.GetDirectory(WellKnownDirectory.Root), chmodPath, arguments, null, default(CancellationToken));
                         if (exitCode == 0)
                         {
                             Trace.Info("Successfully set permissions for RSA key parameters file {0}", _keyFile);
