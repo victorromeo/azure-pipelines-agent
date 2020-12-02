@@ -203,17 +203,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
                     Mode = SignatureVerificationMode.None,
                     Fingerprints = new List<string>() { "BAD" }
                 };
+                settings.AlwaysExtractTask = false;
                 fakeConfigurationStore.UpdateSettings(settings);
                 var message = LoadTemplateMessage();
                 message.Steps.Clear();
                 message.Steps.Add(GetSignedTask());
 
                 // Act
-                //var results = await RunWorker(message);
+                var results = await RunWorker(message);
 
                 // Assert
-                //AssertJobCompleted();
-                //Assert.Equal(TaskResult.Succeeded, results.Result);
+                AssertJobCompleted();
+                Assert.Equal(TaskResult.Succeeded, results.Result);
             }
             finally
             {
