@@ -88,29 +88,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     // Get identity reference of the BUILTIN\Users group
                     IdentityReference bulitInUsersGroup = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null).Translate(typeof(NTAccount));
 
-                    List<FileSystemAccessRule> potentiallyInsecureRules = new List<FileSystemAccessRule>();
-
                     // Check if BUILTIN\Users group have modify/write rights for the agent root folder
-                    foreach (FileSystemAccessRule accessRule in dirAccessRules)
-                    {
-                        if (accessRule.IdentityReference == bulitInUsersGroup)
-                        {
-                            if (accessRule.FileSystemRights.HasFlag(FileSystemRights.Write) || accessRule.FileSystemRights.HasFlag(FileSystemRights.Modify))
-                            {
-                                potentiallyInsecureRules.Add(accessRule);
-                            }
-                        }
-                    }
+                    List<FileSystemAccessRule> potentiallyInsecureRules = (from rule in dirAccessRules.OfType<FileSystemAccessRule>().AsParallel()
+                                                                           where rule.IdentityReference == bulitInUsersGroup &&
+                                                                                 (rule.FileSystemRights.HasFlag(FileSystemRights.Write) || rule.FileSystemRights.HasFlag(FileSystemRights.Modify))
+                                                                           select rule).ToList<FileSystemAccessRule>();
 
                     // Notify user if there are some potentially insecure access rules for the agent root folder
                     if (potentiallyInsecureRules.Count != 0)
                     {
-                        Trace.Warning("The {0} group have the following right to the agent root folder: ", bulitInUsersGroup.ToString());
+                        Trace.Warning("The {0} group have the following permissions to the agent root folder: ", bulitInUsersGroup.ToString());
 
-                        foreach (FileSystemAccessRule accessRule in potentiallyInsecureRules)
-                        {
-                            Trace.Warning("- {0}", accessRule.FileSystemRights.ToString());
-                        }
+                        potentiallyInsecureRules.ForEach(accessRule => Trace.Warning("- {0}", accessRule.FileSystemRights.ToString()));
 
                         _term.Write(StringUtil.Loc("agentRootFolderInsecure", bulitInUsersGroup.ToString()));
                     }
