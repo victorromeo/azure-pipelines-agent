@@ -125,8 +125,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener.Configuration
             _agentServer.Setup(x => x.UpdateAgentAsync(It.IsAny<int>(), It.IsAny<TaskAgent>())).Returns(Task.FromResult(expectedAgent));
 
             rsa = new RSACryptoServiceProvider(2048);
-
-            _rsaKeyManager.Setup(x => x.CreateKey()).Returns(rsa);
+            _rsaKeyManager.Setup(x => x.CreateKey()).Returns(Task.FromResult(rsa));
         }
 
         private TestHostContext CreateTestContext([CallerMemberName] String testName = "")
