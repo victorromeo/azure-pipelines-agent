@@ -89,10 +89,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     IdentityReference bulitInUsersGroup = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null).Translate(typeof(NTAccount));
 
                     // Check if BUILTIN\Users group have modify/write rights for the agent root folder
-                    List<FileSystemAccessRule> potentiallyInsecureRules = (from rule in dirAccessRules.OfType<FileSystemAccessRule>().AsParallel()
-                                                                           where rule.IdentityReference == bulitInUsersGroup &&
-                                                                                 (rule.FileSystemRights.HasFlag(FileSystemRights.Write) || rule.FileSystemRights.HasFlag(FileSystemRights.Modify))
-                                                                           select rule).ToList<FileSystemAccessRule>();
+                    List<FileSystemAccessRule> potentiallyInsecureRules = dirAccessRules.OfType<FileSystemAccessRule>().AsParallel()
+                                                                          .Where(rule => rule.IdentityReference == bulitInUsersGroup && (rule.FileSystemRights.HasFlag(FileSystemRights.Write) || rule.FileSystemRights.HasFlag(FileSystemRights.Modify)))
+                                                                          .ToList<FileSystemAccessRule>();
 
                     // Notify user if there are some potentially insecure access rules for the agent root folder
                     if (potentiallyInsecureRules.Count != 0)
