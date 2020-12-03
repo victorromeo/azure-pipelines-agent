@@ -75,7 +75,52 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Definition definition = taskManager.Load(Task);
                 ArgUtil.NotNull(definition, nameof(definition));
 
-                VerifyTask(taskManager, definition);
+                // Verify task signatures if a fingerprint is configured for the Agent.
+                var configurationStore = HostContext.GetService<IConfigurationStore>();
+                AgentSettings settings = configurationStore.GetSettings();
+                SignatureVerificationMode verificationMode = SignatureVerificationMode.None;
+                if (settings.SignatureVerification != null)
+                {
+                    verificationMode = settings.SignatureVerification.Mode;
+                }
+
+                if (verificationMode != SignatureVerificationMode.None)
+                {
+                    ISignatureService signatureService = HostContext.CreateService<ISignatureService>();
+                    Boolean verificationSuccessful = await signatureService.VerifyAsync(definition, ExecutionContext.CancellationToken);
+
+                    if (verificationSuccessful)
+                    {
+                        ExecutionContext.Output(StringUtil.Loc("TaskSignatureVerificationSucceeeded"));
+
+                        // Only extract if it's not the checkout task.
+                        if (!String.IsNullOrEmpty(definition.ZipPath))
+                        {
+                            taskManager.Extract(ExecutionContext, Task);
+                        }
+                    }
+                    else
+                    {
+                        String message = StringUtil.Loc("TaskSignatureVerificationFailed");
+
+                        if (verificationMode == SignatureVerificationMode.Error)
+                        {
+                            throw new InvalidOperationException(message);
+                        }
+                        else
+                        {
+                            ExecutionContext.Warning(message);
+                        }
+                    }
+                }
+                else if (settings.AlwaysExtractTask)
+                {
+                    // Only extract if it's not the checkout task.
+                    if (!String.IsNullOrEmpty(definition.ZipPath))
+                    {
+                        taskManager.Extract(ExecutionContext, Task);
+                    }
+                }
 
                 // Print out task metadata
                 PrintTaskMetaData(definition);
