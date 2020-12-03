@@ -287,20 +287,25 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             // Decrease invoked process priority, in platform specifc way, relative to parent
             if (!highPriorityProcess)
             {
+                Trace.Info($"Decreasing priority of {_proc.Id}");
                 DecreaseProcessPriority(_proc);
             }
+            Trace.Info($"Decreased priority of {_proc.Id}");
 
             // Start the standard error notifications, if appropriate.
             if (_proc.StartInfo.RedirectStandardError)
             {
                 StartReadStream(_proc.StandardError, _errorData);
             }
-            
+            Trace.Info($"Started std errors stream for {_proc.Id}");
+
             // Start the standard output notifications, if appropriate.
             if (_proc.StartInfo.RedirectStandardOutput)
             {
                 StartReadStream(_proc.StandardOutput, _outputData);
             }
+
+            Trace.Info($"Started std output stream for {_proc.Id}");
 
             if (_proc.StartInfo.RedirectStandardInput)
             {
@@ -315,11 +320,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 }
             }
 
+            Trace.Info($"Started input stream for {_proc.Id}");
+
             using (var registration = cancellationToken.Register(async () => await CancelAndKillProcessTree(killProcessOnCancel)))
             {
                 Trace.Info($"Process started with process id {_proc.Id}, waiting for process exit.");
                 while (true)
                 {
+
+                    Trace.Info($"Waiting for events... Process {_proc.Id} HasExited is {_proc.HasExited}");
                     Task outputSignal = _outputProcessEvent.WaitAsync();
                     var signaled = await Task.WhenAny(outputSignal, _processExitedCompletionSource.Task);
 
