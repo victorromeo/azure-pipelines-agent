@@ -1,3 +1,17 @@
+## Features
+ - Node.js 10.x Vulnerabilities update to v10.22.1 (#3141)
+ - Establish the first Vss connection before doing the rest in parallel (#3165)
+ - [Security] Add a check of the agent's root directory access rules (#3182)
+
+## Bugs
+ - Removed AAD authentication support from MacOS (#3166)
+ - Bumped nuget version (#3174)
+ - Extract tasks on every step for AlwaysExtractTask (#3177)
+ - Fixed installdependencies.sh script for Ubuntu 20.04 (#3179)
+
+## Misc
+
+
 
 ## Agent Downloads
 
