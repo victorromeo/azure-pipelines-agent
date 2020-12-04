@@ -236,12 +236,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             _proc.StartInfo.RedirectStandardError = true;
             _proc.StartInfo.RedirectStandardOutput = true;
 
+            Trace.Info($"Increment error reader count");
             // Ensure we process STDERR even the process exit event happen before we start read STDERR stream.
             if (_proc.StartInfo.RedirectStandardError)
             {
                 Interlocked.Increment(ref _asyncStreamReaderCount);
             }
 
+            Trace.Info($"Increment output reader count");
             // Ensure we process STDOUT even the process exit event happen before we start read STDOUT stream.
             if (_proc.StartInfo.RedirectStandardOutput)
             {
@@ -253,6 +255,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             // code page:
             //      [DllImport("api-ms-win-core-console-l1-1-0.dll", SetLastError = true)]
             //      public extern static uint GetConsoleOutputCP();
+
+            Trace.Info($"EnsureRegisterEncodings");
             if (PlatformUtil.RunningOnWindows)
             {
                 StringUtil.EnsureRegisterEncodings();
@@ -264,6 +268,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 _proc.StartInfo.StandardOutputEncoding = outputEncoding;
             }
 
+            Trace.Info($"Copying env variables");
             // Copy the environment variables.
             if (environment != null && environment.Count > 0)
             {
@@ -276,12 +281,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             // Set the TF_BUILD env variable.
             _proc.StartInfo.Environment["TF_BUILD"] = "True";
 
+            Trace.Info($"Subscribing events");
             // Hook up the events.
             _proc.EnableRaisingEvents = true;
             _proc.Exited += ProcessExitedHandler;
- 
+
+            Trace.Info($"Stopwatch.StartNew");
             // Start the process.
             _stopWatch = Stopwatch.StartNew();
+
+            Trace.Info($"Starting process...");
             _proc.Start();
 
             // Decrease invoked process priority, in platform specifc way, relative to parent
