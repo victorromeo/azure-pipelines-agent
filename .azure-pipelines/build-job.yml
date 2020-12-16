@@ -165,7 +165,7 @@ jobs:
     - template: signing.yml
       parameters:
         layoutRoot: ${{ variables.layoutRoot }}
-        isWindows: ${{ eq(parameters.os, 'win') }}
+        os: ${{ parameters.os }}
 
   # Publish artifacts
   - ${{ if parameters.publishArtifact }}:
@@ -182,27 +182,27 @@ jobs:
       workingDirectory: src
       displayName: Package Release
 
-    - ${{ if and(parameters.sign, eq(parameters.os, 'osx')) }}:
-      - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
-        displayName: Sign Mac Package
-        inputs:
-          ConnectedServiceName: VSTSAgentESRP
-          FolderPath: '_package/${{ parameters.os }}-${{ parameters.arch }}'
-          ${{ if eq(parameters.packageType, 'pipelines-agent') }}:
-            Pattern: pipelines-agent-*.tar.gz
-          ${{ if ne(parameters.packageType, 'pipelines-agent') }}:
-            Pattern: vsts-agent-*.tar.gz
-          signConfigType: inlineSignParams
-          inlineOperation: |
-            [
-              {
-                "KeyCode" : "CP-401337-Apple",
-                "OperationCode" : "MacAppDeveloperSign",
-                "Parameters" : {},
-                "ToolName" : "sign",
-                "ToolVersion" : "1.0"
-              }
-            ]
+    # - ${{ if and(parameters.sign, eq(parameters.os, 'osx')) }}:
+    #   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    #     displayName: Sign Mac Package
+    #     inputs:
+    #       ConnectedServiceName: VSTSAgentESRP
+    #       FolderPath: '_package/${{ parameters.os }}-${{ parameters.arch }}'
+    #       ${{ if eq(parameters.packageType, 'pipelines-agent') }}:
+    #         Pattern: pipelines-agent-*.tar.gz
+    #       ${{ if ne(parameters.packageType, 'pipelines-agent') }}:
+    #         Pattern: vsts-agent-*.tar.gz
+    #       signConfigType: inlineSignParams
+    #       inlineOperation: |
+    #         [
+    #           {
+    #             "KeyCode" : "CP-401337-Apple",
+    #             "OperationCode" : "MacAppDeveloperSign",
+    #             "Parameters" : {},
+    #             "ToolName" : "sign",
+    #             "ToolVersion" : "1.0"
+    #           }
+    #         ]
 
     # Upload agent package zip as build artifact
     - task: PublishBuildArtifacts@1

@@ -1,12 +1,11 @@
 parameters:
 - name: layoutRoot
   type: string
-- name: isWindows
-  type: boolean
-  default: true
+- name: os
+  type: string
 
 steps:
-- ${{ if parameters.isWindows }}:
+- ${{ if eq(parameters.os, 'win') }}:
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
     inputs:
       ConnectedServiceName: VSTSAgentESRP
@@ -200,6 +199,26 @@ steps:
       }
       ]
   displayName: Sign Agent Assemblies (3rd Party Assemblies Signing)
+
+- ${{ if eq(parameters.os, 'win') }}:
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: Sign Mac Binaries
+    inputs:
+      ConnectedServiceName: VSTSAgentESRP
+      FolderPath: '${{ parameters.layoutRoot }}'
+      Pattern: |
+        AgentListener
+      signConfigType: inlineSignParams
+      inlineOperation: |
+        [
+          {
+            "KeyCode" : "CP-401337-Apple",
+            "OperationCode" : "MacAppDeveloperSign",
+            "Parameters" : {},
+            "ToolName" : "sign",
+            "ToolVersion" : "1.0"
+          }
+        ]
 
 - task: DeleteFiles@1
   inputs:
