@@ -30,7 +30,7 @@ extends:
     sign: true
     publishArtifacts: true
 
-    buildAlternatePackage: true
+    buildAlternatePackage: false
     win_x64: false
     win_x86: false
     linux_x64: false

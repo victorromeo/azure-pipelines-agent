@@ -200,7 +200,7 @@ steps:
       ]
   displayName: Sign Agent Assemblies (3rd Party Assemblies Signing)
 
-- ${{ if eq(parameters.os, 'win') }}:
+- ${{ if eq(parameters.os, 'osx') }}:
   - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
     displayName: Sign Mac Binaries
     inputs:
