@@ -1,3 +1,14 @@
+## Features
+ - Add pipelines-agent-* packages without Node 6 (#3170)
+ - Update Agent.OSVersion support fot .net 5 and later (#3186)
+ - Update logging to use the blobstore service (#3187)
+
+## Bugs
+ - Update Agent.OSVersion support of Mac OS X Big Sur agents. (#3183)
+
+## Misc
+
+
 
 ## Agent Downloads
 
