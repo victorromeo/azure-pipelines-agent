@@ -186,14 +186,19 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         containers.AddRange(context.Containers);
                         containers.AddRange(context.SidecarContainers);
 
-                        preJobSteps.Add(new JobExtensionRunner(runAsync: containerProvider.StartContainersAsync,
+                        var preJobStep = new JobExtensionRunner(runAsync: containerProvider.StartContainersAsync,
                                                                           condition: ExpressionManager.Succeeded,
                                                                           displayName: StringUtil.Loc("InitializeContainer"),
-                                                                          data: (object)containers));
-                        postJobStepsBuilder.Push(new JobExtensionRunner(runAsync: containerProvider.StopContainersAsync,
+                                                                          data: (object)containers);
+                        preJobStep.Target = Task.
+                        preJobSteps.Add(preJobStep);
+
+                        var postJobStep = new JobExtensionRunner(runAsync: containerProvider.StopContainersAsync,
                                                                         condition: ExpressionManager.Always,
                                                                         displayName: StringUtil.Loc("StopContainer"),
-                                                                        data: (object)containers));
+                                                                        data: (object)containers);
+
+                        postJobStepsBuilder.Push(postJobStep);
                     }
 
                     foreach (var task in message?.Steps.OfType<Pipelines.TaskStep>())
@@ -211,6 +216,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             taskRunner.Task = task;
                             taskRunner.Stage = JobRunStage.PreJob;
                             taskRunner.Condition = taskConditionMap[task.Id];
+                            taskRunner.Target = task.Target;
                             preJobSteps.Add(taskRunner);
                         }
 
@@ -222,6 +228,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             taskRunner.Task = task;
                             taskRunner.Stage = JobRunStage.Main;
                             taskRunner.Condition = taskConditionMap[task.Id];
+                            taskRunner.Target = task.Target;
                             jobSteps.Add(taskRunner);
                         }
 
