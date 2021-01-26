@@ -1,3 +1,14 @@
+## Features
+ - Added ability to mount 'tasks' volume readonly on Windows (#3173)
+ - Added libicu67 to installdependencies.sh (#3216)
+
+## Bugs
+ - Fix percent encoding knobs (#3204)
+ - Protect Network Call during Client Creation with Retries (#3223)
+
+## Misc
+
+
 
 ## Agent Downloads
 
