@@ -85,7 +85,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 }
             }
 
-            WorkerDispatcher newDispatch = new WorkerDispatcher(jobRequestMessage.JobId, jobRequestMessage.RequestId);
+            WorkerDispatcher newDispatch = new WorkerDispatcher(jobRequestMessage.JobId, jobRequestMessage.RequestId, Trace);
             if (runOnce)
             {
                 Trace.Info("Start dispatcher for one time used agent.");
@@ -158,9 +158,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                     finally
                     {
                         WorkerDispatcher workerDispatcher;
+                        Trace.Info("Before TryRemove - " + currentDispatch.JobId);
                         if (_jobInfos.TryRemove(currentDispatch.JobId, out workerDispatcher))
                         {
-                            Trace.Verbose($"Remove WorkerDispather from {nameof(_jobInfos)} dictionary for job {currentDispatch.JobId}.");
+                            Trace.Info($"Remove WorkerDispather from {nameof(_jobInfos)} dictionary for job {currentDispatch.JobId}.");
                             workerDispatcher.Dispose();
                         }
                     }
@@ -855,13 +856,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             public CancellationTokenSource WorkerCancellationTokenSource { get; private set; }
             public CancellationTokenSource WorkerCancelTimeoutKillTokenSource { get; private set; }
             private readonly object _lock = new object();
+            private Tracing trace;
 
-            public WorkerDispatcher(Guid jobId, long requestId)
+            public WorkerDispatcher(Guid jobId, long requestId, Tracing trace = null)
             {
                 JobId = jobId;
                 RequestId = requestId;
                 WorkerCancelTimeoutKillTokenSource = new CancellationTokenSource();
                 WorkerCancellationTokenSource = new CancellationTokenSource();
+                this.trace = trace;
             }
 
             public bool Cancel(TimeSpan timeout)
@@ -892,27 +895,71 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             public void Dispose()
             {
                 Dispose(true);
+                if (this.trace != null)
+                {
+                    trace.Info("Disposed worker dispatcher for job " + this.JobId);
+                }
+                if (trace != null)
+                {
+                    trace.Info("Suppresing Finalize");
+                }
                 GC.SuppressFinalize(this);
+                if (trace != null)
+                {
+                    trace.Info("Suppresed Finalize");
+                }
             }
 
-            private void Dispose(bool disposing)
+            private void Dispose(bool disposing, Tracing trace = null)
             {
                 if (disposing)
                 {
                     if (WorkerCancellationTokenSource != null || WorkerCancelTimeoutKillTokenSource != null)
                     {
+                        if (trace != null)
+                        {
+                            trace.Info("Dispose - before lock");
+                        }
                         lock (_lock)
                         {
+                            if (trace != null)
+                            {
+                                trace.Info("Dispose - entered lock");
+                            }
+                            if (trace != null)
+                            {
+                                trace.Info("Dispose - before WorkerCancellationTokenSource != null");
+                            }
                             if (WorkerCancellationTokenSource != null)
                             {
+                                if (trace != null)
+                                {
+                                    trace.Info("Dispose - before disposing of WorkerCancellationTokenSource");
+                                }
                                 WorkerCancellationTokenSource.Dispose();
                                 WorkerCancellationTokenSource = null;
+                                if (trace != null)
+                                {
+                                    trace.Info("Dispose - disposed WorkerCancellationTokenSource");
+                                }
                             }
 
+                            if (trace != null)
+                            {
+                                trace.Info("Dispose - before WorkerCancelTimeoutKillTokenSource != null");
+                            }
                             if (WorkerCancelTimeoutKillTokenSource != null)
                             {
+                                if (trace != null)
+                                {
+                                    trace.Info("Dispose - before WorkerCancelTimeoutKillTokenSource");
+                                }
                                 WorkerCancelTimeoutKillTokenSource.Dispose();
                                 WorkerCancelTimeoutKillTokenSource = null;
+                                if (trace != null)
+                                {
+                                    trace.Info("Dispose - disposed WorkerCancelTimeoutKillTokenSource");
+                                }
                             }
                         }
                     }
