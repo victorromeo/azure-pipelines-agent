@@ -894,11 +894,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
             public void Dispose()
             {
-                Dispose(true);
-                if (this.trace != null)
-                {
-                    trace.Info("Disposed worker dispatcher for job " + this.JobId);
-                }
                 if (trace != null)
                 {
                     trace.Info("Suppresing Finalize");
@@ -907,6 +902,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 if (trace != null)
                 {
                     trace.Info("Suppresed Finalize");
+                }
+                Dispose(true);
+                if (this.trace != null)
+                {
+                    trace.Info("Disposed worker dispatcher for job " + this.JobId);
+                }
+                if (trace != null)
+                {
+                    trace.Info("Suppresing Finalize");
                 }
             }
 
