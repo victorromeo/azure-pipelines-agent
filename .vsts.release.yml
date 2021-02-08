@@ -48,7 +48,7 @@ extends:
             - script: |
                 cd release
                 npm install
-                node createReleaseBranch.js ${{ parameters.version }} --derivedFrom=${{ parameters.derivedFrom }}
+                git diff
               env:
                 EDITOR: cat
                 PAT: $(GithubToken)
