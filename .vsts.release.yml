@@ -46,6 +46,7 @@ extends:
 
           - script: |
               cd release
+              npm -v
               npm install
               git diff
             env:
