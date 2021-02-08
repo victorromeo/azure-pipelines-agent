@@ -46,7 +46,7 @@ extends:
 
           - script: |
               cd release
-              npm -v
+              npm i -g npm@6.14.11 --force
               npm install
               git diff
             env:
