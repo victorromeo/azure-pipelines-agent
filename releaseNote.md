@@ -1,3 +1,15 @@
+## Features
+ - Skip task's post-execution step if target container stopped (#3230)
+ - Should ignore PSModulePath (#3231)
+ - Use %AZP25 instead of %25 for escaping (#3241)
+ - Add support for setvariable restrictions (#3249)
+
+## Bugs
+ - Improving the MaxSubResultLimitReached message (#3227)
+
+## Misc
+
+
 
 ## Agent Downloads
 
