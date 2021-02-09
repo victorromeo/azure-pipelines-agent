@@ -313,31 +313,39 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
             var term = HostContext.GetService<ITerminal>();
             term.WriteLine(StringUtil.Loc("RunningJob", DateTime.UtcNow, message.JobDisplayName));
-
+            Trace.Info($"Before firstJobRequestRenewed cons");
             // first job request renew succeed.
             TaskCompletionSource<int> firstJobRequestRenewed = new TaskCompletionSource<int>();
+            Trace.Info($"After firstJobRequestRenewed cons");
             var notification = HostContext.GetService<IJobNotification>();
-
+            Trace.Info($"After notification retrieval");
             // lock renew cancellation token.
             using (var lockRenewalTokenSource = new CancellationTokenSource())
             using (var workerProcessCancelTokenSource = new CancellationTokenSource())
             {
+                Trace.Info($"Inside of using stat");
                 long requestId = message.RequestId;
+                Trace.Info($"requestId = message.RequestId");
                 Guid lockToken = Guid.Empty; // lockToken has never been used, keep this here of compat
                 // Because an agent can be idle for a long time between jobs, it is possible that in that time
                 // a firewall has closed the connection. For that reason, forcibly reestablish this connection at the
                 // start of a new job
+
+                Trace.Info($"Before agent server retrieval");
                 var agentServer = HostContext.GetService<IAgentServer>();
+                Trace.Info($"After agent server retrieval");
                 await agentServer.RefreshConnectionAsync(AgentConnectionType.JobRequest, TimeSpan.FromSeconds(30));
+                Trace.Info($"After agentServer.RefreshConnectionAsync");
 
                 // start renew job request
                 Trace.Info($"Start renew job request {requestId} for job {message.JobId}.");
                 Task renewJobRequest = RenewJobRequestAsync(_poolId, requestId, lockToken, firstJobRequestRenewed, lockRenewalTokenSource.Token);
 
+                Trace.Info($"Before Task.WhenAny");
                 // wait till first renew succeed or job request is canceled
                 // not even start worker if the first renew fail
                 await Task.WhenAny(firstJobRequestRenewed.Task, renewJobRequest, Task.Delay(-1, jobRequestCancellationToken));
-
+                Trace.Info($"After Task.WhenAny");
                 if (renewJobRequest.IsCompleted)
                 {
                     // renew job request task complete means we run out of retry for the first job request renew.
