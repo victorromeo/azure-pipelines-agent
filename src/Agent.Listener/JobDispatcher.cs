@@ -513,7 +513,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                             Trace.Info($"finish job request for job {message.JobId} with result: {result}");
                             term.WriteLine(StringUtil.Loc("JobCompleted", DateTime.UtcNow, message.JobDisplayName, result));
 
-                            Trace.Info($"Stop renew job request for job {message.JobId}.");
                             // stop renew lock
                             lockRenewalTokenSource.Cancel();
                             // renew job request should never blows up.
@@ -606,7 +605,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                         term.WriteLine(StringUtil.Loc("JobCompleted", DateTime.UtcNow, message.JobDisplayName, resultOnAbandonOrCancel));
                         // complete job request with cancel result, stop renew lock, job has finished.
 
-                        Trace.Info($"Stop renew job request for job {message.JobId}.");
                         // stop renew lock
                         lockRenewalTokenSource.Cancel();
                         // renew job request should never blows up.
