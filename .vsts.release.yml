@@ -58,9 +58,12 @@ extends:
           steps:
 
           # Clean
-          - checkout: self
-            clean: true
+          - checkout: none
 
           # Upload agent packages to Azure blob storage and refresh Azure CDN
           - powershell: |
+              dir C:\Users\
+              dir C:\Users\RMAgentLocAcct\
+              dir C:\Users\RMAgentLocAcct\Documents\
+              dir C:\Users\RMAgentLocAcct\Documents\WindowsPowerShell\
               Enable-AzureRmAlias -Scope CurrentUser
