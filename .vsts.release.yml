@@ -58,10 +58,13 @@ extends:
           steps:
 
           # Clean
-          - checkout: none
+          - checkout: self
+            clean: true
 
           # Upload agent packages to Azure blob storage and refresh Azure CDN
           - powershell: |
+              $ErrorActionPreference = "Continue"
+              Enable-AzureRmAlias -Scope CurrentUser
               dir C:\Users\
               dir C:\Users\RMAgentLocAcct\
               dir C:\Users\RMAgentLocAcct\Documents\
