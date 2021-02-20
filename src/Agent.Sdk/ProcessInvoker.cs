@@ -232,7 +232,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             _proc.StartInfo.WorkingDirectory = workingDirectory;
             _proc.StartInfo.UseShellExecute = false;
             _proc.StartInfo.CreateNoWindow = !inheritConsoleHandler;
-            _proc.StartInfo.RedirectStandardInput = true;
+            _proc.StartInfo.RedirectStandardInput = redirectStandardIn != null;
             _proc.StartInfo.RedirectStandardError = true;
             _proc.StartInfo.RedirectStandardOutput = true;
 
@@ -311,7 +311,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 else
                 {
                     // Close the input stream. This is done to prevent commands from blocking the build waiting for input from the user.
-                    _proc.StandardInput.Close();
+                   _proc.StandardInput.Close();
                 }
             }
 
