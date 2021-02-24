@@ -1,3 +1,15 @@
+## Features
+ - Upload build artifacts to blobstore (#3232)
+ - Added ability to download artifacts from canceled builds. (#3254)
+
+## Bugs
+ - ResultsCommandExtension: Do not dispose the VssConnection (#3221)
+ - Fix NullReferenceException when poolName is null (#3256)
+ - Use node10 instead of node in runsvc.sh (#3267)
+
+## Misc
+
+
 
 ## Agent Downloads
 
