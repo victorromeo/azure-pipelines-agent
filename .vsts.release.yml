@@ -14,6 +14,11 @@ steps:
 - powershell: |
     Write-Host "Preloading Azure modules." # This is for better performance, to avoid module-autoloading.
     Import-Module AzureRM, AzureRM.profile, AzureRM.Storage, Azure.Storage, AzureRM.Cdn -ErrorAction Ignore -PassThru
+    # work around expectations of Enable-AzureRmAlias
+    if (!(Test-Path "$HOME\Documents\WindowsPowerShell\profile.ps1"))
+    {
+      New-Item -Path "$HOME\Documents\WindowsPowerShell\profile.ps1" -ItemType File -Force
+    }
     Enable-AzureRmAlias -Scope CurrentUser
     $uploadFiles = New-Object System.Collections.ArrayList
     $certificateThumbprint = (Get-ItemProperty -Path "$(ServicePrincipalReg)").ServicePrincipalCertThumbprint
