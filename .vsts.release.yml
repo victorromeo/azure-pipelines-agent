@@ -3,6 +3,9 @@ trigger: none
 pool:
   name: AzDevProdRMAgents
 
+variables:
+  NugetSecurityAnalysisWarningLevel: none
+
 steps:
 
 - checkout: self
