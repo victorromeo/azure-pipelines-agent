@@ -22,7 +22,8 @@ steps:
     Write-Host "##vso[task.setsecret]$clientId"
     Write-Host "logging in"
     Login-AzureRmAccount -ServicePrincipal -CertificateThumbprint $certificateThumbprint -ApplicationId $clientId -TenantId $(TenantId)
-    Write-Host "selecting subscription $(SubscriptionId)"
+    $sub = "$(SubscriptionId)".Insert(10,' ')
+    Write-Host "selecting subscription $sub"
     Select-AzureRmSubscription -SubscriptionId $(SubscriptionId)
     Write-Host "getting storage account"
     $storage = Get-AzureRmStorageAccount -ResourceGroupName vstsagentpackage -AccountName vstsagentpackage
