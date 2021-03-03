@@ -17,7 +17,8 @@ steps:
     # work around expectations of Enable-AzureRmAlias
     if (!(Test-Path "$HOME\Documents\WindowsPowerShell\profile.ps1"))
     {
-      New-Item -Path "$HOME\Documents\WindowsPowerShell\profile.ps1" -ItemType File -Force
+      Write-Host "No profile!"
+      New-Item -Path "$HOME\Documents\WindowsPowerShell\profile.ps1" -ItemType File -Force | Out-Null
     }
     Enable-AzureRmAlias -Scope CurrentUser
     $uploadFiles = New-Object System.Collections.ArrayList
