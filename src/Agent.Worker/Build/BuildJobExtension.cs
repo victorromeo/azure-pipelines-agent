@@ -167,6 +167,23 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
             UpdateCheckoutTasksAndVariables(executionContext, steps, pipelineWorkspaceDirectory);
 
+            System.Diagnostics.Debugger.Launch();
+            // get path for self repo from tracking config
+            string selfRepoPath = null;
+            if (RepositoryUtil.HasMultipleCheckouts(executionContext.JobSettings))
+            {
+                selfRepoPath = trackingConfig.RepositoryTrackingInfo.Where(repo => RepositoryUtil.IsPrimaryRepositoryName(repo.Identifier)).Select(r => r.SourcesDirectory).FirstOrDefault();
+            }
+            else
+            {
+                selfRepoPath = trackingConfig?.RepositoryTrackingInfo?.First()?.SourcesDirectory;
+            }
+
+            if (selfRepoPath == null)
+            {
+                selfRepoPath = trackingConfig.SourcesDirectory;
+            }
+
             // Set the directory variables.
             executionContext.Output(StringUtil.Loc("SetBuildVars"));
             executionContext.SetVariable(Constants.Variables.Agent.BuildDirectory, pipelineWorkspaceDirectory, isFilePath: true);
@@ -177,7 +194,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             executionContext.SetVariable(Constants.Variables.Build.SourcesDirectory, Path.Combine(_workDirectory, trackingConfig.SourcesDirectory), isFilePath: true);
             executionContext.SetVariable(Constants.Variables.Build.StagingDirectory, Path.Combine(_workDirectory, trackingConfig.ArtifactsDirectory), isFilePath: true);
             executionContext.SetVariable(Constants.Variables.Build.ArtifactStagingDirectory, Path.Combine(_workDirectory, trackingConfig.ArtifactsDirectory), isFilePath: true);
-            executionContext.SetVariable(Constants.Variables.Build.RepoLocalPath, Path.Combine(_workDirectory, trackingConfig.SourcesDirectory), isFilePath: true);
+            executionContext.SetVariable(Constants.Variables.Build.RepoLocalPath, Path.Combine(_workDirectory, selfRepoPath), isFilePath: true);
             executionContext.SetVariable(Constants.Variables.Pipeline.Workspace, pipelineWorkspaceDirectory, isFilePath: true);
         }
 
