@@ -167,16 +167,23 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
             UpdateCheckoutTasksAndVariables(executionContext, steps, pipelineWorkspaceDirectory);
 
-            System.Diagnostics.Debugger.Launch();
-            // get path for self repo from tracking config
+            //System.Diagnostics.Debugger.Launch();
             string selfRepoPath = null;
-            if (RepositoryUtil.HasMultipleCheckouts(executionContext.JobSettings))
+            var checkoutTasks = steps.Where(x => x.IsCheckoutTask()).Select(x => x as TaskStep).ToList();
+            var hasOnlyOneCheckoutTask = checkoutTasks.Count == 1;
+            if (!hasOnlyOneCheckoutTask)
             {
-                selfRepoPath = trackingConfig.RepositoryTrackingInfo.Where(repo => RepositoryUtil.IsPrimaryRepositoryName(repo.Identifier)).Select(r => r.SourcesDirectory).FirstOrDefault();
-            }
-            else
-            {
-                selfRepoPath = trackingConfig?.RepositoryTrackingInfo?.First()?.SourcesDirectory;
+                // get checkout task fo self repo 
+                var selfCheckoutTask = steps.Where(x => x.IsCheckoutTask())
+                    .Select(x => x as TaskStep)
+                    .Where(task => task.Inputs.TryGetValue(PipelineConstants.CheckoutTaskInputs.Repository, out string repositoryAlias)
+                                    && RepositoryUtil.IsPrimaryRepositoryName(repositoryAlias)).First();
+                if (selfCheckoutTask.Inputs.TryGetValue(PipelineConstants.CheckoutTaskInputs.Path, out _))
+                {
+                    {
+                        selfRepoPath = trackingConfig.RepositoryTrackingInfo.Where(repo => RepositoryUtil.IsPrimaryRepositoryName(repo.Identifier)).Select(props => props.SourcesDirectory).FirstOrDefault(); 
+                    }
+                }
             }
 
             if (selfRepoPath == null)

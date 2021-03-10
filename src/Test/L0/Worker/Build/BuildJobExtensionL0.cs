@@ -1,109 +1,199 @@
-public sealed class ReleaseJobExtensionL0
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.CompilerServices;
+using Microsoft.TeamFoundation.Build.WebApi;
+using Microsoft.TeamFoundation.DistributedTask.WebApi;
+using Microsoft.VisualStudio.Services.Agent.Worker;
+using Microsoft.VisualStudio.Services.Agent.Worker.Build;
+using Microsoft.VisualStudio.Services.Agent.Worker.Release;
+using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using Moq;
+using Xunit;
+
+namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
 {
-    private Mock<IExecutionContext> _ec;
-    private Mock<IExtensionManager> _extensionManager;
-    private Mock<ISourceProvider> _sourceProvider;
-    private Mock<IBuildDirectoryManager> _buildDirectoryManager;
-    private Variables _variables;
-    private string stubWorkFolder;
-    private BuildJobExtension buildJobExtension;
-    private List<Pipeline.JobStep> steps;
-
-    private const int id = 10;
-    private const int buildId = 100;
-    private const string buildDefinitionName = "stubRd";
-    private readonly Guid projectId = new Guid("C8077BCC-25BE-404D-98B9-E9B5A1BA42B5");
-    private readonly BuildTrackingConfig map = new BuildTrackingConfig
+    public sealed class BuildJobExtensionL0
     {
-    };
+        private Mock<IExecutionContext> _ec;
+        private Mock<IExtensionManager> _extensionManager;
+        private Mock<ISourceProvider> _sourceProvider;
+        private Mock<IBuildDirectoryManager> _buildDirectoryManager;
+        private Variables _variables;
+        private string stubWorkFolder;
+        private BuildJobExtension buildJobExtension;
+        private List<Pipelines.JobStep> steps;
+        private List<Pipelines.RepositoryResource> repositories { get; set; }
 
-    [Fact]
-    [Trait("Level", "L0")]
-    [Trait("Category", "Worker")]
-    public void GetRootedPathShouldReturnNullIfPathIsNull()
-    {
-        using (TestHostContext tc = Setup(createWorkDirectory: false))
+        private const string CollectionId = "31ffacb8-b468-4e60-b2f9-c50ce437da92";
+        private const string DefinitionId = "1234";
+        private Pipelines.WorkspaceOptions _workspaceOptions;
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
+        public void CheckSingleRepoLocalPathValue()
         {
-            buildJobExtension.InitializeJobExtension(_ec, steps, workspace);
-
-            Assert.Equal(null, result);
-        }
-    }
-
-    private TestHostContext Setup([CallerMemberName] string name = "", bool createWorkDirectory = true, bool useReleaseDefinitionId = true, bool setupArtifactsDirectory = false)
-    {
-        TestHostContext hc = new TestHostContext(this, name);
-        this.stubWorkFolder = hc.GetDirectory(WellKnownDirectory.Work);
-        if (createWorkDirectory)
-        {
-            Directory.CreateDirectory(this.stubWorkFolder);
-        }
-
-        List<Pipelines.JobStep> steps = new List<Pipelines.JobStep>();
-        steps.Add(new Pipelines.TaskStep()
-        ({
-            var step = new TaskStep
+            using (TestHostContext tc = Setup(createWorkDirectory: false, checkOutConfig: CheckoutConfigType.SingleCheckoutDefaultPath))
             {
-                Reference = new TaskStepDefinitionReference
+                buildJobExtension.InitializeJobExtension(_ec.Object, steps, _workspaceOptions);
+                var value = _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath);
+                Assert.NotNull(value);
+                Assert.Equal(Path.Combine(stubWorkFolder, "1\\s"), _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
+        public void CheckSingleRepoWithCustomPathsLocalPathValue()
+        {
+            using (TestHostContext tc = Setup(createWorkDirectory: false, checkOutConfig: CheckoutConfigType.SingleCheckoutCustomPath))
+            {
+                buildJobExtension.InitializeJobExtension(_ec.Object, steps, _workspaceOptions);
+                var value = _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath);
+                Assert.NotNull(value);
+                Assert.Equal(Path.Combine(stubWorkFolder, "1\\s"), _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
+        public void CheckMultiRepoLocalPathValue()
+        {
+            using (TestHostContext tc = Setup(createWorkDirectory: false, checkOutConfig: CheckoutConfigType.MultiCheckoutDefaultPath))
+            {
+                buildJobExtension.InitializeJobExtension(_ec.Object, steps, _workspaceOptions);
+                var value = _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath);
+                Assert.NotNull(value);
+                Assert.Equal(Path.Combine(stubWorkFolder, "1\\s"), _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
+        public void CheckMultiRepoWithCustomPaths()
+        {
+            using (TestHostContext tc = Setup(createWorkDirectory: false, checkOutConfig: CheckoutConfigType.MultiCheckoutCustomPath))
+            {
+                buildJobExtension.InitializeJobExtension(_ec.Object, steps, _workspaceOptions);
+                var value = _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath);
+                Assert.NotNull(value);
+                Assert.Equal(Path.Combine(stubWorkFolder, "1\\s\\App"), _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath));
+            }
+        }
+
+        private TestHostContext Setup([CallerMemberName] string name = "", bool createWorkDirectory = true, CheckoutConfigType checkOutConfig = CheckoutConfigType.SingleCheckoutDefaultPath)
+        {
+            TestHostContext hc = new TestHostContext(this, name);
+            this.stubWorkFolder = hc.GetDirectory(WellKnownDirectory.Work);
+            if (createWorkDirectory)
+            {
+                Directory.CreateDirectory(this.stubWorkFolder);
+            }
+
+            _ec = new Mock<IExecutionContext>();
+
+            _extensionManager = new Mock<IExtensionManager>();
+            _sourceProvider = new Mock<ISourceProvider>();
+            _buildDirectoryManager = new Mock<IBuildDirectoryManager>();
+            _workspaceOptions = new Pipelines.WorkspaceOptions();
+            var _configurationStore = new Mock<IConfigurationStore>();
+            _configurationStore.Setup(store => store.GetSettings()).Returns(new AgentSettings { WorkFolder = this.stubWorkFolder });
+            steps = new List<Pipelines.JobStep>();
+            var selfCheckoutTask = new Pipelines.TaskStep()
+            {
+                Reference = new Pipelines.TaskStepDefinitionReference()
                 {
                     Id = Guid.Parse("6d15af64-176c-496d-b583-fd2ae21d4df4"),
                     Name = "Checkout",
                     Version = "1.0.0"
-                },
-                Name = "Checkout",
-                DisplayName = "Checkout",
-                Id = Guid.NewGuid()
+                }
             };
-            step.Inputs.Add("repository", repoAlias);
-            });
-            tasks.Add(new Pipelines.TaskStep()
-            ({
-            var step = new TaskStep
+            selfCheckoutTask.Inputs.Add("repository", "self");
+            if (checkOutConfig == CheckoutConfigType.SingleCheckoutCustomPath
+                || checkOutConfig == CheckoutConfigType.MultiCheckoutCustomPath)
             {
-                Reference = new TaskStepDefinitionReference
+                selfCheckoutTask.Inputs.Add("path", "s/App");
+            }
+            steps.Add(selfCheckoutTask);
+
+            if (checkOutConfig == CheckoutConfigType.MultiCheckoutCustomPath
+                || checkOutConfig == CheckoutConfigType.MultiCheckoutDefaultPath)
+            {
+                var anotherCheckoutTask = new Pipelines.TaskStep()
                 {
-                    Id = Guid.Parse("6d15af64-176c-496d-b583-fd2ae21d4df4"),
-                    Name = "Checkout",
-                    Version = "1.0.0"
-                },
-                Name = "Checkout",
-                DisplayName = "Checkout",
-                Id = Guid.NewGuid()
+                    Reference = new Pipelines.TaskStepDefinitionReference()
+                    {
+                        Id = Guid.Parse("6d15af64-176c-496d-b583-fd2ae21d4df4"),
+                        Name = "Checkout",
+                        Version = "1.0.0"
+                    }
+                };
+                anotherCheckoutTask.Inputs.Add("repository", "BuildRepo");
+                anotherCheckoutTask.Inputs.Add("path", "s/BuildRepo");
+                steps.Add(anotherCheckoutTask);
+            }
+
+            repositories = new List<Pipelines.RepositoryResource>();
+            repositories.Add(GetRepository(hc, "self", "App"));
+            repositories.Add(GetRepository(hc, "repo2", "BuildRepo"));
+            _ec.Setup(x => x.Repositories).Returns(repositories);
+
+            List<string> warnings;
+            var buildVariables = GetBuildVariables();
+            _variables = new Variables(hc, buildVariables, out warnings);
+            hc.SetSingleton(_buildDirectoryManager.Object);
+            hc.SetSingleton(_extensionManager.Object);
+            hc.SetSingleton(_configurationStore.Object);
+            _ec.Setup(x => x.Variables).Returns(_variables);
+            _ec.Setup(x => x.SetVariable(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>())).Callback((string varName, string varValue, bool isSecret, bool isOutput, bool isFilePath, bool isReadOnly) => { _variables.Set(varName, varValue, false); });
+            _extensionManager.Setup(x => x.GetExtensions<ISourceProvider>())
+                .Returns(new List<ISourceProvider> { _sourceProvider.Object });
+            _sourceProvider.Setup(x => x.RepositoryType).Returns(Pipelines.RepositoryTypes.ExternalGit);
+            _buildDirectoryManager.Setup(x => x.PrepareDirectory(_ec.Object, repositories, _workspaceOptions)).Returns(new TrackingConfig(_ec.Object, repositories, 1));
+
+            buildJobExtension = new BuildJobExtension();
+            buildJobExtension.Initialize(hc);
+            return hc;
+        }
+
+        private Dictionary<string, VariableValue> GetBuildVariables()
+        {
+            var buildVariables = new Dictionary<string, VariableValue>();
+            buildVariables.Add(Constants.Variables.Build.SyncSources, Boolean.TrueString);
+            buildVariables.Add(Constants.Variables.System.CollectionId, CollectionId);
+            buildVariables.Add(Constants.Variables.System.DefinitionId, DefinitionId);
+
+            return buildVariables;
+        }
+
+        private Pipelines.RepositoryResource GetRepository(TestHostContext hostContext, String alias, String relativePath)
+        {
+            var workFolder = hostContext.GetDirectory(WellKnownDirectory.Work);
+            var repo = new Pipelines.RepositoryResource()
+            {
+                Alias = alias,
+                Type = Pipelines.RepositoryTypes.ExternalGit,
+                Id = alias,
+                Url = new Uri($"http://contoso.visualstudio.com/{relativePath}"),
             };
-            step.Inputs.Add("repository", repoAlias);
-        });
+            repo.Properties.Set<string>(Pipelines.RepositoryPropertyNames.Path, Path.Combine(workFolder, "1", relativePath));
 
-        _ec = new Mock<IExecutionContext>();
+            return repo;
+        }
 
-        _extensionManager = new Mock<IExtensionManager>();
-        _sourceProvider = new Mock<ISourceProvider>();
-        _buildDirectoryManager = new Mock<IBuildDirectoryManager>();
-        var _configurationStore = new Mock<IConfigurationStore>();
-        _configurationStore.Setup(store => store.GetSettings()).Returns(new AgentSettings { WorkFolder = this.stubWorkFolder });
-
-        //List<string> warnings;
-        //var releaseVariables = useReleaseDefinitionId
-        //    ? GetReleaseVariables(id.ToString(), bool.TrueString)
-        //    : GetReleaseVariables(null, bool.TrueString);
-
-        //if (setupArtifactsDirectory)
-        //{
-        //    releaseVariables.Add(Constants.Variables.Release.ArtifactsDirectory, this.stubWorkFolder);
-        //}
-
-        //_variables = new Variables(hc, releaseVariables, out warnings);
-
-        hc.SetSingleton(_buildDirectoryManager.Object);
-        hc.SetSingleton(_extensionManager.Object);
-        hc.SetSingleton(_configurationStore.Object);
-        _ec.Setup(x => x.Variables).Returns(_variables);
-        _ec.Setup(x => x.SetVariable(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>())).Callback((string varName, string varValue, bool isSecret, bool isOutput, bool isFilePath, bool isReadOnly) => { _variables.Set(varName, varValue, false); });
-        _extensionManager.Setup(x => x.GetExtensions<ISourceProvider>())
-            .Returns(new List<ISourceProvider> { _sourceProvider.Object });
-        _sourceProvider.Setup(x => x.RepositoryType).Returns(RepositoryTypes.TfsGit);
-
-        buildJobExtension = new BuildJobExtension();
-        buildJobExtension.Initialize(hc);
-        return hc;
+        private enum CheckoutConfigType
+        {
+            MultiCheckoutDefaultPath = 0,
+            MultiCheckoutCustomPath = 1,
+            SingleCheckoutDefaultPath = 2,
+            SingleCheckoutCustomPath = 3,
+        }
     }
 }

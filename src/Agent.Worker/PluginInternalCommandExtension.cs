@@ -28,7 +28,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public List<string> Aliases => null;
         public void Execute(IExecutionContext context, Command command)
         {
-            // System.Diagnostics.Debugger.Launch();
             ArgUtil.NotNull(context, nameof(context));
             ArgUtil.NotNull(command, nameof(command));
             var eventProperties = command.Properties;
@@ -51,8 +50,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 throw new ArgumentNullException(StringUtil.Loc("MissingRepositoryPath"));
             }
 
-            var repoLocalPath = context?.Variables.Get(Constants.Variables.Build.RepoLocalPath);
             var currentPath = repository.Properties.Get<string>(RepositoryPropertyNames.Path);
+            System.Diagnostics.Debugger.Launch();
             if (!string.Equals(data.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), currentPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), IOUtil.FilePathStringComparison))
             {
                 string repositoryPath = data.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
