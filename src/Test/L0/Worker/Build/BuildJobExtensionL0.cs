@@ -31,6 +31,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
         private const string CollectionId = "31ffacb8-b468-4e60-b2f9-c50ce437da92";
         private const string DefinitionId = "1234";
         private Pipelines.WorkspaceOptions _workspaceOptions;
+        private char pathSeparator = Path.DirectorySeparatorChar;
 
         [Fact]
         [Trait("Level", "L0")]
@@ -42,7 +43,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 buildJobExtension.InitializeJobExtension(_ec.Object, steps, _workspaceOptions);
                 var value = _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath);
                 Assert.NotNull(value);
-                Assert.Equal(Path.Combine(stubWorkFolder, "1\\s"), _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath));
+                Assert.Equal(Path.Combine(stubWorkFolder, $"1{pathSeparator}s"), _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath));
             }
         }
 
@@ -56,7 +57,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 buildJobExtension.InitializeJobExtension(_ec.Object, steps, _workspaceOptions);
                 var value = _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath);
                 Assert.NotNull(value);
-                Assert.Equal(Path.Combine(stubWorkFolder, "1\\s"), _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath));
+                Assert.Equal(Path.Combine(stubWorkFolder, $"1{pathSeparator}s"), _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath));
             }
         }
 
@@ -70,7 +71,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 buildJobExtension.InitializeJobExtension(_ec.Object, steps, _workspaceOptions);
                 var value = _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath);
                 Assert.NotNull(value);
-                Assert.Equal(Path.Combine(stubWorkFolder, "1\\s"), _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath));
+                Assert.Equal(Path.Combine(stubWorkFolder, $"1{pathSeparator}s"), _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath));
             }
         }
 
@@ -84,7 +85,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 buildJobExtension.InitializeJobExtension(_ec.Object, steps, _workspaceOptions);
                 var value = _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath);
                 Assert.NotNull(value);
-                Assert.Equal(Path.Combine(stubWorkFolder, "1\\s\\App"), _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath));
+                Assert.Equal(Path.Combine(stubWorkFolder, $"1{pathSeparator}s{pathSeparator}App"), _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath));
             }
         }
 
