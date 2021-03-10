@@ -30,6 +30,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             ArgUtil.NotNull(context, nameof(context));
             ArgUtil.NotNull(command, nameof(command));
+
             var eventProperties = command.Properties;
             var data = command.Data;
 
@@ -51,7 +52,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
             var currentPath = repository.Properties.Get<string>(RepositoryPropertyNames.Path);
-            System.Diagnostics.Debugger.Launch();
+            //  System.Diagnostics.Debugger.Launch();
             if (!string.Equals(data.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), currentPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), IOUtil.FilePathStringComparison))
             {
                 string repositoryPath = data.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
