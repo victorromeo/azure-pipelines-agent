@@ -75,7 +75,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         string repoRelativePath = directoryManager.GetRelativeRepositoryPath(buildDirectory, repositoryPath);
                         
                         string sourcesDirectory = context.Variables.Get(Constants.Variables.Build.SourcesDirectory);
-                        if (!string.Equals(Path.Combine(_workDirectory, repoRelativePath), Path.Combine(sourcesDirectory, repository.Name), IOUtil.FilePathStringComparison))
+                        string repoLocalPath = context.Variables.Get(Constants.Variables.Build.RepoLocalPath);
+                        if (repoLocalPath == null || !string.Equals(Path.Combine(_workDirectory, repoRelativePath), Path.Combine(sourcesDirectory, repository.Name), IOUtil.FilePathStringComparison))
                         {
                             context?.SetVariable(Constants.Variables.Build.RepoLocalPath, Path.Combine(_workDirectory, repoRelativePath), isFilePath: true);
                         }
