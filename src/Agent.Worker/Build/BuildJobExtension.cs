@@ -168,6 +168,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             UpdateCheckoutTasksAndVariables(executionContext, steps, pipelineWorkspaceDirectory);
 
             string selfRepoPath = null;
+            // For saving backward compatibility with the behaviour of the Build.RepoLocalPath that was before this PR https://github.com/microsoft/azure-pipelines-agent/pull/3237
+            // We need to change the how we set default value of this variable
+            // We need to allow setting of the paths from RepositoryTrackingInfo for checkout taks where was set path input by the user
+            // This is the only case where the value of Build.RepoLocalPath variable is not pointing to the root of sources directory /s.
+            // New logic is not affecting single checkout jobs and jobs with multiple checkouts and defult paths for Self repository
             if (RepositoryUtil.HasMultipleCheckouts(executionContext.JobSettings))
             {
                 // get checkout task fo self repo 
@@ -175,6 +180,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                     .Select(x => x as TaskStep)
                     .Where(task => task.Inputs.TryGetValue(PipelineConstants.CheckoutTaskInputs.Repository, out string repositoryAlias)
                                     && RepositoryUtil.IsPrimaryRepositoryName(repositoryAlias)).First();
+                // Check if task has path input, if so set as a value of selfRepoPath SourcesDirectory from RepositoryTrackingInfo
                 if (selfCheckoutTask.Inputs.TryGetValue(PipelineConstants.CheckoutTaskInputs.Path, out _))
                 {
                     {
@@ -182,6 +188,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                     }
                 }
             }
+            // For single checkout jobs and multicheckout jobs with default paths set selfRepoPath to the defult sources directory
             if (selfRepoPath == null)
             {
                 selfRepoPath = trackingConfig.SourcesDirectory;
