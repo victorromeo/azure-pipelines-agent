@@ -23,6 +23,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
         private Mock<IExtensionManager> _extensionManager;
         private Mock<ISourceProvider> _sourceProvider;
         private Mock<IBuildDirectoryManager> _buildDirectoryManager;
+        private Mock<IConfigurationStore> _configurationStore;
         private Variables _variables;
         private string stubWorkFolder;
         private BuildJobExtension buildJobExtension;
@@ -93,6 +94,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
 
         private TestHostContext Setup([CallerMemberName] string name = "", bool createWorkDirectory = true, CheckoutConfigType checkOutConfig = CheckoutConfigType.SingleCheckoutDefaultPath)
         {
+            bool isMulticheckoutScenario = checkOutConfig == CheckoutConfigType.MultiCheckoutCustomPath || checkOutConfig == CheckoutConfigType.MultiCheckoutDefaultPath;
+            bool isCustomPathScenario = checkOutConfig == CheckoutConfigType.SingleCheckoutCustomPath || checkOutConfig == CheckoutConfigType.MultiCheckoutCustomPath;
+
             TestHostContext hc = new TestHostContext(this, name);
             this.stubWorkFolder = hc.GetDirectory(WellKnownDirectory.Work);
             if (createWorkDirectory)
@@ -106,8 +110,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             _sourceProvider = new Mock<ISourceProvider>();
             _buildDirectoryManager = new Mock<IBuildDirectoryManager>();
             _workspaceOptions = new Pipelines.WorkspaceOptions();
-            var _configurationStore = new Mock<IConfigurationStore>();
+            _configurationStore = new Mock<IConfigurationStore>();
             _configurationStore.Setup(store => store.GetSettings()).Returns(new AgentSettings { WorkFolder = this.stubWorkFolder });
+            
             steps = new List<Pipelines.JobStep>();
             var selfCheckoutTask = new Pipelines.TaskStep()
             {
@@ -119,15 +124,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 }
             };
             selfCheckoutTask.Inputs.Add("repository", "self");
-            if (checkOutConfig == CheckoutConfigType.SingleCheckoutCustomPath
-                || checkOutConfig == CheckoutConfigType.MultiCheckoutCustomPath)
+            if (isCustomPathScenario)
             {
                 selfCheckoutTask.Inputs.Add("path", "s/App");
             }
             steps.Add(selfCheckoutTask);
 
-            if (checkOutConfig == CheckoutConfigType.MultiCheckoutCustomPath
-                || checkOutConfig == CheckoutConfigType.MultiCheckoutDefaultPath)
+            // Setup second checkout only for multicheckout jobs
+            if (isMulticheckoutScenario)
             {
                 var anotherCheckoutTask = new Pipelines.TaskStep()
                 {
@@ -143,27 +147,33 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 steps.Add(anotherCheckoutTask);
             }
 
+            hc.SetSingleton(_buildDirectoryManager.Object);
+            hc.SetSingleton(_extensionManager.Object);
+            hc.SetSingleton(_configurationStore.Object);
+
+            var buildVariables = GetBuildVariables();
+            _variables = new Variables(hc, buildVariables, out _);
+            _ec.Setup(x => x.Variables).Returns(_variables);
+
             repositories = new List<Pipelines.RepositoryResource>();
             repositories.Add(GetRepository(hc, "self", "App"));
             repositories.Add(GetRepository(hc, "repo2", "BuildRepo"));
             _ec.Setup(x => x.Repositories).Returns(repositories);
 
-            List<string> warnings;
-            var buildVariables = GetBuildVariables();
-            _variables = new Variables(hc, buildVariables, out warnings);
-            hc.SetSingleton(_buildDirectoryManager.Object);
-            hc.SetSingleton(_extensionManager.Object);
-            hc.SetSingleton(_configurationStore.Object);
-            _ec.Setup(x => x.Variables).Returns(_variables);
-            InitialiseJobSettings(checkOutConfig);
+            jobSettings = new Dictionary<string, string>();
+            jobSettings.Add(WellKnownJobSettings.HasMultipleCheckouts, isMulticheckoutScenario.ToString());
             _ec.Setup(x => x.JobSettings).Returns(jobSettings);
+            
             _ec.Setup(x =>
                 x.SetVariable(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .Callback((string varName, string varValue, bool isSecret, bool isOutput, bool isFilePath, bool isReadOnly) => { _variables.Set(varName, varValue, false); });
+            
             _extensionManager.Setup(x => x.GetExtensions<ISourceProvider>())
                 .Returns(new List<ISourceProvider> { _sourceProvider.Object });
+            
             _sourceProvider.Setup(x => x.RepositoryType)
                 .Returns(Pipelines.RepositoryTypes.ExternalGit);
+            
             _buildDirectoryManager.Setup(x => x.PrepareDirectory(_ec.Object, repositories, _workspaceOptions))
                  .Returns(new TrackingConfig(_ec.Object, repositories, 1));
 
@@ -180,20 +190,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             buildVariables.Add(Constants.Variables.System.DefinitionId, DefinitionId);
 
             return buildVariables;
-        }
-
-        private void InitialiseJobSettings(CheckoutConfigType checkoutConfigType)
-        {
-            jobSettings = new Dictionary<string, string>();
-            if (checkoutConfigType == CheckoutConfigType.MultiCheckoutDefaultPath
-                || checkoutConfigType == CheckoutConfigType.MultiCheckoutCustomPath)
-            {
-                jobSettings.Add(WellKnownJobSettings.HasMultipleCheckouts, "true");
-            }
-            else
-            {
-                jobSettings.Add(WellKnownJobSettings.HasMultipleCheckouts, "false");
-            }
         }
 
         private Pipelines.RepositoryResource GetRepository(TestHostContext hostContext, String alias, String relativePath)
