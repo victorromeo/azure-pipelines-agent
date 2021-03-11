@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.Services.Agent.Worker.Release;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Moq;
 using Xunit;
+using Agent.Sdk;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
 {
@@ -27,6 +28,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
         private BuildJobExtension buildJobExtension;
         private List<Pipelines.JobStep> steps;
         private List<Pipelines.RepositoryResource> repositories { get; set; }
+        private Dictionary<string, string> jobSettings { get; set; }
 
         private const string CollectionId = "31ffacb8-b468-4e60-b2f9-c50ce437da92";
         private const string DefinitionId = "1234";
@@ -153,6 +155,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             hc.SetSingleton(_extensionManager.Object);
             hc.SetSingleton(_configurationStore.Object);
             _ec.Setup(x => x.Variables).Returns(_variables);
+            InitialiseJobSettings(checkOutConfig);
+            _ec.Setup(x => x.JobSettings).Returns(jobSettings);
             _ec.Setup(x => x.SetVariable(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>())).Callback((string varName, string varValue, bool isSecret, bool isOutput, bool isFilePath, bool isReadOnly) => { _variables.Set(varName, varValue, false); });
             _extensionManager.Setup(x => x.GetExtensions<ISourceProvider>())
                 .Returns(new List<ISourceProvider> { _sourceProvider.Object });
@@ -172,6 +176,19 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             buildVariables.Add(Constants.Variables.System.DefinitionId, DefinitionId);
 
             return buildVariables;
+        }
+
+        private void InitialiseJobSettings(CheckoutConfigType checkoutConfigType)
+        {
+            jobSettings = new Dictionary<string, string>();
+            if (checkoutConfigType == CheckoutConfigType.MultiCheckoutDefaultPath || checkoutConfigType == CheckoutConfigType.MultiCheckoutCustomPath)
+            {
+                jobSettings.Add(WellKnownJobSettings.HasMultipleCheckouts, "true");
+            }
+            else
+            {
+                jobSettings.Add(WellKnownJobSettings.HasMultipleCheckouts, "false");
+            }
         }
 
         private Pipelines.RepositoryResource GetRepository(TestHostContext hostContext, String alias, String relativePath)

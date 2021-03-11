@@ -167,11 +167,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
             UpdateCheckoutTasksAndVariables(executionContext, steps, pipelineWorkspaceDirectory);
 
-            //System.Diagnostics.Debugger.Launch();
             string selfRepoPath = null;
-            var checkoutTasks = steps.Where(x => x.IsCheckoutTask()).Select(x => x as TaskStep).ToList();
-            var hasOnlyOneCheckoutTask = checkoutTasks.Count == 1;
-            if (!hasOnlyOneCheckoutTask)
+            if (RepositoryUtil.HasMultipleCheckouts(executionContext.JobSettings))
             {
                 // get checkout task fo self repo 
                 var selfCheckoutTask = steps.Where(x => x.IsCheckoutTask())
