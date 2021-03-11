@@ -126,7 +126,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             selfCheckoutTask.Inputs.Add("repository", "self");
             if (isCustomPathScenario)
             {
-                selfCheckoutTask.Inputs.Add("path", "s/App");
+                selfCheckoutTask.Inputs.Add("path", "s/CustomApplicationFolder");
             }
             steps.Add(selfCheckoutTask);
 
@@ -156,8 +156,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             _ec.Setup(x => x.Variables).Returns(_variables);
 
             repositories = new List<Pipelines.RepositoryResource>();
-            repositories.Add(GetRepository(hc, "self", "App"));
-            repositories.Add(GetRepository(hc, "repo2", "BuildRepo"));
+            repositories.Add(GetRepository(hc, "self", "App", "App"));
+            repositories.Add(GetRepository(hc, "repo2", "BuildRepo", "BuildRepo"));
             _ec.Setup(x => x.Repositories).Returns(repositories);
 
             jobSettings = new Dictionary<string, string>();
@@ -192,7 +192,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             return buildVariables;
         }
 
-        private Pipelines.RepositoryResource GetRepository(TestHostContext hostContext, String alias, String relativePath)
+        private Pipelines.RepositoryResource GetRepository(TestHostContext hostContext, String alias, String relativePath, String Name)
         {
             var workFolder = hostContext.GetDirectory(WellKnownDirectory.Work);
             var repo = new Pipelines.RepositoryResource()
@@ -200,7 +200,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 Alias = alias,
                 Type = Pipelines.RepositoryTypes.ExternalGit,
                 Id = alias,
-                Url = new Uri($"http://contoso.visualstudio.com/{relativePath}"),
+                Url = new Uri($"http://contoso.visualstudio.com/{Name}"),
+                Name = Name,
             };
             repo.Properties.Set<string>(Pipelines.RepositoryPropertyNames.Path, Path.Combine(workFolder, "1", relativePath));
 
