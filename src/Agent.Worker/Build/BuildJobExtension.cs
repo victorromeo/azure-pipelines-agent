@@ -166,11 +166,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             string pipelineWorkspaceDirectory = Path.Combine(_workDirectory, trackingConfig.BuildDirectory);
 
             UpdateCheckoutTasksAndVariables(executionContext, steps, pipelineWorkspaceDirectory);
-
+            
             string selfRepoPath = null;
             // For saving backward compatibility with the behavior of the Build.RepoLocalPath that was before this PR https://github.com/microsoft/azure-pipelines-agent/pull/3237
             // We need to change how we set the default value of this variable
             // We need to allow the setting of paths from RepositoryTrackingInfo for checkout tasks where path input was provided by the user
+            // and this input is not point to the default location for this repository
             // This is the only case where the value of Build.RepoLocalPath variable is not pointing to the root of sources directory /s.
             // The new logic is not affecting single checkout jobs and jobs with multiple checkouts and default paths for Self repository
             if (RepositoryUtil.HasMultipleCheckouts(executionContext.JobSettings))
@@ -180,8 +181,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                     .Select(x => x as TaskStep)
                     .Where(task => task.Inputs.TryGetValue(PipelineConstants.CheckoutTaskInputs.Repository, out string repositoryAlias)
                                     && RepositoryUtil.IsPrimaryRepositoryName(repositoryAlias)).First();
-                // Check if the task has path input, if so we need to set as a value of selfRepoPath the value of SourcesDirectory from RepositoryTrackingInfo
-                if (selfCheckoutTask.Inputs.TryGetValue(PipelineConstants.CheckoutTaskInputs.Path, out _))
+                // Check if the task has path input with custom path, if so we need to set as a value of selfRepoPath the value of SourcesDirectory from RepositoryTrackingInfo
+                string path;
+                string selfRepoName = RepositoryUtil.GetCloneDirectory(repoInfo.TriggeringRepository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name));
+                if (selfCheckoutTask.Inputs.TryGetValue(PipelineConstants.CheckoutTaskInputs.Path, out path)
+                     && !string.Equals(Path.GetFullPath(Path.Combine(trackingConfig.BuildDirectory, path)),
+                        Path.GetFullPath(Path.Combine(trackingConfig.SourcesDirectory, selfRepoName)),
+                        IOUtil.FilePathStringComparison))
                 {
                     {
                         selfRepoPath = trackingConfig.RepositoryTrackingInfo.Where(repo => RepositoryUtil.IsPrimaryRepositoryName(repo.Identifier)).Select(props => props.SourcesDirectory).FirstOrDefault(); 
@@ -194,7 +200,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 selfRepoPath = trackingConfig.SourcesDirectory;
             }
 
-            // Set the directory variables.
+            // Set the directory variables.+
             executionContext.Output(StringUtil.Loc("SetBuildVars"));
             executionContext.SetVariable(Constants.Variables.Agent.BuildDirectory, pipelineWorkspaceDirectory, isFilePath: true);
             executionContext.SetVariable(Constants.Variables.System.ArtifactsDirectory, Path.Combine(_workDirectory, trackingConfig.ArtifactsDirectory), isFilePath: true);
