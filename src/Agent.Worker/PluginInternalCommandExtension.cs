@@ -52,7 +52,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
             var currentPath = repository.Properties.Get<string>(RepositoryPropertyNames.Path);
-            // System.Diagnostics.Debugger.Launch();
             if (!string.Equals(data.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), currentPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), IOUtil.FilePathStringComparison))
             {
                 string repositoryPath = data.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
@@ -76,7 +75,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         
                         string sourcesDirectory = context.Variables.Get(Constants.Variables.Build.SourcesDirectory);
                         string repoLocalPath = context.Variables.Get(Constants.Variables.Build.RepoLocalPath);
-                        if (repoLocalPath == null || !string.Equals(Path.Combine(_workDirectory, repoRelativePath), Path.Combine(sourcesDirectory, repository.Name), IOUtil.FilePathStringComparison))
+                        if (repoLocalPath == null
+                            || !string.Equals(Path.Combine(_workDirectory, repoRelativePath), Path.Combine(sourcesDirectory, repository.Name), IOUtil.FilePathStringComparison))
                         {
                             context?.SetVariable(Constants.Variables.Build.RepoLocalPath, Path.Combine(_workDirectory, repoRelativePath), isFilePath: true);
                         }

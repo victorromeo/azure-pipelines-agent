@@ -182,7 +182,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                     }
                 }
             }
-
             if (selfRepoPath == null)
             {
                 selfRepoPath = trackingConfig.SourcesDirectory;
