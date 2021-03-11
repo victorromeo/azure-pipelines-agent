@@ -52,7 +52,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
             var currentPath = repository.Properties.Get<string>(RepositoryPropertyNames.Path);
-            //  System.Diagnostics.Debugger.Launch();
+            // System.Diagnostics.Debugger.Launch();
             if (!string.Equals(data.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), currentPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), IOUtil.FilePathStringComparison))
             {
                 string repositoryPath = data.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
@@ -73,7 +73,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         // So, we will just reset the repo local path
                         string buildDirectory = context.Variables.Get(Constants.Variables.Pipeline.Workspace);
                         string repoRelativePath = directoryManager.GetRelativeRepositoryPath(buildDirectory, repositoryPath);
-                        context?.SetVariable(Constants.Variables.Build.RepoLocalPath, Path.Combine(_workDirectory, repoRelativePath), isFilePath: true);
+                        
+                        string sourcesDirectory = context.Variables.Get(Constants.Variables.Build.SourcesDirectory);
+                        if (!string.Equals(Path.Combine(_workDirectory, repoRelativePath), Path.Combine(sourcesDirectory, repository.Name), IOUtil.FilePathStringComparison))
+                        {
+                            context?.SetVariable(Constants.Variables.Build.RepoLocalPath, Path.Combine(_workDirectory, repoRelativePath), isFilePath: true);
+                        }
                     }
                     else
                     {
