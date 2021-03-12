@@ -39,7 +39,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Worker")]
-        public void CheckSingleRepo()
+        public void CheckSingleRepoWithoutPathInput()
         {
             using (TestHostContext tc = Setup(createWorkDirectory: false, checkOutConfig: CheckoutConfigType.SingleCheckoutDefaultPath))
             {
@@ -55,7 +55,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
         [Trait("Category", "Worker")]
         public void CheckSingleRepoWithCustomPaths()
         {
-            using (TestHostContext tc = Setup(createWorkDirectory: false, checkOutConfig: CheckoutConfigType.SingleCheckoutCustomPath))
+            using (TestHostContext tc = Setup(createWorkDirectory: false, checkOutConfig: CheckoutConfigType.SingleCheckoutCustomPath, pathToSelfRepo: "s/CustomApplicationFolder"))
             {
                 buildJobExtension.InitializeJobExtension(_ec.Object, steps, _workspaceOptions);
                 var repoLocalPath = _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath);
@@ -67,7 +67,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Worker")]
-        public void CheckMultiRepo()
+        public void CheckMultiRepoWithoutPathInput()
         {
             using (TestHostContext tc = Setup(createWorkDirectory: false, checkOutConfig: CheckoutConfigType.MultiCheckoutDefaultPath))
             {
@@ -81,9 +81,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Worker")]
-        public void CheckMultiRepoWithCustomPaths()
+        public void CheckMultiRepoWithPathInputToCustomPath()
         {
-            using (TestHostContext tc = Setup(createWorkDirectory: false, checkOutConfig: CheckoutConfigType.MultiCheckoutCustomPath))
+            using (TestHostContext tc = Setup(createWorkDirectory: false, checkOutConfig: CheckoutConfigType.MultiCheckoutCustomPath, pathToSelfRepo: "s/CustomApplicationFolder"))
             {
                 buildJobExtension.InitializeJobExtension(_ec.Object, steps, _workspaceOptions);
                 var repoLocalPath = _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath);
@@ -92,7 +92,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             }
         }
 
-        private TestHostContext Setup([CallerMemberName] string name = "", bool createWorkDirectory = true, CheckoutConfigType checkOutConfig = CheckoutConfigType.SingleCheckoutDefaultPath)
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
+        public void CheckMultiRepoWithPathInputToDefaultPath()
+        {
+            using (TestHostContext tc = Setup(createWorkDirectory: false, checkOutConfig: CheckoutConfigType.MultiCheckoutCustomPath, pathToSelfRepo: "s/App"))
+            {
+                buildJobExtension.InitializeJobExtension(_ec.Object, steps, _workspaceOptions);
+                var repoLocalPath = _ec.Object.Variables.Get(Constants.Variables.Build.RepoLocalPath);
+                Assert.NotNull(repoLocalPath);
+                Assert.Equal(Path.Combine(stubWorkFolder, $"1{directorySeparator}s"), repoLocalPath);
+            }
+        }
+
+        private TestHostContext Setup([CallerMemberName] string name = "",
+            bool createWorkDirectory = true,
+            CheckoutConfigType checkOutConfig = CheckoutConfigType.SingleCheckoutDefaultPath,
+            string pathToSelfRepo = "")
         {
             bool isMulticheckoutScenario = checkOutConfig == CheckoutConfigType.MultiCheckoutCustomPath || checkOutConfig == CheckoutConfigType.MultiCheckoutDefaultPath;
             bool isCustomPathScenario = checkOutConfig == CheckoutConfigType.SingleCheckoutCustomPath || checkOutConfig == CheckoutConfigType.MultiCheckoutCustomPath;
@@ -126,7 +143,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             selfCheckoutTask.Inputs.Add("repository", "self");
             if (isCustomPathScenario)
             {
-                selfCheckoutTask.Inputs.Add("path", "s/CustomApplicationFolder");
+                selfCheckoutTask.Inputs.Add("path", pathToSelfRepo);
             }
             steps.Add(selfCheckoutTask);
 
