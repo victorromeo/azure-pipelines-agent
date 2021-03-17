@@ -1,3 +1,15 @@
+## Features
+ - Added PR opening script (#3302)
+ - Decode %AZP25 to % by default (#3303)
+ - Introduce enforcement mode for task restrictions (#3329)
+
+## Bugs
+ - Revert "Self-hosted agent cleaning source folder (#3237)" (#3297)
+ - Fix the triggering build logic for Download Pipeline Artifact (#3313)
+
+## Misc
+
+
 
 ## Agent Downloads
 
