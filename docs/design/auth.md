@@ -61,3 +61,9 @@ NOTE: The point is to make the token not *readily* available to developer contri
 The token is meant for tasks and scripts that are trusted by the build admin by (1) installing the task or (2) directing a build definition to run that script.  
 The goal is to avoid having the token accidentally leak in scripts.  
 Even then, the token will expire at the end of the job which helps mitigate any accidental exposure.
+
+## Keeping RSA private key - security implications for 'run once' agent setup
+Agent stores RSA private key in a file on disk. For Windows host - it is protected by DPAPI; on Linux/OSX - it sets up chmod permissions (read & write) to the owner/group only (by calling 'chmod 600' command).
+
+An RSA private key is being created during agent configuration and removed only after running of 'config remove' command.
+For 'run once' agent setup - it keeps the private key file the same way, so it remains on disk after agent being shut down. If you don't want this file to be available for the user you configure agent with - make sure that you removed it by your own.
