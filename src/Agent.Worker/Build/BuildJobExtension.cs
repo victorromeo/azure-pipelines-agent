@@ -357,7 +357,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 var selfCheckoutTask = GetSelfCheckoutTask(steps);
 
                 // Check if the task has path input with custom path, if so we need to set as a value of selfRepoPath the value of SourcesDirectory from RepositoryTrackingInfo
-                if (IsCheckoutToDefaultPath(trackingConfig, repoInfo, selfCheckoutTask))
+                if (IsCheckoutToCustomPath(trackingConfig, repoInfo, selfCheckoutTask))
                 {
                     selfRepoPath = trackingConfig.RepositoryTrackingInfo
                         .Where(repo => RepositoryUtil.IsPrimaryRepositoryName(repo.Identifier))
@@ -373,7 +373,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             return selfRepoPath;
         }
 
-        private bool IsCheckoutToDefaultPath(TrackingConfig trackingConfig, RepositoryInfo repoInfo, TaskStep selfCheckoutTask)
+        private bool IsCheckoutToCustomPath(TrackingConfig trackingConfig, RepositoryInfo repoInfo, TaskStep selfCheckoutTask)
         {
             string path;
             string selfRepoName = RepositoryUtil.GetCloneDirectory(repoInfo.PrimaryRepository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name));
