@@ -62,8 +62,15 @@ The token is meant for tasks and scripts that are trusted by the build admin by 
 The goal is to avoid having the token accidentally leak in scripts.  
 Even then, the token will expire at the end of the job which helps mitigate any accidental exposure.
 
-## Keeping RSA private key - security implications for 'run once' agent setup
-Agent stores RSA private key in a file on disk. For Windows host - it is protected by DPAPI; on Linux/OSX - it sets up chmod permissions (read & write) to the owner only (by calling 'chmod 600' command).
+## Keeping RSA private key - security implications
+Agent stores RSA private key in a '.credentials_rsaparams' file in the agent root directory.
+For Windows host - it is protected by [DPAPI](https://docs.microsoft.com/dotnet/standard/security/how-to-use-data-protection).
+On Linux/OSX - it sets up chmod permissions (read & write) to the user which configured the agent (by calling 'chmod 600' command) - so this user will be able to reconfigure the agent.
+
+For user which runs the agent - there should be permissions to read '.credentials_rsaparams' file. 
+No other permissions are required for this file - please make sure that you don't grant any additional permissions since this file stores sensitive connection data.
 
 An RSA private key is being created during agent configuration and removed only after running of 'config remove' command.
-For 'run once' agent setup - it keeps the private key file the same way, so it remains on disk after agent being shut down. If you don't want this file to be available for the user you configure agent with - make sure that you removed it by your own.
+If this file will be removed - you need to run 'config remove' command and configure it again to register the agent.
+
+This is actual for all agent modes (running as interactive, 'run once' mode, running as a service).
