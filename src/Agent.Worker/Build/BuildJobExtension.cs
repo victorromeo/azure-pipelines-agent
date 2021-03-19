@@ -359,11 +359,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 // Check if the task has path input with custom path, if so we need to set as a value of selfRepoPath the value of SourcesDirectory from RepositoryTrackingInfo
                 if (IsCheckoutToDefaultPath(trackingConfig, repoInfo, selfCheckoutTask))
                 {
-                    {
-                        selfRepoPath = trackingConfig.RepositoryTrackingInfo
-                            .Where(repo => RepositoryUtil.IsPrimaryRepositoryName(repo.Identifier))
-                            .Select(props => props.SourcesDirectory).FirstOrDefault(); 
-                    }
+                    selfRepoPath = trackingConfig.RepositoryTrackingInfo
+                        .Where(repo => RepositoryUtil.IsPrimaryRepositoryName(repo.Identifier))
+                        .Select(props => props.SourcesDirectory).FirstOrDefault(); 
                 }
             }
             // For single checkout jobs and multicheckout jobs with default paths set selfRepoPath to the default sources directory
