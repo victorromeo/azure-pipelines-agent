@@ -1114,6 +1114,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                     throw new InvalidOperationException($"Git prune failed with exit code: {exitCode_prune}");
                 }
 
+                 // git lfs prune
+                var lfsVersion = _gitCommandManager.GitLfsVersion(executionContext).Result;
+                if (!(lfsVersion is null))
+                {
+                    int exitCode_lFSPrune = await _gitCommandManager.GitLFSPrune(executionContext, repositoryPath);
+                    if (exitCode_lFSPrune != 0)
+                    {
+                        throw new InvalidOperationException($"Git lfs prune failed with exit code: {exitCode_lFSPrune}");
+                    }
+                }
+
                 // git count-objects after git repack
                 executionContext.Output("Repository status after executing 'git repack'");
                 int exitCode_countobjectsafter = await _gitCommandManager.GitCountObjects(executionContext, repositoryPath);
