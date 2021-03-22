@@ -1,7 +1,7 @@
 trigger: none
 
 pool:
-  name: AzDevProdRMAgents
+  name: RMAgentsProdAME
 
 variables:
   NugetSecurityAnalysisWarningLevel: none
