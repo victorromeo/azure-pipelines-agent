@@ -458,13 +458,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     // We need to find out whether there is a user with same UID inside the container
                     List<string> userNames = new List<string>();
                     int execGrepExitCode = await _dockerManger.DockerExec(executionContext, container.ContainerId, string.Empty, $"bash -c \"getent passwd {container.CurrentUserId} | cut -d: -f1 \"", userNames);
+                    
+                    
                     if (execGrepExitCode != 0)
                     {
                         throw new InvalidOperationException($"Docker exec fail with exit code {execGrepExitCode}");
                     }
 
+                    executionContext.Debug($"Retrieved user names to find out whether there is a user with same UID inside the container.");
+
                     if (userNames.Count > 0)
                     {
+                        executionContext.Debug($"Retrieved user names: list is non empty");
                         // check all potential username that might match the UID.
                         foreach (string username in userNames)
                         {
@@ -472,6 +477,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             if (execIdExitCode == 0)
                             {
                                 containerUserName = username;
+                                executionContext.Debug($"Recieved user name of user with the same UID: {containerUserName}");
                                 break;
                             }
                         }
@@ -485,20 +491,25 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         int keepLength = Math.Min(32 - userNameSuffix.Length, container.CurrentUserName.Length);
                         containerUserName = $"{container.CurrentUserName.Substring(0, keepLength)}{userNameSuffix}";
                         int execUseraddExitCode = await _dockerManger.DockerExec(executionContext, container.ContainerId, string.Empty, $"useradd -m -u {container.CurrentUserId} {containerUserName}");
+
                         if (execUseraddExitCode != 0)
                         {
                             throw new InvalidOperationException($"Docker exec fail with exit code {execUseraddExitCode}");
                         }
+                        executionContext.Debug($"Created new user: {containerUserName}, UID: {container.CurrentUserId}");
                     }
 
                     executionContext.Output(StringUtil.Loc("GrantContainerUserSUDOPrivilege", containerUserName));
 
                     // Create a new group for giving sudo permission
                     int execGroupaddExitCode = await _dockerManger.DockerExec(executionContext, container.ContainerId, string.Empty, $"groupadd azure_pipelines_sudo");
+                    
                     if (execGroupaddExitCode != 0)
                     {
                         throw new InvalidOperationException($"Docker exec fail with exit code {execGroupaddExitCode}");
                     }
+
+                    executionContext.Debug($"Created newg group for giving sudo permission - azure_pipelines_sudo.");
 
                     // Add the new created user to the new created sudo group.
                     int execUsermodExitCode = await _dockerManger.DockerExec(executionContext, container.ContainerId, string.Empty, $"usermod -a -G azure_pipelines_sudo {containerUserName}");
@@ -507,12 +518,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         throw new InvalidOperationException($"Docker exec fail with exit code {execUsermodExitCode}");
                     }
 
+                    executionContext.Debug($"Added new created user to the new created sudo group.");
+
                     // Allow the new sudo group run any sudo command without providing password.
                     int execEchoExitCode = await _dockerManger.DockerExec(executionContext, container.ContainerId, string.Empty, $"su -c \"echo '%azure_pipelines_sudo ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers\"");
                     if (execUsermodExitCode != 0)
                     {
                         throw new InvalidOperationException($"Docker exec fail with exit code {execEchoExitCode}");
                     }
+
+                    executionContext.Debug($"Allowed the new sudo group run any sudo command without providing password.");
 
                     if (AgentKnobs.SetupDockerGroup.GetValue(executionContext).AsBoolean())
                     {
@@ -525,6 +540,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         }
                         string dockerSockGroupId = (await ExecuteCommandAsync(executionContext, "stat", $"{statFormatOption} /var/run/docker.sock")).FirstOrDefault();
 
+                        executionContext.Debug($"Executed stat /var/run/docker.sock");
+
                         // We need to find out whether there is a group with same GID inside the container
                         string existingGroupName = null;
                         List<string> groupsOutput = new List<string>();
@@ -534,8 +551,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             throw new InvalidOperationException($"Docker exec fail with exit code {execGroupGrepExitCode}");
                         }
 
+                        executionContext.Debug($"Checked whether there is a group with same GID inside the container");
+
                         if (groupsOutput.Count > 0)
                         {
+                            executionContext.Debug($"groupsOutput not empty");
                             // check all potential groups that might match the GID.
                             foreach (string groupOutput in groupsOutput)
                             {
@@ -554,9 +574,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                                         if(string.Equals(dockerSockGroupId, groupId))
                                         {
+                                            executionContext.Debug($"existingGroupName = groupName");
                                             existingGroupName = groupName;
                                             break;
                                         }
+                                        executionContext.Debug($"dockerSockGroupId != groupId - {dockerSockGroupId} != {groupId}");
                                     }
                                 }
                             }
@@ -571,6 +593,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             {
                                 throw new InvalidOperationException($"Docker exec fail with exit code {execDockerGroupaddExitCode}");
                             }
+
+                            executionContext.Debug($"Created a new group with same gid");
                         }
                         // Add the new created user to the docker socket group.
                         int execGroupUsermodExitCode = await _dockerManger.DockerExec(executionContext, container.ContainerId, string.Empty, $"usermod -a -G {existingGroupName} {containerUserName}");
@@ -578,6 +602,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         {
                             throw new InvalidOperationException($"Docker exec fail with exit code {execGroupUsermodExitCode}");
                         }
+
+                        executionContext.Debug($"Added the new created user to the docker socket group.");
 
                         // if path to node is just 'node', with no path, let's make sure it is actually there
                         if (string.Equals(container.CustomNodePath, "node", StringComparison.OrdinalIgnoreCase))
@@ -588,6 +614,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             {
                                 throw new InvalidOperationException($"Unable to get node version on container {container.ContainerId}. Got exit code {execNodeVersionExitCode} from docker exec");
                             }
+                            executionContext.Debug($"Executed 'bash -c node -v'");
                             if (nodeVersionOutput.Count > 0)
                             {
                                 executionContext.Output($"Detected Node Version: {nodeVersionOutput[0]}");
