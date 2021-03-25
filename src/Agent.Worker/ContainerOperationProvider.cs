@@ -628,6 +628,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     }
                 }
             }
+
+
+            int execSwitchUserExitCode = await _dockerManger.DockerExec(executionContext, container.ContainerId, string.Empty, $"su - {container.CurrentUserName}");
+            if (execSwitchUserExitCode != 0)
+            {
+                throw new InvalidOperationException($"Unable to switch on user {container.CurrentUserName}. Got exit code {execSwitchUserExitCode} from docker exec");
+            }
+            else
+            {
+                Trace.Info($"Succesfully switched to user {container.CurrentUserName}");
+            }
         }
 
         private async Task StopContainerAsync(IExecutionContext executionContext, ContainerInfo container)
