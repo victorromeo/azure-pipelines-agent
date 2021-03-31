@@ -13,6 +13,7 @@ using Agent.Plugins.PipelineArtifact.Telemetry;
 using Agent.Sdk;
 using Agent.Sdk.Blob;
 using Microsoft.TeamFoundation.Build.WebApi;
+using Microsoft.VisualStudio.Services.Agent.Blob;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.BlobStore.Common;
 using Microsoft.VisualStudio.Services.BlobStore.Common.Telemetry;
@@ -21,7 +22,7 @@ using Microsoft.VisualStudio.Services.Content.Common;
 using Microsoft.VisualStudio.Services.Content.Common.Tracing;
 using Microsoft.VisualStudio.Services.WebApi;
 
-namespace Agent.Plugins.PipelineArtifact
+namespace Agent.Plugins
 {
     internal class FileShareProvider: IArtifactProvider
     {
@@ -46,12 +47,12 @@ namespace Agent.Plugins.PipelineArtifact
             this.connection = connection;
         }
 
-        public async Task DownloadSingleArtifactAsync(PipelineArtifactDownloadParameters downloadParameters, BuildArtifact buildArtifact, CancellationToken cancellationToken, AgentTaskPluginExecutionContext context) 
+        public async Task DownloadSingleArtifactAsync(ArtifactDownloadParameters downloadParameters, BuildArtifact buildArtifact, CancellationToken cancellationToken, AgentTaskPluginExecutionContext context) 
         {
             await DownloadMultipleArtifactsAsync(downloadParameters, new List<BuildArtifact> { buildArtifact }, cancellationToken, context);
         }
 
-        public async Task DownloadMultipleArtifactsAsync(PipelineArtifactDownloadParameters downloadParameters, IEnumerable<BuildArtifact> buildArtifacts, CancellationToken cancellationToken, AgentTaskPluginExecutionContext context) 
+        public async Task DownloadMultipleArtifactsAsync(ArtifactDownloadParameters downloadParameters, IEnumerable<BuildArtifact> buildArtifacts, CancellationToken cancellationToken, AgentTaskPluginExecutionContext context) 
         {
             context.Warning(StringUtil.Loc("DownloadArtifactWarning", "UNC"));
             var (dedupManifestClient, clientTelemetry) = await this.factory.CreateDedupManifestClientAsync(context.IsSystemDebugTrue(), (str) => context.Output(str), connection, cancellationToken);
@@ -73,7 +74,7 @@ namespace Agent.Plugins.PipelineArtifact
             }
         }
 
-        private async Task<FileShareDownloadResult> DownloadArtifactsAsync(PipelineArtifactDownloadParameters downloadParameters, IEnumerable<BuildArtifact> buildArtifacts, CancellationToken cancellationToken)
+        private async Task<FileShareDownloadResult> DownloadArtifactsAsync(ArtifactDownloadParameters downloadParameters, IEnumerable<BuildArtifact> buildArtifacts, CancellationToken cancellationToken)
         {
             var records = new List<ArtifactRecord>();
             long totalContentSize = 0;
