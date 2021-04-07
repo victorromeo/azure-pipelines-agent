@@ -1,3 +1,13 @@
+## Features
+ - add git lfs prune to maintenance job #3283 (#3288)
+ - Upload timeline attachments to blob-backed FCS (#3345)
+
+## Bugs
+ - Fix 'Self-hosted agent cleaning source folder' issue without affecting env variables  (#3318)
+
+## Misc
+
+
 
 ## Agent Downloads
 
