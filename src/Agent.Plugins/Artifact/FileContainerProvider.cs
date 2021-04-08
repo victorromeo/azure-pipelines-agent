@@ -4,7 +4,7 @@
 using Agent.Sdk;
 using Agent.Sdk.Blob;
 using Agent.Plugins.PipelineArtifact.Telemetry;
-using BuildXL.Cache.ContentStore.Hashing;
+// using BuildXL.Cache.ContentStore.Hashing;
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Blob;
 using Microsoft.VisualStudio.Services.Agent.Util;

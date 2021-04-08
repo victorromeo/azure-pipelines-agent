@@ -8,7 +8,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using Agent.Plugins.PipelineCache;
 using Agent.Sdk;
-using BuildXL.Cache.ContentStore.Interfaces.Utils;
+// using BuildXL.Cache.ContentStore.Interfaces.Utils;
 using Microsoft.VisualStudio.Services.PipelineCache.WebApi;
 using Xunit;
 

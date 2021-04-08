@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.Services.WebApi;
 using System.Net.Http;
 using System.Net;
 using Agent.Sdk.Blob;
-using BuildXL.Cache.ContentStore.Hashing;
+// using BuildXL.Cache.ContentStore.Hashing;
 using Microsoft.VisualStudio.Services.BlobStore.WebApi;
 using Microsoft.VisualStudio.Services.Content.Common;
 using Microsoft.VisualStudio.Services.BlobStore.Common;

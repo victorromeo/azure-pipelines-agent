@@ -12,7 +12,7 @@ using System.Linq;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.BlobStore.Common;
 using Microsoft.VisualStudio.Services.Content.Common;
-using BuildXL.Cache.ContentStore.Hashing;
+// using BuildXL.Cache.ContentStore.Hashing;
 using BlobIdentifierWithBlocks = Microsoft.VisualStudio.Services.BlobStore.Common.BlobIdentifierWithBlocks;
 using VsoHash = Microsoft.VisualStudio.Services.BlobStore.Common.VsoHash;
 

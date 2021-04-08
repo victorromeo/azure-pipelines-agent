@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 using System;
-using BuildXL.Cache.ContentStore.Hashing;
-using BuildXL.Cache.ContentStore.Interfaces.Utils;
+// using BuildXL.Cache.ContentStore.Hashing;
+// using BuildXL.Cache.ContentStore.Interfaces.Utils;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests
