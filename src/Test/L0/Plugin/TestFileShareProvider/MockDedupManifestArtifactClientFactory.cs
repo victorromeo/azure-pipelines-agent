@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Agent.Sdk;
-using Agent.Sdk.Blob;
+using Microsoft.VisualStudio.Services.Agent.Blob;
 using Microsoft.VisualStudio.Services.BlobStore.WebApi;
 using Microsoft.VisualStudio.Services.Content.Common.Tracing;
 using Microsoft.VisualStudio.Services.WebApi;
@@ -28,10 +28,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
 
         }
 
-        public Task<(DedupStoreClientWithDataport client, BlobStoreClientTelemetry telemetry)> CreateDedupClientAsync(bool verbose, Action<string> traceOutput, VssConnection connection, CancellationToken cancellationToken)
+        public Task<(DedupStoreClient client, BlobStoreClientTelemetry telemetry)> CreateDedupClientAsync(bool verbose, Action<string> traceOutput, VssConnection connection, CancellationToken cancellationToken)
         {
             telemetrySender = new TestTelemetrySender();
-            return Task.FromResult((client: (DedupStoreClientWithDataport)null, telemetry: new BlobStoreClientTelemetry(
+            return Task.FromResult((client: (DedupStoreClient)null, telemetry: new BlobStoreClientTelemetry(
                 NoopAppTraceSource.Instance,
                 baseAddress,
                 telemetrySender)));
