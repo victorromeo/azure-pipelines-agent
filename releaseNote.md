@@ -4,6 +4,7 @@
 
 ## Bugs
  - Fix 'Self-hosted agent cleaning source folder' issue without affecting env variables  (#3318)
+ - Revert MinGit to 2.30.2 from 2.31.0 (in 2.185.0 prerelease)
 
 ## Misc
 
