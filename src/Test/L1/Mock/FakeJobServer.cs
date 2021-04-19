@@ -7,11 +7,13 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System;
-using Microsoft.VisualStudio.Services.WebApi;
 using System.Linq;
+using Microsoft.VisualStudio.Services.Agent.Blob;
+using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.BlobStore.Common;
 using Microsoft.VisualStudio.Services.Content.Common;
+using Microsoft.VisualStudio.Services.Content.Common.Telemetry;
 using BuildXL.Cache.ContentStore.Hashing;
 using BlobIdentifierWithBlocks = Microsoft.VisualStudio.Services.BlobStore.Common.BlobIdentifierWithBlocks;
 using VsoHash = Microsoft.VisualStudio.Services.BlobStore.Common.VsoHash;
@@ -134,14 +136,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
             return Task.FromResult(blockBlobId);
         }
 
-        public async Task<(DedupIdentifier dedupId, ulong length)> UploadAttachmentToBlobStore(bool verbose, string itemPath, CancellationToken cancellationToken)
+                
+
+        public async Task<(DedupIdentifier dedupId, ulong length, TimelineRecordAttachmentTelemetryRecord record)> UploadAttachmentToBlobStore(bool verbose, string itemPath, CancellationToken cancellationToken)
         {
             UploadedAttachmentBlobFiles.Add(itemPath);
             var chunk = await ChunkerHelper.CreateFromFileAsync(FileSystem.Instance, itemPath, cancellationToken, false);
             var rootNode = new DedupNode(new []{ chunk});
             var dedupId = rootNode.GetDedupIdentifier(HashType.Dedup64K);
 
-            return (dedupId, rootNode.TransitiveContentBytes);
+            return (dedupId, rootNode.TransitiveContentBytes, new TimelineRecordAttachmentTelemetryRecord(TelemetryInformationLevel.Debug, new Uri(""), "", ""));
         }
 
         public Task<TaskLog> AssociateLogAsync(Guid scopeIdentifier, string hubName, Guid planId, int logId, BlobIdentifierWithBlocks blobBlockId, int lineCount, CancellationToken cancellationToken)
