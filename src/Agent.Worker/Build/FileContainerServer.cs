@@ -15,12 +15,12 @@ using System.Diagnostics;
 using Microsoft.VisualStudio.Services.WebApi;
 using System.Net.Http;
 using System.Net;
-using Agent.Sdk.Blob;
 using BuildXL.Cache.ContentStore.Hashing;
+using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.BlobStore.WebApi;
-using Microsoft.VisualStudio.Services.Content.Common;
-using Microsoft.VisualStudio.Services.BlobStore.Common;
+using Microsoft.VisualStudio.Services.Agent.Worker.Telemetry;
 using Microsoft.VisualStudio.Services.BlobStore.Common.Telemetry;
+using Microsoft.VisualStudio.Services.WebPlatform;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 {
@@ -144,6 +144,32 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             }
         }
 
+        private async Task PublishBlobUploadTelemetry(IAsyncCommandContext context, UploadResult result)
+        {
+            var ciService = context.GetHostContext().GetService<ICustomerIntelligenceServer>();
+            ciService.Initialize(_connection);
+
+            var ciData = new Dictionary<string, object>();
+            ciData.Add("PlanId", context.GetVariableValueOrDefault(WellKnownDistributedTaskVariables.PlanId) ?? Guid.Empty.ToString());
+            ciData.Add("JobId", context.GetVariableValueOrDefault(WellKnownDistributedTaskVariables.JobId) ?? Guid.Empty.ToString());
+
+            var dedupStats = result.GetDedupUploadStatistics();
+            ciData.Add("ChunksUploaded", dedupStats.ChunksUploaded);
+            ciData.Add("CompressionBytesSaved", dedupStats.CompressionBytesSaved);
+            ciData.Add("DedupUploadBytesSaved", dedupStats.DedupUploadBytesSaved);
+            ciData.Add("LogicalContentBytesUploaded", dedupStats.LogicalContentBytesUploaded);
+            ciData.Add("PhysicalContentBytesUploaded", dedupStats.PhysicalContentBytesUploaded);
+            ciData.Add("TotalNumberOfChunks", dedupStats.TotalNumberOfChunks);
+
+            var ciEvent = new CustomerIntelligenceEvent
+            {
+                Area = "AzurePipelinesAgent",
+                Feature = "BuildArtifacts",
+                Properties = ciData
+            };
+            await ciService.PublishEventsAsync(new[] { ciEvent });
+        }
+
         private async Task<UploadResult> ParallelUploadAsync(IAsyncCommandContext context, IReadOnlyList<string> files, int concurrentUploads, CancellationToken token)
         {
             // return files that fail to upload and total artifact size
@@ -204,13 +230,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             _uploadFinished.TrySetResult(0);
             await uploadMonitor;
 
+            // report telemetry
+            if (uploadToBlob)
+            {
+                await PublishBlobUploadTelemetry(context, uploadResult);
+            }
+
             return uploadResult;
         }
 
         private async Task<UploadResult> UploadAsync(IAsyncCommandContext context, int uploaderId, bool uploadToBlob, CancellationToken token)
         {
-            List<string> failedFiles = new List<string>();
-            long uploadedSize = 0;
+            var uploadResult = new UploadResult();
             string fileToUpload;
             Stopwatch uploadTimer = new Stopwatch();
             while (_fileUploadQueue.TryDequeue(out fileToUpload))
@@ -235,6 +266,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                                                            (retryCounter) => (int) Math.Pow(retryCounter, 2) * 5,
                                                            (exception) => true);
                             uploadLength = (long) result.length;
+
+                            uploadResult.AddDedupStats(result.record.UploadStatistics);
                         }
                         else
                         {
@@ -284,12 +317,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                         }
 
                         // tracking file that failed to upload.
-                        failedFiles.Add(fileToUpload);
+                        uploadResult.FailedFiles.Add(fileToUpload);
                     }
                     else
                     {
                         context.Debug(StringUtil.Loc("FileUploadFinish", fileToUpload, uploadTimer.ElapsedMilliseconds));
-                        uploadedSize += uploadLength;
+                        uploadResult.TotalFileSizeUploaded += uploadLength;
                         // debug detail upload trace for the file.
                         ConcurrentQueue<string> logQueue;
                         if (_fileUploadTraceLog.TryGetValue(itemPath, out logQueue))
@@ -318,10 +351,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 }
             }
 
-            return new UploadResult(failedFiles, uploadedSize);
+            return uploadResult;
         }
 
-        private async Task<(DedupIdentifier dedupId, ulong length)> UploadToBlobStore(IAsyncCommandContext context, string itemPath, CancellationToken cancellationToken)
+        private async Task<(DedupIdentifier dedupId, ulong length, BuildArtifactActionRecord record)> UploadToBlobStore(IAsyncCommandContext context, string itemPath, CancellationToken cancellationToken)
         {
             var verbose = String.Equals(context.GetVariableValueOrDefault("system.debug"), "true", StringComparison.InvariantCultureIgnoreCase);
 

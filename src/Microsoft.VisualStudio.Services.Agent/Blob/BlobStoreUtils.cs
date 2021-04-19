@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
     /// </summary>
     public static class BlobStoreUtils
     {
-        public static async Task<(DedupIdentifier dedupId, ulong length)> UploadToBlobStore<T>(
+        public static async Task<(DedupIdentifier dedupId, ulong length, T record)> UploadToBlobStore<T>(
             bool verbose,
             string itemPath,
             Func<TelemetryInformationLevel, Uri, string, T> telemetryRecordFactory,
@@ -55,7 +55,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
                 actionAsync: async () => await AsyncHttpRetryHelper.InvokeAsync(
                         async () =>
                         {
-                            return await uploadSession.UploadAsync(rootNode, new Dictionary<DedupIdentifier, string>(){ [dedupId] = itemPath }, cancellationToken);
+                            await uploadSession.UploadAsync(rootNode, new Dictionary<DedupIdentifier, string>(){ [dedupId] = itemPath }, cancellationToken);
+                            return uploadSession.UploadStatistics;
                         },
                         maxRetries: 3,
                         tracer: tracer,
@@ -63,10 +64,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
                         cancellationToken: cancellationToken,
                         continueOnCapturedContext: false)
             );
-            return (dedupId, rootNode.TransitiveContentBytes);
+            return (dedupId, rootNode.TransitiveContentBytes, uploadRecord);
         }
 
-        public static async Task<(DedupIdentifier dedupId, ulong length)> UploadToBlobStore<T>(
+        public static async Task<(DedupIdentifier dedupId, ulong lengt, T recordh)> UploadToBlobStore<T>(
             bool verbose,
             string itemPath,
             Func<TelemetryInformationLevel, Uri, string, T> telemetryRecordFactory,

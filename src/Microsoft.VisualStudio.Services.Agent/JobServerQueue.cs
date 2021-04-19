@@ -655,7 +655,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                     {
                         try
                         {
-                            var (dedupId, length) = await _jobServer.UploadAttachmentToBlobStore(_debugMode, file.Path, default(CancellationToken));
+                            var (dedupId, length, record) = await _jobServer.UploadAttachmentToBlobStore(_debugMode, file.Path, default(CancellationToken));
                             // Notify TFS
                             await _jobServer.AssosciateAttachmentAsync(_scopeIdentifier, _hubName, _planId, file.TimelineId, file.TimelineRecordId, file.Type, file.Name, dedupId, (long) length, default(CancellationToken));
                         }

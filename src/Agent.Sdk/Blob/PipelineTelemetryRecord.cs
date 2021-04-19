@@ -17,6 +17,8 @@ namespace Agent.Sdk.Blob
         public Guid PlanId { get; private set; }
         public Guid JobId { get; private set; }
         public Guid TaskInstanceId { get; private set; }
+        public DedupUploadStatistics UploadStatistics { get; private set; }
+        public DedupDownloadStatistics DownloadStatistics { get; private set; }
 
         public PipelineTelemetryRecord(
             TelemetryInformationLevel level, 
@@ -30,6 +32,18 @@ namespace Agent.Sdk.Blob
             PlanId = new Guid(context.GetVariableValueOrDefault(WellKnownDistributedTaskVariables.PlanId) ?? Guid.Empty.ToString());
             JobId = new Guid(context.GetVariableValueOrDefault(WellKnownDistributedTaskVariables.JobId) ?? Guid.Empty.ToString());
             TaskInstanceId = new Guid(context.GetVariableValueOrDefault(WellKnownDistributedTaskVariables.TaskInstanceId) ?? Guid.Empty.ToString());
+        }
+
+        protected override void SetMeasuredActionResult<T>(T value)
+        {
+            if (value is DedupUploadStatistics upStats)
+            {
+                UploadStatistics = upStats;
+            }
+            else if (value is DedupDownloadStatistics downStats)
+            {
+                DownloadStatistics = downStats;
+            }
         }
     }
 }

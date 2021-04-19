@@ -36,7 +36,7 @@ namespace Microsoft.VisualStudio.Services.Agent
         Task<Timeline> GetTimelineAsync(Guid scopeIdentifier, string hubName, Guid planId, Guid timelineId, CancellationToken cancellationToken);
         Task<TaskLog> AssociateLogAsync(Guid scopeIdentifier, string hubName, Guid planId, int logId, BlobIdentifierWithBlocks blobBlockId, int lineCount, CancellationToken cancellationToken);
         Task<BlobIdentifierWithBlocks> UploadLogToBlobStore(Stream blob, string hubName, Guid planId, int logId);
-        Task<(DedupIdentifier dedupId, ulong length)> UploadAttachmentToBlobStore(bool verbose, string itemPath, CancellationToken cancellationToken);
+        Task<(DedupIdentifier dedupId, ulong length, TimelineRecordAttachmentTelemetryRecord record)> UploadAttachmentToBlobStore(bool verbose, string itemPath, CancellationToken cancellationToken);
     }
 
     public sealed class JobServer : AgentService, IJobServer
@@ -158,7 +158,7 @@ namespace Microsoft.VisualStudio.Services.Agent
             }
         }
 
-        public async Task<(DedupIdentifier dedupId, ulong length)> UploadAttachmentToBlobStore(bool verbose, string itemPath, CancellationToken cancellationToken)
+        public async Task<(DedupIdentifier dedupId, ulong length, TimelineRecordAttachmentTelemetryRecord record)> UploadAttachmentToBlobStore(bool verbose, string itemPath, CancellationToken cancellationToken)
         {
             return await BlobStoreUtils.UploadToBlobStore<TimelineRecordAttachmentTelemetryRecord>(verbose, itemPath, (level, uri, type) =>
                 new TimelineRecordAttachmentTelemetryRecord(level, uri, type, nameof(UploadAttachmentToBlobStore)), (str) => Trace.Info(str), this._connection, cancellationToken);
