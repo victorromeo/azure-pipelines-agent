@@ -173,3 +173,22 @@ function Get-RegistryValueNames {
         }
     }
 }
+
+function Is-RegistryValueEmpty {
+    <#
+        .SYNOPSIS
+            Returns true if registry value is empty; otherwise false
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Value)
+
+    if ($Value -eq $null) {
+        return $false
+    }
+
+    if ($Value -is [string] -and $Value -eq '') {
+        return $false
+    }
+}

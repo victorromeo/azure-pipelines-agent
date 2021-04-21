@@ -83,6 +83,118 @@ function Add-CapabilityFromRegistry {
     return $true
 }
 
+
+function Add-CapabilityFromRegistryWithLastVersionAvailableForSubkey {
+    <#
+        .SYNOPSIS
+            Retrieves capability from registry for specified key and subkey.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
+        [string]$Hive,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('Default', 'Registry32', 'Registry64')]
+        [string]$View,
+
+        [Parameter(Mandatory = $true)]
+        [string]$KeyName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ValueName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Subkey,
+
+        [ref]$Value)
+
+    try {
+        $wholeKey = Join-Path -Path $KeyName -ChildPath $Subkey
+
+        $capablityValue = Get-RegistryValue -Hive $Hive -View $View -KeyName $wholeKey -ValueName $ValueName
+
+        if (Is-RegistryValueEmpty -Value $capablityValue) {
+            return $false
+        }
+
+        Write-Capability -Name $Name -Value $capablityValue
+        if ($Value) {
+            $Value.Value = $capablityValue
+        }
+
+        return $true
+    } catch {
+        return $false
+    }
+}
+
+function Add-CapabilityFromRegistryWithLastVersionAvailable {
+    <#
+        .SYNOPSIS
+            Retrieves capability from registry with last version. Considers that subkeys for specified key name are versions (in semver format like 1.2.3)
+            This is useful to detect last version of tools as agent capabilities
+
+        .EXAMPLE
+            If KeyName = 'SOFTWARE\JavaSoft\JDK', and this registry key contains subkeys: 14.0.1, 16.0 - it will write the last one as specified capability
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('CurrentUser', 'LocalMachine')]
+        [string]$Hive,
+
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('Default', 'Registry32', 'Registry64')]
+        [string]$View,
+
+        [Parameter(Mandatory = $true)]
+        [string]$KeyName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$ValueName,
+
+        [ref]$Value)
+
+    try {
+        $subkeys = Get-RegistrySubKeyNames -Hive $Hive -View $View -KeyName $KeyName | Sort-Object
+
+        $versionSubkeys = $subkeys | ForEach {[tuple]::Create((Parse-Version -Version $_), $_)}
+
+        $sortedVersionSubkeys = $versionSubkeys | Sort-Object -Property @{Expression = {$_.Item1}; Descending = $False}
+
+        $res = Add-CapabilityFromRegistryWithLastVersionAvailableForSubkey -Name $Name -Hive $Hive -View $View -KeyName $KeyName -ValueName $ValueName -Subkey $sortedVersionSubkeys[-1].Item2 -Value $Value
+        if (!$res) {
+            Write-Host "An error occured while trying to get last available version for capability: " $Name
+            Write-Host $_ 
+
+            $res = Add-CapabilityFromRegistryWithLastVersionAvailableForSubkey -Name $Name -Hive $Hive -View $View -KeyName $KeyName -ValueName $ValueName -Subkey $subkeys[-1] -Value $Value
+
+            if(!$res) {
+                Write-Host "An error occured while trying to set capability for first found subkey: " $subkeys[-1]
+                Write-Host $_
+
+                return $false
+            }
+        }
+
+        return $true
+    } catch {
+        Write-Host "An error occured while trying to sort subkeys for capability as versions: " $Name
+        Write-Host $_ 
+
+        return $false
+    }
+}
+
+
 function Write-Capability {
     [CmdletBinding()]
     param(
