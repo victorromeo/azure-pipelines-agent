@@ -87,12 +87,16 @@ function Add-CapabilityFromRegistry {
 function Add-CapabilityFromRegistryWithLastVersionAvailableForSubkey {
     <#
         .SYNOPSIS
-            Retrieves capability from registry for specified key and subkey.
+            Retrieves capability from registry for specified key and subkey. Considers that subkey has semver format
     #>
     [CmdletBinding()]
     param(
+        # Prefix name of capability
         [Parameter(Mandatory = $true)]
-        [string]$Name,
+        [string]$PrefixName,
+        # Postfix name of capability
+        [Parameter(Mandatory = $false)]
+        [string]$PostfixName,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
@@ -101,19 +105,30 @@ function Add-CapabilityFromRegistryWithLastVersionAvailableForSubkey {
         [Parameter(Mandatory = $true)]
         [ValidateSet('Default', 'Registry32', 'Registry64')]
         [string]$View,
-
+        # Registry key
         [Parameter(Mandatory = $true)]
         [string]$KeyName,
 
         [Parameter(Mandatory = $true)]
         [string]$ValueName,
-
+        # Registry subkey
         [Parameter(Mandatory = $true)]
         [string]$Subkey,
+        # Major version of tool to be added as capability
+        [Parameter(Mandatory = $true)]
+        [int]$MajorVersion,
+        # Minimum major version of tool to be added as capability. All versions detected less than this version - will be ignored. 
+        # This is helpful for backward compatibility with already existing logic for previous versions
+        [Parameter(Mandatory = $false)]
+        [int]$MinimumMajorVersion,
 
         [ref]$Value)
-
     try {
+         Write-Host $MajorVersion $MinimumMajorVersion
+        if ($MajorVersion -lt $MinimumMajorVersion) {
+            return $false
+        }
+
         $wholeKey = Join-Path -Path $KeyName -ChildPath $Subkey
 
         $capablityValue = Get-RegistryValue -Hive $Hive -View $View -KeyName $wholeKey -ValueName $ValueName
@@ -121,8 +136,10 @@ function Add-CapabilityFromRegistryWithLastVersionAvailableForSubkey {
         if (Is-RegistryValueEmpty -Value $capablityValue) {
             return $false
         }
+   
+        $capabilityName = $PrefixName + $MajorVersion + $PostfixName
 
-        Write-Capability -Name $Name -Value $capablityValue
+        Write-Capability -Name $capabilityName -Value $capablityValue
         if ($Value) {
             $Value.Value = $capablityValue
         }
@@ -144,8 +161,12 @@ function Add-CapabilityFromRegistryWithLastVersionAvailable {
     #>
     [CmdletBinding()]
     param(
+        # Prefix name of capability
         [Parameter(Mandatory = $true)]
-        [string]$Name,
+        [string]$PrefixName,
+        # Postfix name of capability
+        [Parameter(Mandatory = $false)]
+        [string]$PostfixName,
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('CurrentUser', 'LocalMachine')]
@@ -154,28 +175,35 @@ function Add-CapabilityFromRegistryWithLastVersionAvailable {
         [Parameter(Mandatory = $true)]
         [ValidateSet('Default', 'Registry32', 'Registry64')]
         [string]$View,
-
+        # Registry key
         [Parameter(Mandatory = $true)]
         [string]$KeyName,
 
         [Parameter(Mandatory = $true)]
         [string]$ValueName,
+        # Minimum major version of tool to be added as capability. All versions detected less than this version - will be ignored. 
+        # This is helpful for backward compatibility with already existing logic for previous versions
+        [Parameter(Mandatory = $false)]
+        [string]$MinimumMajorVersion,
 
         [ref]$Value)
 
     try {
         $subkeys = Get-RegistrySubKeyNames -Hive $Hive -View $View -KeyName $KeyName | Sort-Object
 
-        $versionSubkeys = $subkeys | ForEach {[tuple]::Create((Parse-Version -Version $_), $_)}
+        $versionSubkeys = $subkeys | ForEach {[tuple]::Create((Parse-Version -Version $_), $_)} | Where { ![string]::IsNullOrEmpty($_.Item1)}
 
         $sortedVersionSubkeys = $versionSubkeys | Sort-Object -Property @{Expression = {$_.Item1}; Descending = $False}
+        Write-Host $sortedVersionSubkeys[-1].Item1.Major
+        $res = Add-CapabilityFromRegistryWithLastVersionAvailableForSubkey -PrefixName $PrefixName -PostfixName $PostfixName -Hive $Hive -View $View -KeyName $KeyName -ValueName $ValueName -Subkey $sortedVersionSubkeys[-1].Item2 -MajorVersion $sortedVersionSubkeys[-1].Item1.Major -Value $Value  -MinimumMajorVersion $MinimumMajorVersion
 
-        $res = Add-CapabilityFromRegistryWithLastVersionAvailableForSubkey -Name $Name -Hive $Hive -View $View -KeyName $KeyName -ValueName $ValueName -Subkey $sortedVersionSubkeys[-1].Item2 -Value $Value
         if (!$res) {
-            Write-Host "An error occured while trying to get last available version for capability: " $Name
+            Write-Host "An error occured while trying to get last available version for capability: " $PrefixName + "<version>" + $PostfixName
             Write-Host $_ 
 
-            $res = Add-CapabilityFromRegistryWithLastVersionAvailableForSubkey -Name $Name -Hive $Hive -View $View -KeyName $KeyName -ValueName $ValueName -Subkey $subkeys[-1] -Value $Value
+            $major = (Parse-Version -Version $subkeys[-1]).Major
+
+            $res = Add-CapabilityFromRegistryWithLastVersionAvailableForSubkey -PrefixName $PrefixName -PostfixName $PostfixName -Hive $Hive -View $View -KeyName $KeyName -ValueName $ValueName -Subkey $subkeys[-1] -MajorVersion $major -Value $Value -MinimumMajorVersion $MinimumMajorVersion
 
             if(!$res) {
                 Write-Host "An error occured while trying to set capability for first found subkey: " $subkeys[-1]
@@ -187,7 +215,7 @@ function Add-CapabilityFromRegistryWithLastVersionAvailable {
 
         return $true
     } catch {
-        Write-Host "An error occured while trying to sort subkeys for capability as versions: " $Name
+        Write-Host "An error occured while trying to sort subkeys for capability as versions: " $PrefixName + "<version>" + $PostfixName
         Write-Host $_ 
 
         return $false
