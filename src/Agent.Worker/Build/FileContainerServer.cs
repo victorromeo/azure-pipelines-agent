@@ -329,11 +329,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             return new UploadResult(failedFiles, uploadedSize);
         }
 
-        private async Task<(DedupIdentifier dedupId, ulong length, BuildArtifactActionRecord record)> UploadToBlobStore(IAsyncCommandContext context, string itemPath, CancellationToken cancellationToken)
+        private async Task<(DedupIdentifier dedupId, ulong length)> UploadToBlobStore(IAsyncCommandContext context, string itemPath, CancellationToken cancellationToken)
         {
             var verbose = String.Equals(context.GetVariableValueOrDefault("system.debug"), "true", StringComparison.InvariantCultureIgnoreCase);
 
-            return await BlobStoreUtils.UploadToBlobStore<BuildArtifactActionRecord>(verbose, itemPath, (level, uri, type) =>
+            return await BlobStoreUtils.UploadToBlobStore(verbose, itemPath, (level, uri, type) =>
                 new BuildArtifactActionRecord(level, uri, type, nameof(UploadToBlobStore), context), (str) => context.Output(str), _dedupClient, _blobTelemetry, cancellationToken);
         }
 

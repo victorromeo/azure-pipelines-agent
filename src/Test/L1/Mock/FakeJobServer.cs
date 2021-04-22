@@ -135,15 +135,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
 
             return Task.FromResult(blockBlobId);
         }
-        
-        public async Task<(DedupIdentifier dedupId, ulong length, TimelineRecordAttachmentTelemetryRecord record)> UploadAttachmentToBlobStore(bool verbose, string itemPath, Guid planId, Guid jobId, CancellationToken cancellationToken)
+
+        public async Task<(DedupIdentifier dedupId, ulong length)> UploadAttachmentToBlobStore(bool verbose, string itemPath, Guid planId, Guid jobId, CancellationToken cancellationToken)
         {
             UploadedAttachmentBlobFiles.Add(itemPath);
             var chunk = await ChunkerHelper.CreateFromFileAsync(FileSystem.Instance, itemPath, cancellationToken, false);
             var rootNode = new DedupNode(new []{ chunk});
             var dedupId = rootNode.GetDedupIdentifier(HashType.Dedup64K);
 
-            return (dedupId, rootNode.TransitiveContentBytes, new TimelineRecordAttachmentTelemetryRecord(TelemetryInformationLevel.Debug, new Uri(""), "", "", planId, jobId, Guid.Empty));
+            return (dedupId, rootNode.TransitiveContentBytes);
         }
 
         public Task<TaskLog> AssociateLogAsync(Guid scopeIdentifier, string hubName, Guid planId, int logId, BlobIdentifierWithBlocks blobBlockId, int lineCount, CancellationToken cancellationToken)
