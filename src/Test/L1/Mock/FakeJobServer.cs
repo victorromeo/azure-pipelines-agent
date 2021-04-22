@@ -135,9 +135,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
 
             return Task.FromResult(blockBlobId);
         }
-
-                
-
+        
         public async Task<(DedupIdentifier dedupId, ulong length, TimelineRecordAttachmentTelemetryRecord record)> UploadAttachmentToBlobStore(bool verbose, string itemPath, Guid planId, Guid jobId, CancellationToken cancellationToken)
         {
             UploadedAttachmentBlobFiles.Add(itemPath);
