@@ -29,16 +29,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             _ciClient = connection.GetClient<CustomerIntelligenceHttpClient>();
         }
 
+        // Not used by the interface. We just want to capture successful telemetry for dedup analytics
         public void StartSender()
         {
         }
         public void StopSender()
         {
         }
-
-        public Task PublishEventsAsync(CustomerIntelligenceEvent[] ciEvents)
+        public void SendErrorTelemetry(ErrorTelemetryRecord errorTelemetry)
         {
-            return _ciClient.PublishEventsAsync(events: ciEvents);
+        }
+        public void SendRecord(TelemetryRecord record)
+        {
         }
 
         public void SendActionTelemetry(ActionTelemetryRecord actionTelemetry)
@@ -56,13 +58,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
                     this._totalNumberOfChunks += uploadStats.TotalNumberOfChunks;
                 }
             }
-        }
-
-        public void SendErrorTelemetry(ErrorTelemetryRecord errorTelemetry)
-        {
-        }
-        public void SendRecord(TelemetryRecord record)
-        {
         }
 
         public async Task CommitTelemetry(Guid planId, Guid jobId)
