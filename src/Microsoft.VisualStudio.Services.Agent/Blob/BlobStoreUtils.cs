@@ -66,19 +66,5 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             );
             return (dedupId, rootNode.TransitiveContentBytes, uploadRecord);
         }
-
-        public static async Task<(DedupIdentifier dedupId, ulong lengt, T recordh)> UploadToBlobStore<T>(
-            bool verbose,
-            string itemPath,
-            Func<TelemetryInformationLevel, Uri, string, T> telemetryRecordFactory,
-            Action<string> traceOutput,
-            VssConnection connection,
-            CancellationToken cancellationToken) where T : BlobStoreTelemetryRecord
-        {
-            var (dedupClient, clientTelemetry) = await DedupManifestArtifactClientFactory.Instance
-                    .CreateDedupClientAsync(verbose, traceOutput, connection, cancellationToken);
-
-            return await UploadToBlobStore<T>(verbose, itemPath, telemetryRecordFactory, traceOutput, dedupClient, clientTelemetry, cancellationToken);
-        }
     }
 }
