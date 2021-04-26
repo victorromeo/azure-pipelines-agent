@@ -207,8 +207,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             // report telemetry
             if (uploadToBlob)
             {
-                var planId = Guid.Parse(context.GetVariableValueOrDefault(WellKnownDistributedTaskVariables.PlanId) ?? Guid.Empty.ToString());
-                var jobId = Guid.Parse(context.GetVariableValueOrDefault(WellKnownDistributedTaskVariables.JobId) ?? Guid.Empty.ToString());
+                if (!Guid.TryParse(context.GetVariableValueOrDefault(WellKnownDistributedTaskVariables.PlanId), out var planId))
+                {
+                    planId = Guid.Empty;
+                }
+                if (!Guid.TryParse(context.GetVariableValueOrDefault(WellKnownDistributedTaskVariables.JobId), out var jobId))
+                {
+                    jobId = Guid.Empty;
+                }
                 await _blobTelemetry.CommitTelemetry(planId, jobId);
             }
 
