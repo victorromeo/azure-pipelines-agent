@@ -1,3 +1,13 @@
+## Features
+ - Allow the server to control PostLines speed (#3370)
+ - Update NODE10_VERSION to 10.24.1 #3376 (#3377)
+
+## Bugs
+
+
+## Misc
+ - Added workflow for automerging PRs from LEGO system (#3378)
+
 
 ## Agent Downloads
 
