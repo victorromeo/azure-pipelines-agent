@@ -192,7 +192,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 }
             }
 
-            string containerExecutionArgs = $"exec -i {userArgs} {Container.ContainerId} {workingDirectory} {node} {entryScript}";
+            string containerExecutionArgs = $"exec -i {userArgs} {Container.ContainerId} {workingDirectoryParam} {node} {entryScript}";
 
             using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
             {
