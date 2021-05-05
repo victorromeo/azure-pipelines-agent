@@ -182,7 +182,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             if (!PlatformUtil.RunningOnWindows)
             {
                 userArgs = $"-u {Container.CurrentUserId}";
-                if (Container.CurrentUserName != "root")
+                if (Container.CurrentUserName == "root")
                 {
                     workingDirectoryParam = $" -w /root";
                 }
