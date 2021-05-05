@@ -15,6 +15,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         {
             List<string> validPackageNames = new List<string>()
             {
+                "linux-musl-x64",
                 "win-x64",
                 "win-x86",
                 "linux-x64",

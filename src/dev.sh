@@ -70,6 +70,11 @@ function detect_platform_and_runtime_id ()
             fi
         fi
 
+        if [ -e /etc/alpine-release ]; then
+            local alpineRelease=$(</etc/alpine-release)
+            DETECTED_RUNTIME_ID='linux-musl-x64'
+        fi
+
     elif [[ "$CURRENT_PLATFORM" == 'darwin' ]]; then
         DETECTED_RUNTIME_ID='osx-x64'
     fi
@@ -269,7 +274,7 @@ else
     RUNTIME_ID=$DETECTED_RUNTIME_ID
 fi
 
-_VALID_RIDS='linux-x64:linux-arm:linux-arm64:rhel.6-x64:osx-x64:win-x64:win-x86'
+_VALID_RIDS='linux-musl-x64:linux-x64:linux-arm:linux-arm64:rhel.6-x64:osx-x64:win-x64:win-x86'
 if [[ ":$_VALID_RIDS:" != *:$RUNTIME_ID:* ]]; then
     failed "must specify a valid target runtime ID (one of: $_VALID_RIDS)"
 fi
