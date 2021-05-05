@@ -10,8 +10,9 @@ using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.VisualStudio.Services.Content.Common;
 using Microsoft.VisualStudio.Services.BlobStore.Common.Telemetry;
 
-namespace Agent.Sdk.Blob
+namespace Microsoft.VisualStudio.Services.Agent.Blob
 {
+    [ServiceLocator(Default = typeof(DedupManifestArtifactClientFactory))]
     public interface IDedupManifestArtifactClientFactory
     {
         Task<(DedupManifestArtifactClient client, BlobStoreClientTelemetry telemetry)> CreateDedupManifestClientAsync(
@@ -21,7 +22,7 @@ namespace Agent.Sdk.Blob
             CancellationToken cancellationToken);
 
             
-        Task<(DedupStoreClient client, BlobStoreClientTelemetry telemetry)> CreateDedupClientAsync(
+        Task<(DedupStoreClient client, BlobStoreClientTelemetryTfs telemetry)> CreateDedupClientAsync(
             bool verbose,
             Action<string> traceOutput,
             VssConnection connection,
@@ -69,7 +70,7 @@ namespace Agent.Sdk.Blob
             return (new DedupManifestArtifactClient(telemetry, client, tracer), telemetry);
         }
 
-        public async Task<(DedupStoreClient client, BlobStoreClientTelemetry telemetry)> CreateDedupClientAsync(
+        public async Task<(DedupStoreClient client, BlobStoreClientTelemetryTfs telemetry)> CreateDedupClientAsync(
             bool verbose,
             Action<string> traceOutput,
             VssConnection connection,
@@ -96,7 +97,7 @@ namespace Agent.Sdk.Blob
                 cancellationToken: cancellationToken,
                 continueOnCapturedContext: false);
 
-            var telemetry = new BlobStoreClientTelemetry(tracer, dedupStoreHttpClient.BaseAddress);
+            var telemetry = new BlobStoreClientTelemetryTfs(tracer, dedupStoreHttpClient.BaseAddress, connection);
             var client = new DedupStoreClient(dedupStoreHttpClient, 192); // TODO
             return (client, telemetry);
         }

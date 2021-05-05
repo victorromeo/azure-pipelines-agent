@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.VisualStudio.Services.Agent.Blob;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.FileContainer.Client;
 using System;
@@ -14,12 +15,12 @@ using System.Diagnostics;
 using Microsoft.VisualStudio.Services.WebApi;
 using System.Net.Http;
 using System.Net;
-using Agent.Sdk.Blob;
 using BuildXL.Cache.ContentStore.Hashing;
+using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.BlobStore.WebApi;
-using Microsoft.VisualStudio.Services.Content.Common;
-using Microsoft.VisualStudio.Services.BlobStore.Common;
+using Microsoft.VisualStudio.Services.Agent.Worker.Telemetry;
 using Microsoft.VisualStudio.Services.BlobStore.Common.Telemetry;
+using Microsoft.VisualStudio.Services.WebPlatform;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 {
@@ -31,7 +32,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
         private readonly FileContainerHttpClient _fileContainerHttpClient;
         private readonly VssConnection _connection;
         private DedupStoreClient _dedupClient;
-        private BlobStoreClientTelemetry _blobTelemetry;
+        private BlobStoreClientTelemetryTfs _blobTelemetry;
 
         private CancellationTokenSource _uploadCancellationTokenSource;
         private TaskCompletionSource<int> _uploadFinished;
@@ -203,6 +204,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             _uploadFinished.TrySetResult(0);
             await uploadMonitor;
 
+            // report telemetry
+            if (uploadToBlob)
+            {
+                if (!Guid.TryParse(context.GetVariableValueOrDefault(WellKnownDistributedTaskVariables.PlanId), out var planId))
+                {
+                    planId = Guid.Empty;
+                }
+                if (!Guid.TryParse(context.GetVariableValueOrDefault(WellKnownDistributedTaskVariables.JobId), out var jobId))
+                {
+                    jobId = Guid.Empty;
+                }
+                await _blobTelemetry.CommitTelemetry(planId, jobId);
+            }
+
             return uploadResult;
         }
 
@@ -322,34 +337,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
         private async Task<(DedupIdentifier dedupId, ulong length)> UploadToBlobStore(IAsyncCommandContext context, string itemPath, CancellationToken cancellationToken)
         {
-            // Create chunks and identifier
-            var chunk = await ChunkerHelper.CreateFromFileAsync(FileSystem.Instance, itemPath, cancellationToken, false);
-            var rootNode = new DedupNode(new []{ chunk});
-            var dedupId = rootNode.GetDedupIdentifier(HashType.Dedup64K);
-
-            // Setup upload session to keep file for at mimimum one day
             var verbose = String.Equals(context.GetVariableValueOrDefault("system.debug"), "true", StringComparison.InvariantCultureIgnoreCase);
-            var tracer = DedupManifestArtifactClientFactory.CreateArtifactsTracer(verbose, (str) => context.Output(str));
-            var keepUntulRef = new KeepUntilBlobReference(DateTime.UtcNow.AddDays(1));
-            var uploadSession = _dedupClient.CreateUploadSession(keepUntulRef, tracer, FileSystem.Instance);
 
-            // Upload the chunks
-            var uploadRecord = _blobTelemetry.CreateRecord<BuildArtifactActionRecord>((level, uri, type) =>
-                new BuildArtifactActionRecord(level, uri, type, nameof(UploadAsync), context));
-            await _blobTelemetry.MeasureActionAsync(
-                record: uploadRecord,
-                actionAsync: async () => await AsyncHttpRetryHelper.InvokeAsync(
-                        async () =>
-                        {
-                            return await uploadSession.UploadAsync(rootNode, new Dictionary<DedupIdentifier, string>(){ [dedupId] = itemPath }, cancellationToken);
-                        },
-                        maxRetries: 3,
-                        tracer: tracer,
-                        canRetryDelegate: e => true, // this isn't great, but failing on upload stinks, so just try a couple of times
-                        cancellationToken: cancellationToken,
-                        continueOnCapturedContext: false)
-            );
-            return (dedupId, rootNode.TransitiveContentBytes);
+            return await BlobStoreUtils.UploadToBlobStore(verbose, itemPath, (level, uri, type) =>
+                new BuildArtifactActionRecord(level, uri, type, nameof(UploadToBlobStore), context), (str) => context.Output(str), _dedupClient, _blobTelemetry, cancellationToken);
         }
 
         private async Task ReportingAsync(IAsyncCommandContext context, int totalFiles, CancellationToken token)
