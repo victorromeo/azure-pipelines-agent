@@ -235,7 +235,7 @@ namespace Agent.Sdk.Knob
         // to disable recognition of Java higher than 9
         public static readonly Knob DisableRecognitionOfJDKHigherThen9 = new Knob(
             nameof(DisableRecognitionOfJDKHigherThen9),
-            "Allow to recognise SDK higher than 9",
+            "Recognize JDK and JRE >= 9 installed on the machine as agent capability. Setting any value to DISABLE_JAVA_CAPABILITY_HIGHER_THAN_9 is disabling this behavior",
             new EnvironmentKnobSource("DISABLE_JAVA_CAPABILITY_HIGHER_THAN_9"),
             new BuiltInDefaultKnobSource(string.Empty));
     }
