@@ -3,6 +3,7 @@
  - Update NODE10_VERSION to 10.24.1 #3376 (#3377)
 
 ## Bugs
+- Fix PostLines default speed (#3389)
 
 
 ## Misc
