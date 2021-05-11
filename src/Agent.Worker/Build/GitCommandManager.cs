@@ -162,9 +162,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 if (PlatformUtil.RunningOnWindows)
                 {
                     _gitPath = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "git", "cmd", $"git{IOUtil.ExeExtension}");
+                    _gitLfsPath = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "git", PlatformUtil.IsX86 ? "mingw32" : "mingw64", "bin", "git-lfs.exe");
 
                     // Prepend the PATH.
                     context.Output(StringUtil.Loc("Prepending0WithDirectoryContaining1", Constants.PathVariable, Path.GetFileName(_gitPath)));
+                    // We need to prepend git-lfs path first so that we call
+                    // externals/git/cmd/git.exe instead of externals/git/mingw**/bin/git.exe
+                    PathUtil.PrependPath(Path.GetDirectoryName(_gitLfsPath));
                     PathUtil.PrependPath(Path.GetDirectoryName(_gitPath));
                     context.Debug($"{Constants.PathVariable}: '{Environment.GetEnvironmentVariable(Constants.PathVariable)}'");
                 }
@@ -172,6 +176,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             else
             {
                 _gitPath = WhichUtil.Which("git", require: true, trace: Trace);
+                _gitLfsPath = WhichUtil.Which("git-lfs", require: false, trace: Trace);
             }
 
             ArgUtil.File(_gitPath, nameof(_gitPath));
@@ -181,17 +186,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             ArgUtil.NotNull(_gitVersion, nameof(_gitVersion));
             context.Debug($"Detect git version: {_gitVersion.ToString()}.");
 
-            // Resolve the location of git-lfs.
-            // This should be best effort since checkout lfs objects is an option.
-            // We will check and ensure git-lfs version later
-            _gitLfsPath = WhichUtil.Which("git-lfs", require: false, trace: Trace);
-
-            // Get the Git-LFS version if git-lfs exist in %PATH%.
-            if (!string.IsNullOrEmpty(_gitLfsPath))
-            {
-                _gitLfsVersion = await GitLfsVersion(context);
-                context.Debug($"Detect git-lfs version: '{_gitLfsVersion?.ToString() ?? string.Empty}'.");
-            }
+            // Get the Git-LFS version.
+            _gitLfsVersion = await GitLfsVersion(context);
+            ArgUtil.NotNull(_gitLfsVersion, nameof(_gitLfsVersion));
+            context.Debug($"Detect git-lfs version: '{_gitLfsVersion.ToString()}'.");
 
             // required 2.0, all git operation commandline args need min git version 2.0
             Version minRequiredGitVersion = new Version(2, 0);
