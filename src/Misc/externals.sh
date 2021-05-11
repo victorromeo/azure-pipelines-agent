@@ -11,6 +11,7 @@ NODE_URL=https://nodejs.org/dist
 NODE_VERSION="6.17.1"
 NODE10_VERSION="10.24.1"
 MINGIT_VERSION="2.30.2"
+LFS_VERSION="2.13.3"
 
 get_abs_path() {
   # exploits the fact that pwd will print abs path when no args
