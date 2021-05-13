@@ -186,10 +186,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             ArgUtil.NotNull(_gitVersion, nameof(_gitVersion));
             context.Debug($"Detect git version: {_gitVersion.ToString()}.");
 
-            // Get the Git-LFS version.
-            _gitLfsVersion = await GitLfsVersion(context);
-            ArgUtil.NotNull(_gitLfsVersion, nameof(_gitLfsVersion));
-            context.Debug($"Detect git-lfs version: '{_gitLfsVersion.ToString()}'.");
+            // Get the Git-LFS version if git-lfs exist in %PATH%.
+            if (!string.IsNullOrEmpty(_gitLfsPath))
+            {
+                _gitLfsVersion = await GitLfsVersion(context);
+                context.Debug($"Detect git-lfs version: '{_gitLfsVersion?.ToString() ?? string.Empty}'.");
+            }
 
             // required 2.0, all git operation commandline args need min git version 2.0
             Version minRequiredGitVersion = new Version(2, 0);

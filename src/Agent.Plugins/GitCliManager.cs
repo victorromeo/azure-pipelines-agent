@@ -111,10 +111,12 @@ namespace Agent.Plugins.Repository
             ArgUtil.NotNull(gitVersion, nameof(gitVersion));
             context.Debug($"Detect git version: {gitVersion.ToString()}.");
 
-            // Get the Git-LFS version.
-            gitLfsVersion = await GitLfsVersion(context);
-            ArgUtil.NotNull(gitLfsVersion, nameof(gitLfsVersion));
-            context.Debug($"Detect git-lfs version: '{gitLfsVersion.ToString()}'.");
+            // Get the Git-LFS version if git-lfs exist in %PATH%.
+            if (!string.IsNullOrEmpty(gitLfsPath))
+            {
+                gitLfsVersion = await GitLfsVersion(context);
+                context.Debug($"Detect git-lfs version: '{gitLfsVersion?.ToString() ?? string.Empty}'.");
+            }
 
             // required 2.0, all git operation commandline args need min git version 2.0
             Version minRequiredGitVersion = new Version(2, 0);
