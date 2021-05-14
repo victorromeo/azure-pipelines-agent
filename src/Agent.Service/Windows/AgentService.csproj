@@ -82,9 +82,10 @@
     <EmbeddedResource Include="Resource.ko-KR.resx">
     </EmbeddedResource>
     <EmbeddedResource Include="Resource.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resource.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="Resource.ru-RU.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
     </EmbeddedResource>
     <EmbeddedResource Include="Resource.zh-CN.resx">
     </EmbeddedResource>
