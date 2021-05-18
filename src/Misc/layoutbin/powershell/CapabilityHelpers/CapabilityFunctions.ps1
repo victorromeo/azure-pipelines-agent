@@ -124,24 +124,24 @@ function Add-CapabilityFromRegistryWithLastVersionAvailableForSubkey {
 
         [ref]$Value)
     try {
-         Write-Host $MajorVersion $MinimumMajorVersion
+        Write-Host $MajorVersion $MinimumMajorVersion
         if ($MajorVersion -lt $MinimumMajorVersion) {
             return $false
         }
 
         $wholeKey = Join-Path -Path $KeyName -ChildPath $Subkey
 
-        $capablityValue = Get-RegistryValue -Hive $Hive -View $View -KeyName $wholeKey -ValueName $ValueName
+        $capabilityValue = Get-RegistryValue -Hive $Hive -View $View -KeyName $wholeKey -ValueName $ValueName
 
-        if (Is-RegistryValueEmpty -Value $capablityValue) {
+        if ([string]::IsNullOrEmpty($capabilityValue)) {
             return $false
         }
    
         $capabilityName = $PrefixName + $MajorVersion + $PostfixName
 
-        Write-Capability -Name $capabilityName -Value $capablityValue
+        Write-Capability -Name $capabilityName -Value $capabilityValue
         if ($Value) {
-            $Value.Value = $capablityValue
+            $Value.Value = $capabilityValue
         }
 
         return $true

@@ -231,7 +231,7 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("ALLOW_TFVC_UNSHELVE_ERRORS"),
             new BuiltInDefaultKnobSource("false"));
 
-        // Set ALLOW_JAVA_CAPABILITY_HIGHER_THAN_9 variable with any value
+        // Set DISABLE_JAVA_CAPABILITY_HIGHER_THAN_9 variable with any value
         // to disable recognition of Java higher than 9
         public static readonly Knob DisableRecognitionOfJDKHigherThen9 = new Knob(
             nameof(DisableRecognitionOfJDKHigherThen9),
