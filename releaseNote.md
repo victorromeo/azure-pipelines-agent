@@ -1,3 +1,15 @@
+## Features
+
+
+## Bugs
+ - Added capability detection for JDK/JRE >=9 as 'java'/'JDK' capabilities (#3381)
+ - Specified working directory explicitly for 'docker exec' command - to align behavior with last docker fix (#3392)
+ - Make artifact type check case-insensitive (#3396)
+ - Remove unneeded blob telemetry (#3405)
+
+## Misc
+
+
 
 ## Agent Downloads
 
