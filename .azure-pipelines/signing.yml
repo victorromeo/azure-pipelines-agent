@@ -39,7 +39,7 @@ steps:
       Agent.*.dll
       Agent.*.exe
       Microsoft.VisualStudio.Services.Agent.dll
-      AgentService.exe
+      **\AgentService.resources.dll
     UseMinimatch: true
     signConfigType: inlineSignParams
     inlineOperation: |
