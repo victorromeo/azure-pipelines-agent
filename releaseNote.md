@@ -1,3 +1,16 @@
+## Features
+ - Updating vss-api-nuget package - catching Exception for blobstore client telemetry (#3408)
+
+## Bugs
+ - Added capability detection for JDK/JRE >=9 as 'java'/'JDK' capabilities (#3381)
+ - Specified working directory explicitly for 'docker exec' command - to align behavior with last docker fix (#3392)
+ - Make artifact type check case-insensitive (#3396)
+ - Remove unneeded blob telemetry (#3405)
+ - Adjusted code sign step - to sign new assemblies (#3410)
+
+## Misc
+ - Localization update (#3394)
+
 
 ## Agent Downloads
 
