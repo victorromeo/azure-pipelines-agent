@@ -926,6 +926,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                                 timeout = TimeSpan.FromSeconds(60);
                             }
 
+                            if (timeout.TotalMinutes > 35790)
+                            {
+                                timeout = TimeSpan.FromMinutes(35790);
+                            }
+
                             WorkerCancelTimeoutKillTokenSource.CancelAfter(timeout.Subtract(TimeSpan.FromSeconds(15)));
                             return true;
                         }
