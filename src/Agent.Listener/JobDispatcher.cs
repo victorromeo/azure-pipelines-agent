@@ -912,6 +912,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
             public bool Cancel(TimeSpan timeout)
             {
+                const int maxValueInMinutes = 35790; // 35790 * 60 * 1000 = 2147400000
+                // The "CancelAfter" method converts minutes to milliseconds
+                // It throw an exception if the value is greater than 2147483647 (Int32.MaxValue)
+
                 if (WorkerCancellationTokenSource != null && WorkerCancelTimeoutKillTokenSource != null)
                 {
                     lock (_lock)
@@ -926,9 +930,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                                 timeout = TimeSpan.FromSeconds(60);
                             }
 
-                            if (timeout.TotalMinutes > 35790)
+                            // make sure we have less than 2147400000 milliseconds
+                            if (timeout.TotalMinutes > maxValueInMinutes)
                             {
-                                timeout = TimeSpan.FromMinutes(35790);
+                                timeout = TimeSpan.FromMinutes(maxValueInMinutes);
                             }
 
                             WorkerCancelTimeoutKillTokenSource.CancelAfter(timeout.Subtract(TimeSpan.FromSeconds(15)));
