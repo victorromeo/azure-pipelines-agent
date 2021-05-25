@@ -916,7 +916,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
             public bool Cancel(TimeSpan timeout)
             {
-
                 if (WorkerCancellationTokenSource != null && WorkerCancelTimeoutKillTokenSource != null)
                 {
                     lock (_lock)
