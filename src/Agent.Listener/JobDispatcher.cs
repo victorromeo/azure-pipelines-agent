@@ -901,6 +901,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             public CancellationTokenSource WorkerCancelTimeoutKillTokenSource { get; private set; }
             private readonly object _lock = new object();
 
+            const int maxValueInMinutes = 35790; // 35790 * 60 * 1000 = 2147400000
+            // The "CancelAfter" method converts minutes to milliseconds
+            // It throws an exception if the value is greater than 2147483647 (Int32.MaxValue)
+
             public WorkerDispatcher(Guid jobId, long requestId)
             {
                 JobId = jobId;
@@ -912,9 +916,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
             public bool Cancel(TimeSpan timeout)
             {
-                const int maxValueInMinutes = 35790; // 35790 * 60 * 1000 = 2147400000
-                // The "CancelAfter" method converts minutes to milliseconds
-                // It throw an exception if the value is greater than 2147483647 (Int32.MaxValue)
 
                 if (WorkerCancellationTokenSource != null && WorkerCancelTimeoutKillTokenSource != null)
                 {
