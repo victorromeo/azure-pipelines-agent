@@ -11,6 +11,7 @@
 
 ## Misc
  - Localization update (#3394)
+ - Add temporary env variable to disable blob integration (#3426)
 
 
 ## Agent Downloads
