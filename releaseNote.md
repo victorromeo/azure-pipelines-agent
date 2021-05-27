@@ -7,6 +7,7 @@
  - Make artifact type check case-insensitive (#3396)
  - Remove unneeded blob telemetry (#3405)
  - Adjusted code sign step - to sign new assemblies (#3410)
+ - Backward-compat support setting proxy via environment variables (#3420)
 
 ## Misc
  - Localization update (#3394)
