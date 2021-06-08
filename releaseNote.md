@@ -1,3 +1,14 @@
+## Features
+ - Upload build artifacts to blob with batching (#3403)
+ - Optimize DownloadBuildArtifactsV1 (#3425)
+
+## Bugs
+ - Add checking the maximum timeout value (#3413)
+ - Only connect to Blobstore when needed + Download telemetry (#3431)
+
+## Misc
+ - Auto assign action - fixed token, area label name (#3427)
+
 
 ## Agent Downloads
 
