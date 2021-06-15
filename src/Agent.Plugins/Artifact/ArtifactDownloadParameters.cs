@@ -29,6 +29,9 @@ namespace Agent.Plugins
         public int ParallelizationLimit { get; set; } = 8;
         public int RetryDownloadCount { get; set; } = 4;
         public bool CheckDownloadedFiles { get; set; } = false;
+        // Show if DwonloadBuildArtifactsTaskV1 called download method.
+        // We need it sine this task should use another minimatch options
+        public bool BuildArtifactsTask { get; set; } = false;
     }
 
     internal enum BuildArtifactRetrievalOptions

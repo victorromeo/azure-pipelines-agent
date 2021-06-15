@@ -174,7 +174,8 @@ namespace Agent.Plugins.BuildArtifacts
                     MinimatchFilterWithArtifactName = true,
                     ParallelizationLimit = int.TryParse(parallelizationLimit, out var parallelLimit) ? parallelLimit : 8,
                     RetryDownloadCount = int.TryParse(retryDownloadCount, out var retryCount) ? retryCount : 4,
-                    CheckDownloadedFiles = bool.TryParse(checkDownloadedFiles, out var checkDownloads) && checkDownloads
+                    CheckDownloadedFiles = bool.TryParse(checkDownloadedFiles, out var checkDownloads) && checkDownloads,
+                    BuildArtifactsTask = true
                 };
             }
             else if (buildType == buildTypeSpecific)
@@ -268,7 +269,8 @@ namespace Agent.Plugins.BuildArtifacts
                     MinimatchFilterWithArtifactName = true,
                     ParallelizationLimit = int.TryParse(parallelizationLimit, out var parallelLimit) ? parallelLimit : 8,
                     RetryDownloadCount = int.TryParse(retryDownloadCount, out var retryCount) ? retryCount : 4,
-                    CheckDownloadedFiles = bool.TryParse(checkDownloadedFiles, out var checkDownloads) && checkDownloads
+                    CheckDownloadedFiles = bool.TryParse(checkDownloadedFiles, out var checkDownloads) && checkDownloads,
+                    BuildArtifactsTask = true
                 };
             }
             else
