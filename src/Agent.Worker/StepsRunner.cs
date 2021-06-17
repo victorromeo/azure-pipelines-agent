@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TeamFoundation.DistributedTask.Expressions;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         IExpressionNode Condition { get; set; }
         bool ContinueOnError { get; }
         string DisplayName { get; }
-        Pipelines.StepTarget Target { get; }
+        DistributedTaskPipelines.StepTarget Target { get; }
         bool Enabled { get; }
         IExecutionContext ExecutionContext { get; set; }
         TimeSpan? Timeout { get; }

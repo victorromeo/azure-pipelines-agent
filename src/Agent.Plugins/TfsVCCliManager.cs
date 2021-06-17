@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
 using Agent.Sdk;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Plugins.Repository
@@ -21,7 +21,7 @@ namespace Agent.Plugins.Repository
 
         public ServiceEndpoint Endpoint { protected get; set; }
 
-        public Pipelines.RepositoryResource Repository { protected get; set; }
+        public DistributedTaskPipelines.RepositoryResource Repository { protected get; set; }
 
         public AgentTaskPluginExecutionContext ExecutionContext { protected get; set; }
 
@@ -46,7 +46,7 @@ namespace Agent.Plugins.Repository
         {
             get
             {
-                string sourcesDirectory = Repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
+                string sourcesDirectory = Repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Path);
                 ArgUtil.NotNullOrEmpty(sourcesDirectory, nameof(sourcesDirectory));
                 return sourcesDirectory;
             }

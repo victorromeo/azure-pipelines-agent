@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TeamFoundation.Build.WebApi;
 using Agent.Sdk;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Plugins.Repository
@@ -16,7 +16,7 @@ namespace Agent.Plugins.Repository
     {
         public async Task GetSourceAsync(
             AgentTaskPluginExecutionContext executionContext,
-            Pipelines.RepositoryResource repository,
+            DistributedTaskPipelines.RepositoryResource repository,
             CancellationToken cancellationToken)
         {
             // Validate args.
@@ -27,11 +27,11 @@ namespace Agent.Plugins.Repository
             svn.Init(executionContext, repository, cancellationToken);
 
             // Determine the sources directory.
-            string sourceDirectory = repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
+            string sourceDirectory = repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Path);
             executionContext.Debug($"sourceDirectory={sourceDirectory}");
             ArgUtil.NotNullOrEmpty(sourceDirectory, nameof(sourceDirectory));
 
-            string sourceBranch = repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Ref);
+            string sourceBranch = repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Ref);
             executionContext.Debug($"sourceBranch={sourceBranch}");
 
             string revision = repository.Version;
@@ -42,11 +42,11 @@ namespace Agent.Plugins.Repository
 
             executionContext.Debug($"revision={revision}");
 
-            bool clean = StringUtil.ConvertToBoolean(executionContext.GetInput(Pipelines.PipelineConstants.CheckoutTaskInputs.Clean));
+            bool clean = StringUtil.ConvertToBoolean(executionContext.GetInput(DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.Clean));
             executionContext.Debug($"clean={clean}");
 
             // Get the definition mappings.
-            var mappings = repository.Properties.Get<IList<Pipelines.WorkspaceMapping>>(Pipelines.RepositoryPropertyNames.Mappings);
+            var mappings = repository.Properties.Get<IList<DistributedTaskPipelines.WorkspaceMapping>>(DistributedTaskPipelines.RepositoryPropertyNames.Mappings);
             List<SvnMappingDetails> allMappings = mappings.Select(x => new SvnMappingDetails() { ServerPath = x.ServerPath, LocalPath = x.LocalPath, Revision = x.Revision, Depth = x.Depth, IgnoreExternals = x.IgnoreExternals }).ToList();
 
             if (StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("system.debug")?.Value))
@@ -63,7 +63,7 @@ namespace Agent.Plugins.Repository
 
             string normalizedBranch = svn.NormalizeRelativePath(sourceBranch, '/', '\\');
 
-            executionContext.Output(StringUtil.Loc("SvnSyncingRepo", repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name)));
+            executionContext.Output(StringUtil.Loc("SvnSyncingRepo", repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Name)));
 
             string effectiveRevision = await svn.UpdateWorkspace(
                 sourceDirectory,
@@ -72,10 +72,10 @@ namespace Agent.Plugins.Repository
                 normalizedBranch,
                 revision);
 
-            executionContext.Output(StringUtil.Loc("SvnBranchCheckedOut", normalizedBranch, repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name), effectiveRevision));
+            executionContext.Output(StringUtil.Loc("SvnBranchCheckedOut", normalizedBranch, repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Name), effectiveRevision));
         }
 
-        public Task PostJobCleanupAsync(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository)
+        public Task PostJobCleanupAsync(AgentTaskPluginExecutionContext executionContext, DistributedTaskPipelines.RepositoryResource repository)
         {
             return Task.CompletedTask;
         }

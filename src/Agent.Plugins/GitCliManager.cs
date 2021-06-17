@@ -14,7 +14,7 @@ using Agent.Sdk;
 using Agent.Sdk.Knob;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Common;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Agent.Plugins.Repository
 {
@@ -131,7 +131,7 @@ namespace Agent.Plugins.Repository
 
             // git-lfs 2.7.1 contains a bug where it doesn't include extra header from git config
             // See https://github.com/git-lfs/git-lfs/issues/3571
-            bool gitLfsSupport = StringUtil.ConvertToBoolean(context.GetInput(Pipelines.PipelineConstants.CheckoutTaskInputs.Lfs));
+            bool gitLfsSupport = StringUtil.ConvertToBoolean(context.GetInput(DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.Lfs));
             Version recommendedGitLfsVersion = new Version(2, 7, 2);
 
             if (gitLfsSupport && gitLfsVersion == new Version(2, 7, 1))
@@ -205,7 +205,7 @@ namespace Agent.Plugins.Repository
                 watch.Stop();
 
                 // Publish some fetch statistics
-                context.PublishTelemetry(area: "AzurePipelinesAgent", feature: "GitFetch", properties: new Dictionary<string, string>
+                context.PublishTelemetry(area: "AzureDistributedTaskPipelinesAgent", feature: "GitFetch", properties: new Dictionary<string, string>
                 {
                     { "ElapsedTimeMilliseconds", $"{watch.ElapsedMilliseconds}" },
                     { "RefSpec", string.Join(" ", refSpec) },

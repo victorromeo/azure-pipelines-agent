@@ -16,7 +16,7 @@ using System.Linq;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     public interface IDiagnosticLogManager : IAgentService
     {
         Task UploadDiagnosticLogsAsync(IExecutionContext executionContext,
-                                  Pipelines.AgentJobRequestMessage message,
+                                  DistributedTaskPipelines.AgentJobRequestMessage message,
                                   DateTime jobStartTimeUtc);
     }
 
@@ -38,7 +38,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     public sealed class DiagnosticLogManager : AgentService, IDiagnosticLogManager
     {
         public async Task UploadDiagnosticLogsAsync(IExecutionContext executionContext,
-                                         Pipelines.AgentJobRequestMessage message,
+                                         DistributedTaskPipelines.AgentJobRequestMessage message,
                                          DateTime jobStartTimeUtc)
         {
             ArgUtil.NotNull(executionContext, nameof(executionContext));
@@ -230,7 +230,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return agentLogFiles;
         }
 
-        private async Task<string> GetEnvironmentContent(int agentId, string agentName, IList<Pipelines.JobStep> steps)
+        private async Task<string> GetEnvironmentContent(int agentId, string agentName, IList<DistributedTaskPipelines.JobStep> steps)
         {
             if (PlatformUtil.RunningOnWindows)
             {
@@ -239,7 +239,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return GetEnvironmentContentNonWindows(agentId, agentName, steps);
         }
 
-        private async Task<string> GetEnvironmentContentWindows(int agentId, string agentName, IList<Pipelines.JobStep> steps)
+        private async Task<string> GetEnvironmentContentWindows(int agentId, string agentName, IList<DistributedTaskPipelines.JobStep> steps)
         {
             var builder = new StringBuilder();
 
@@ -250,7 +250,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             builder.AppendLine($"OS: {System.Runtime.InteropServices.RuntimeInformation.OSDescription}");
             builder.AppendLine("Steps:");
 
-            foreach (Pipelines.TaskStep task in steps.OfType<Pipelines.TaskStep>())
+            foreach (DistributedTaskPipelines.TaskStep task in steps.OfType<DistributedTaskPipelines.TaskStep>())
             {
                 builder.AppendLine($"\tName: {task.Reference.Name} Version: {task.Reference.Version}");
             }
@@ -328,7 +328,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return builder.ToString();
         }
 
-        private string GetEnvironmentContentNonWindows(int agentId, string agentName, IList<Pipelines.JobStep> steps)
+        private string GetEnvironmentContentNonWindows(int agentId, string agentName, IList<DistributedTaskPipelines.JobStep> steps)
         {
             var builder = new StringBuilder();
 
@@ -339,7 +339,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             builder.AppendLine($"OS: {System.Runtime.InteropServices.RuntimeInformation.OSDescription}");
             builder.AppendLine("Steps:");
 
-            foreach (Pipelines.TaskStep task in steps.OfType<Pipelines.TaskStep>())
+            foreach (DistributedTaskPipelines.TaskStep task in steps.OfType<DistributedTaskPipelines.TaskStep>())
             {
                 builder.AppendLine($"\tName: {task.Reference.Name} Version: {task.Reference.Version}");
             }

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.IO;
 using Microsoft.VisualStudio.Services.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 {
@@ -25,7 +25,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         Dictionary<string, string> Inputs { get; set; }
         List<SecureFile> SecureFiles { get; set; }
         string TaskDirectory { get; set; }
-        Pipelines.TaskStepDefinitionReference Task { get; set; }
+        DistributedTaskPipelines.TaskStepDefinitionReference Task { get; set; }
         Task RunAsync();
     }
 
@@ -45,7 +45,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         public Dictionary<string, string> Inputs { get; set; }
         public List<SecureFile> SecureFiles { get; set; }
         public string TaskDirectory { get; set; }
-        public Pipelines.TaskStepDefinitionReference Task { get; set; }
+        public DistributedTaskPipelines.TaskStepDefinitionReference Task { get; set; }
 
         public override void Initialize(IHostContext hostContext)
         {

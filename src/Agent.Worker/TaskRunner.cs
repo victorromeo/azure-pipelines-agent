@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.TeamFoundation.DistributedTask.Expressions;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Agent.Worker.Handlers;
 using Microsoft.VisualStudio.Services.Agent.Worker.Container;
@@ -30,7 +30,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     public interface ITaskRunner : IStep, IAgentService
     {
         JobRunStage Stage { get; set; }
-        Pipelines.TaskStep Task { get; set; }
+        DistributedTaskPipelines.TaskStep Task { get; set; }
     }
 
     public sealed class TaskRunner : AgentService, ITaskRunner
@@ -47,11 +47,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public IExecutionContext ExecutionContext { get; set; }
 
-        public Pipelines.TaskStep Task { get; set; }
+        public DistributedTaskPipelines.TaskStep Task { get; set; }
 
         public TimeSpan? Timeout => (Task?.TimeoutInMinutes ?? 0) > 0 ? (TimeSpan?)TimeSpan.FromMinutes(Task.TimeoutInMinutes) : null;
 
-        public Pipelines.StepTarget Target => Task?.Target;
+        public DistributedTaskPipelines.StepTarget Target => Task?.Target;
 
         public async Task RunAsync()
         {

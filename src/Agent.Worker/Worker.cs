@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
 using System.Collections.Generic;
@@ -55,7 +55,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Trace.Info("Message received.");
                 ArgUtil.Equal(MessageType.NewJobRequest, channelMessage.MessageType, nameof(channelMessage.MessageType));
                 ArgUtil.NotNullOrEmpty(channelMessage.Body, nameof(channelMessage.Body));
-                var jobMessage = JsonUtility.FromString<Pipelines.AgentJobRequestMessage>(channelMessage.Body);
+                var jobMessage = JsonUtility.FromString<DistributedTaskPipelines.AgentJobRequestMessage>(channelMessage.Body);
                 ArgUtil.NotNull(jobMessage, nameof(jobMessage));
                 HostContext.WritePerfCounter($"WorkerJobMessageReceived_{jobMessage.RequestId.ToString()}");
 
@@ -136,7 +136,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        private void InitializeSecretMasker(Pipelines.AgentJobRequestMessage message)
+        private void InitializeSecretMasker(DistributedTaskPipelines.AgentJobRequestMessage message)
         {
             Trace.Entering();
             ArgUtil.NotNull(message, nameof(message));
@@ -204,7 +204,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        private void SetCulture(Pipelines.AgentJobRequestMessage message)
+        private void SetCulture(DistributedTaskPipelines.AgentJobRequestMessage message)
         {
             // Extract the culture name from the job's variable dictionary.
             // The variable does not exist for TFS 2015 RTM and Update 1.

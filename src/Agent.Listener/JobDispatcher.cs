@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using System.Linq;
 using Microsoft.VisualStudio.Services.Common;
 using System.Diagnostics;
@@ -23,7 +23,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
     public interface IJobDispatcher : IAgentService
     {
         TaskCompletionSource<bool> RunOnceJobCompleted { get; }
-        void Run(Pipelines.AgentJobRequestMessage message, bool runOnce = false);
+        void Run(DistributedTaskPipelines.AgentJobRequestMessage message, bool runOnce = false);
         bool Cancel(JobCancelMessage message);
         void MetadataUpdate(JobMetadataMessage message);
         Task WaitAsync(CancellationToken token);
@@ -71,7 +71,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
         public TaskCompletionSource<bool> RunOnceJobCompleted => _runOnceJobCompleted;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA2000:Dispose objects before losing scope", MessageId = "WorkerDispatcher")]
-        public void Run(Pipelines.AgentJobRequestMessage jobRequestMessage, bool runOnce = false)
+        public void Run(DistributedTaskPipelines.AgentJobRequestMessage jobRequestMessage, bool runOnce = false)
         {
             ArgUtil.NotNull(jobRequestMessage, nameof(jobRequestMessage));
             Trace.Info($"Job request {jobRequestMessage.RequestId} for plan {jobRequestMessage.Plan.PlanId} job {jobRequestMessage.JobId} received.");
@@ -303,7 +303,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             }
         }
 
-        private async Task RunOnceAsync(Pipelines.AgentJobRequestMessage message, WorkerDispatcher previousJobDispatch, WorkerDispatcher currentJobDispatch)
+        private async Task RunOnceAsync(DistributedTaskPipelines.AgentJobRequestMessage message, WorkerDispatcher previousJobDispatch, WorkerDispatcher currentJobDispatch)
         {
             try
             {
@@ -316,7 +316,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             }
         }
 
-        private async Task RunAsync(Pipelines.AgentJobRequestMessage message, WorkerDispatcher previousJobDispatch, WorkerDispatcher newJobDispatch)
+        private async Task RunAsync(DistributedTaskPipelines.AgentJobRequestMessage message, WorkerDispatcher previousJobDispatch, WorkerDispatcher newJobDispatch)
         {
             if (previousJobDispatch != null)
             {
@@ -789,7 +789,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
         }
 
         // TODO: We need send detailInfo back to DT in order to add an issue for the job
-        private async Task CompleteJobRequestAsync(int poolId, Pipelines.AgentJobRequestMessage message, Guid lockToken, TaskResult result, string detailInfo = null)
+        private async Task CompleteJobRequestAsync(int poolId, DistributedTaskPipelines.AgentJobRequestMessage message, Guid lockToken, TaskResult result, string detailInfo = null)
         {
             Trace.Entering();
 
@@ -836,7 +836,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         // log an error issue to job level timeline record
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA2000:Dispose objects before losing scope", MessageId = "jobServer")]
-        private async Task LogWorkerProcessUnhandledException(Pipelines.AgentJobRequestMessage message, string errorMessage)
+        private async Task LogWorkerProcessUnhandledException(DistributedTaskPipelines.AgentJobRequestMessage message, string errorMessage)
         {
             try
             {

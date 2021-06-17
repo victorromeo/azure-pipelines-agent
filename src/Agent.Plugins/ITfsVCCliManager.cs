@@ -5,14 +5,14 @@ using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System.Threading;
 using System.Threading.Tasks;
 using Agent.Sdk;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Agent.Plugins.Repository
 {
     public interface ITfsVCCliManager
     {
         CancellationToken CancellationToken { set; }
-        Pipelines.RepositoryResource Repository { set; }
+        DistributedTaskPipelines.RepositoryResource Repository { set; }
         AgentTaskPluginExecutionContext ExecutionContext { set; }
         ServiceEndpoint Endpoint { set; }
         TfsVCFeatures Features { get; }

@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.TeamFoundation.DistributedTask.Expressions;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -31,7 +31,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public bool Enabled => true;
         public IExecutionContext ExecutionContext { get; set; }
         public TimeSpan? Timeout => null;
-        public Pipelines.StepTarget Target => null;
+        public DistributedTaskPipelines.StepTarget Target => null;
 
         public async Task RunAsync()
         {

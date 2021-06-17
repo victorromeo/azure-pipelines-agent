@@ -4,7 +4,7 @@
 using Agent.Sdk;
 using Agent.Sdk.Knob;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
@@ -23,7 +23,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     [ServiceLocator(Default = typeof(JobRunner))]
     public interface IJobRunner : IAgentService
     {
-        Task<TaskResult> RunAsync(Pipelines.AgentJobRequestMessage message, CancellationToken jobRequestCancellationToken);
+        Task<TaskResult> RunAsync(DistributedTaskPipelines.AgentJobRequestMessage message, CancellationToken jobRequestCancellationToken);
         void UpdateMetadata(JobMetadataMessage message);
     }
 
@@ -32,7 +32,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private IJobServerQueue _jobServerQueue;
         private ITempDirectoryManager _tempDirectoryManager;
 
-        public async Task<TaskResult> RunAsync(Pipelines.AgentJobRequestMessage message, CancellationToken jobRequestCancellationToken)
+        public async Task<TaskResult> RunAsync(DistributedTaskPipelines.AgentJobRequestMessage message, CancellationToken jobRequestCancellationToken)
         {
             // Validate parameters.
             Trace.Entering();
@@ -201,21 +201,21 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 foreach (var repository in jobContext.Repositories)
                 {
                     // expand checkout option
-                    var checkoutOptions = repository.Properties.Get<JToken>(Pipelines.RepositoryPropertyNames.CheckoutOptions);
+                    var checkoutOptions = repository.Properties.Get<JToken>(DistributedTaskPipelines.RepositoryPropertyNames.CheckoutOptions);
                     if (checkoutOptions != null)
                     {
                         checkoutOptions = jobContext.Variables.ExpandValues(target: checkoutOptions);
                         checkoutOptions = VarUtil.ExpandEnvironmentVariables(HostContext, target: checkoutOptions);
-                        repository.Properties.Set<JToken>(Pipelines.RepositoryPropertyNames.CheckoutOptions, checkoutOptions); ;
+                        repository.Properties.Set<JToken>(DistributedTaskPipelines.RepositoryPropertyNames.CheckoutOptions, checkoutOptions); ;
                     }
 
                     // expand workspace mapping
-                    var mappings = repository.Properties.Get<JToken>(Pipelines.RepositoryPropertyNames.Mappings);
+                    var mappings = repository.Properties.Get<JToken>(DistributedTaskPipelines.RepositoryPropertyNames.Mappings);
                     if (mappings != null)
                     {
                         mappings = jobContext.Variables.ExpandValues(target: mappings);
                         mappings = VarUtil.ExpandEnvironmentVariables(HostContext, target: mappings);
-                        repository.Properties.Set<JToken>(Pipelines.RepositoryPropertyNames.Mappings, mappings);
+                        repository.Properties.Set<JToken>(DistributedTaskPipelines.RepositoryPropertyNames.Mappings, mappings);
                     }
                 }
 
@@ -360,7 +360,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             container.ContainerCreateOptions = variables.ExpandValue(nameof(container.ContainerCreateOptions), container.ContainerCreateOptions);
         }
 
-        private async Task<TaskResult> CompleteJobAsync(IJobServer jobServer, IExecutionContext jobContext, Pipelines.AgentJobRequestMessage message, TaskResult? taskResult = null)
+        private async Task<TaskResult> CompleteJobAsync(IJobServer jobServer, IExecutionContext jobContext, DistributedTaskPipelines.AgentJobRequestMessage message, TaskResult? taskResult = null)
         {
             ArgUtil.NotNull(message, nameof(message));
             jobContext.Section(StringUtil.Loc("StepFinishing", message.JobDisplayName));
@@ -481,7 +481,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return messageUri;
         }
 
-        private void ReplaceConfigUriBaseInJobRequestMessage(Pipelines.AgentJobRequestMessage message)
+        private void ReplaceConfigUriBaseInJobRequestMessage(DistributedTaskPipelines.AgentJobRequestMessage message)
         {
             ServiceEndpoint systemConnection = message.Resources.Endpoints.Single(x => string.Equals(x.Name, WellKnownServiceEndpointNames.SystemVssConnection, StringComparison.OrdinalIgnoreCase));
             Uri systemConnectionUrl = systemConnection.Url;

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.TeamFoundation.Build.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -37,7 +37,7 @@ namespace Agent.Plugins.Repository
             return false;
         }
 
-        public override void RequirementCheck(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository, GitCliManager gitCommandManager)
+        public override void RequirementCheck(AgentTaskPluginExecutionContext executionContext, DistributedTaskPipelines.RepositoryResource repository, GitCliManager gitCommandManager)
         {
             // check git version for SChannel SSLBackend (Windows Only)
             bool schannelSslBackend = StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("agent.gituseschannel")?.Value);
@@ -62,7 +62,7 @@ namespace Agent.Plugins.Repository
             return gitCommandManager.EnsureGitLFSVersion(_minGitLfsVersionSupportAuthHeader, throwOnNotMatch: false);
         }
 
-        public override void RequirementCheck(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository, GitCliManager gitCommandManager)
+        public override void RequirementCheck(AgentTaskPluginExecutionContext executionContext, DistributedTaskPipelines.RepositoryResource repository, GitCliManager gitCommandManager)
         {
             // check git version for SChannel SSLBackend (Windows Only)
             bool schannelSslBackend = StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("agent.gituseschannel")?.Value);
@@ -122,7 +122,7 @@ namespace Agent.Plugins.Repository
         // When the repository is a TfsGit, figure out the endpoint is hosted vsts git or on-prem tfs git
         // if repository is on-prem tfs git, make sure git version greater than 2.9
         // we have to use http.extraheader option to provide auth header for on-prem tfs git
-        public override void RequirementCheck(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository, GitCliManager gitCommandManager)
+        public override void RequirementCheck(AgentTaskPluginExecutionContext executionContext, DistributedTaskPipelines.RepositoryResource repository, GitCliManager gitCommandManager)
         {
             var selfManageGitCreds = StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("system.selfmanagegitcreds")?.Value);
             if (selfManageGitCreds)
@@ -140,7 +140,7 @@ namespace Agent.Plugins.Repository
             {
                 gitCommandManager.EnsureGitVersion(_minGitVersionSupportAuthHeader, throwOnNotMatch: true);
 
-                bool gitLfsSupport = StringUtil.ConvertToBoolean(executionContext.GetInput(Pipelines.PipelineConstants.CheckoutTaskInputs.Lfs));
+                bool gitLfsSupport = StringUtil.ConvertToBoolean(executionContext.GetInput(DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.Lfs));
                 // prefer feature variable over endpoint data
                 if (executionContext.Variables.GetValueOrDefault("agent.source.git.lfs") != null)
                 {
@@ -186,7 +186,7 @@ namespace Agent.Plugins.Repository
 
         public abstract bool GitSupportUseAuthHeader(AgentTaskPluginExecutionContext executionContext, GitCliManager gitCommandManager);
         public abstract bool GitLfsSupportUseAuthHeader(AgentTaskPluginExecutionContext executionContext, GitCliManager gitCommandManager);
-        public abstract void RequirementCheck(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository, GitCliManager gitCommandManager);
+        public abstract void RequirementCheck(AgentTaskPluginExecutionContext executionContext, DistributedTaskPipelines.RepositoryResource repository, GitCliManager gitCommandManager);
         public abstract bool GitSupportsFetchingCommitBySha1Hash(GitCliManager gitCommandManager);
 
         public virtual bool UseBearerAuthenticationForOAuth()
@@ -216,7 +216,7 @@ namespace Agent.Plugins.Repository
 
         public async Task GetSourceAsync(
             AgentTaskPluginExecutionContext executionContext,
-            Pipelines.RepositoryResource repository,
+            DistributedTaskPipelines.RepositoryResource repository,
             CancellationToken cancellationToken)
         {
             // Validate args.
@@ -241,18 +241,18 @@ namespace Agent.Plugins.Repository
                 executionContext.SetTaskVariable(AgentKnobs.QuietCheckoutRuntimeVarName, Boolean.TrueString);
             }
 
-            executionContext.Output($"Syncing repository: {repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name)} ({repository.Type})");
+            executionContext.Output($"Syncing repository: {repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Name)} ({repository.Type})");
             Uri repositoryUrl = repository.Url;
             if (!repositoryUrl.IsAbsoluteUri)
             {
                 throw new InvalidOperationException("Repository url need to be an absolute uri.");
             }
 
-            string targetPath = repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
-            string sourceBranch = repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Ref);
+            string targetPath = repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Path);
+            string sourceBranch = repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Ref);
             string sourceVersion = repository.Version;
 
-            bool clean = StringUtil.ConvertToBoolean(executionContext.GetInput(Pipelines.PipelineConstants.CheckoutTaskInputs.Clean));
+            bool clean = StringUtil.ConvertToBoolean(executionContext.GetInput(DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.Clean));
 
             // input Submodules can be ['', true, false, recursive]
             // '' or false indicate don't checkout submodules
@@ -260,10 +260,10 @@ namespace Agent.Plugins.Repository
             // recursive indicate checkout submodules recursively
             bool checkoutSubmodules = false;
             bool checkoutNestedSubmodules = false;
-            string submoduleInput = executionContext.GetInput(Pipelines.PipelineConstants.CheckoutTaskInputs.Submodules);
+            string submoduleInput = executionContext.GetInput(DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.Submodules);
             if (!string.IsNullOrEmpty(submoduleInput))
             {
-                if (string.Equals(submoduleInput, Pipelines.PipelineConstants.CheckoutTaskInputs.SubmodulesOptions.Recursive, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(submoduleInput, DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.SubmodulesOptions.Recursive, StringComparison.OrdinalIgnoreCase))
                 {
                     checkoutSubmodules = true;
                     checkoutNestedSubmodules = true;
@@ -294,7 +294,7 @@ namespace Agent.Plugins.Repository
             acceptUntrustedCerts = acceptUntrustedCerts || (agentCert?.SkipServerCertificateValidation ?? false);
 
             int fetchDepth = 0;
-            if (!int.TryParse(executionContext.GetInput(Pipelines.PipelineConstants.CheckoutTaskInputs.FetchDepth), out fetchDepth) || fetchDepth < 0)
+            if (!int.TryParse(executionContext.GetInput(DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.FetchDepth), out fetchDepth) || fetchDepth < 0)
             {
                 fetchDepth = 0;
             }
@@ -305,14 +305,14 @@ namespace Agent.Plugins.Repository
                 fetchDepth = fetchDepthOverwrite;
             }
 
-            bool gitLfsSupport = StringUtil.ConvertToBoolean(executionContext.GetInput(Pipelines.PipelineConstants.CheckoutTaskInputs.Lfs));
+            bool gitLfsSupport = StringUtil.ConvertToBoolean(executionContext.GetInput(DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.Lfs));
             // prefer feature variable over endpoint data
             if (executionContext.Variables.GetValueOrDefault("agent.source.git.lfs") != null)
             {
                 gitLfsSupport = StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("agent.source.git.lfs")?.Value);
             }
 
-            bool exposeCred = StringUtil.ConvertToBoolean(executionContext.GetInput(Pipelines.PipelineConstants.CheckoutTaskInputs.PersistCredentials));
+            bool exposeCred = StringUtil.ConvertToBoolean(executionContext.GetInput(DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.PersistCredentials));
 
             executionContext.Debug($"repository url={repositoryUrl}");
             executionContext.Debug($"targetPath={targetPath}");
@@ -1183,15 +1183,15 @@ namespace Agent.Plugins.Repository
             }
         }
 
-        public async Task PostJobCleanupAsync(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository)
+        public async Task PostJobCleanupAsync(AgentTaskPluginExecutionContext executionContext, DistributedTaskPipelines.RepositoryResource repository)
         {
             ArgUtil.NotNull(executionContext, nameof(executionContext));
             ArgUtil.NotNull(repository, nameof(repository));
 
-            executionContext.Output($"Cleaning any cached credential from repository: {repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name)} ({repository.Type})");
+            executionContext.Output($"Cleaning any cached credential from repository: {repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Name)} ({repository.Type})");
 
             Uri repositoryUrl = repository.Url;
-            string targetPath = repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
+            string targetPath = repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Path);
 
             executionContext.Debug($"Repository url={repositoryUrl}");
             executionContext.Debug($"targetPath={targetPath}");

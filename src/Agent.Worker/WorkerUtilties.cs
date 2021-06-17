@@ -5,7 +5,7 @@ using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +29,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return connection;
         }
 
-        public static Pipelines.AgentJobRequestMessage ScrubPiiData(Pipelines.AgentJobRequestMessage message)
+        public static DistributedTaskPipelines.AgentJobRequestMessage ScrubPiiData(DistributedTaskPipelines.AgentJobRequestMessage message)
         {
             ArgUtil.NotNull(message, nameof(message));
 
@@ -50,20 +50,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
 
-            var scrubbedRepositories = new List<Pipelines.RepositoryResource>();
+            var scrubbedRepositories = new List<DistributedTaskPipelines.RepositoryResource>();
 
             // Scrub the repository resources
             foreach (var repository in message.Resources.Repositories)
             {
-                Pipelines.RepositoryResource scrubbedRepository = repository.Clone();
+                DistributedTaskPipelines.RepositoryResource scrubbedRepository = repository.Clone();
 
-                var versionInfo = repository.Properties.Get<Pipelines.VersionInfo>(Pipelines.RepositoryPropertyNames.VersionInfo);
+                var versionInfo = repository.Properties.Get<DistributedTaskPipelines.VersionInfo>(DistributedTaskPipelines.RepositoryPropertyNames.VersionInfo);
 
                 if (versionInfo != null)
                 {
                     scrubbedRepository.Properties.Set(
-                        Pipelines.RepositoryPropertyNames.VersionInfo,
-                        new Pipelines.VersionInfo()
+                        DistributedTaskPipelines.RepositoryPropertyNames.VersionInfo,
+                        new DistributedTaskPipelines.VersionInfo()
                         {
                             Author = "[PII]"
                         });
@@ -72,7 +72,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 scrubbedRepositories.Add(scrubbedRepository);
             }
 
-            var scrubbedJobResources = new Pipelines.JobResources();
+            var scrubbedJobResources = new DistributedTaskPipelines.JobResources();
 
             scrubbedJobResources.Containers.AddRange(message.Resources.Containers);
             scrubbedJobResources.Endpoints.AddRange(message.Resources.Endpoints);
@@ -80,7 +80,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             scrubbedJobResources.SecureFiles.AddRange(message.Resources.SecureFiles);
 
             // Reconstitute a new agent job request message from the scrubbed parts
-            return new Pipelines.AgentJobRequestMessage(
+            return new DistributedTaskPipelines.AgentJobRequestMessage(
                 plan: message.Plan,
                 timeline: message.Timeline,
                 jobId: message.JobId,

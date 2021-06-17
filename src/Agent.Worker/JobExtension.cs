@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.TeamFoundation.DistributedTask.Expressions;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System.Linq;
 using System.Diagnostics;
@@ -19,7 +19,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     public interface IJobExtension : IExtension
     {
         HostTypes HostType { get; }
-        Task<List<IStep>> InitializeJob(IExecutionContext jobContext, Pipelines.AgentJobRequestMessage message);
+        Task<List<IStep>> InitializeJob(IExecutionContext jobContext, DistributedTaskPipelines.AgentJobRequestMessage message);
         Task FinalizeJob(IExecutionContext jobContext);
         string GetRootedPath(IExecutionContext context, string path);
         void ConvertLocalPath(IExecutionContext context, string localPath, out string repoName, out string sourcePath);
@@ -38,7 +38,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public abstract Type ExtensionType { get; }
 
         // Anything job extension want to do before building the steps list.
-        public abstract void InitializeJobExtension(IExecutionContext context, IList<Pipelines.JobStep> steps, Pipelines.WorkspaceOptions workspace);
+        public abstract void InitializeJobExtension(IExecutionContext context, IList<DistributedTaskPipelines.JobStep> steps, DistributedTaskPipelines.WorkspaceOptions workspace);
 
         // Anything job extension want to add to pre-job steps list. This will be deprecated when GetSource move to a task.
         public abstract IStep GetExtensionPreJobStep(IExecutionContext jobContext);
@@ -53,7 +53,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         // download all required tasks.
         // make sure all task's condition inputs are valid.
         // build up three list of steps for jobrunner. (pre-job, job, post-job)
-        public async Task<List<IStep>> InitializeJob(IExecutionContext jobContext, Pipelines.AgentJobRequestMessage message)
+        public async Task<List<IStep>> InitializeJob(IExecutionContext jobContext, DistributedTaskPipelines.AgentJobRequestMessage message)
         {
             Trace.Entering();
             ArgUtil.NotNull(jobContext, nameof(jobContext));
@@ -109,7 +109,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     Trace.Info("Parsing all task's condition inputs.");
                     var expression = HostContext.GetService<IExpressionManager>();
                     Dictionary<Guid, IExpressionNode> taskConditionMap = new Dictionary<Guid, IExpressionNode>();
-                    foreach (var task in message.Steps.OfType<Pipelines.TaskStep>())
+                    foreach (var task in message.Steps.OfType<DistributedTaskPipelines.TaskStep>())
                     {
                         IExpressionNode condition;
                         if (!string.IsNullOrEmpty(task.Condition))
@@ -197,7 +197,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     }
 
                     Dictionary<Guid, List<TaskRestrictions>> taskRestrictionsMap = new Dictionary<Guid, List<TaskRestrictions>>();
-                    foreach (var task in message?.Steps.OfType<Pipelines.TaskStep>())
+                    foreach (var task in message?.Steps.OfType<DistributedTaskPipelines.TaskStep>())
                     {
                         var taskDefinition = taskManager.Load(task);
 

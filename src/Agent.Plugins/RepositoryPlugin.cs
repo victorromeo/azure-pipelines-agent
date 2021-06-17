@@ -10,27 +10,27 @@ using Agent.Sdk;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Newtonsoft.Json.Linq;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using System.IO;
 
 namespace Agent.Plugins.Repository
 {
     public interface ISourceProvider
     {
-        Task GetSourceAsync(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository, CancellationToken cancellationToken);
+        Task GetSourceAsync(AgentTaskPluginExecutionContext executionContext, DistributedTaskPipelines.RepositoryResource repository, CancellationToken cancellationToken);
 
-        Task PostJobCleanupAsync(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository);
+        Task PostJobCleanupAsync(AgentTaskPluginExecutionContext executionContext, DistributedTaskPipelines.RepositoryResource repository);
     }
 
     public abstract class RepositoryTask : IAgentTaskPlugin
     {
         private static readonly HashSet<String> _checkoutOptions = new HashSet<String>(StringComparer.OrdinalIgnoreCase)
         {
-            Pipelines.PipelineConstants.CheckoutTaskInputs.Clean,
-            Pipelines.PipelineConstants.CheckoutTaskInputs.FetchDepth,
-            Pipelines.PipelineConstants.CheckoutTaskInputs.Lfs,
-            Pipelines.PipelineConstants.CheckoutTaskInputs.PersistCredentials,
-            Pipelines.PipelineConstants.CheckoutTaskInputs.Submodules,
+            DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.Clean,
+            DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.FetchDepth,
+            DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.Lfs,
+            DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.PersistCredentials,
+            DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.Submodules,
         };
 
         protected RepositoryTask()
@@ -43,7 +43,7 @@ namespace Agent.Plugins.Repository
             SourceProviderFactory = sourceProviderFactory;
         }
 
-        public Guid Id => Pipelines.PipelineConstants.CheckoutTask.Id;
+        public Guid Id => DistributedTaskPipelines.PipelineConstants.CheckoutTask.Id;
 
         public ISourceProviderFactory SourceProviderFactory { get; }
 
@@ -51,11 +51,11 @@ namespace Agent.Plugins.Repository
 
         public abstract Task RunAsync(AgentTaskPluginExecutionContext executionContext, CancellationToken token);
 
-        protected void MergeCheckoutOptions(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository)
+        protected void MergeCheckoutOptions(AgentTaskPluginExecutionContext executionContext, DistributedTaskPipelines.RepositoryResource repository)
         {
             // Merge the repository checkout options
             if ((!executionContext.Variables.TryGetValue("MERGE_CHECKOUT_OPTIONS", out VariableValue mergeCheckoutOptions) || !String.Equals(mergeCheckoutOptions.Value, "false", StringComparison.OrdinalIgnoreCase)) &&
-                repository.Properties.Get<JToken>(Pipelines.RepositoryPropertyNames.CheckoutOptions) is JObject checkoutOptions)
+                repository.Properties.Get<JToken>(DistributedTaskPipelines.RepositoryPropertyNames.CheckoutOptions) is JObject checkoutOptions)
             {
                 foreach (var pair in checkoutOptions)
                 {
@@ -115,12 +115,12 @@ namespace Agent.Plugins.Repository
                 return;
             }
 
-            var repoAlias = executionContext.GetInput(Pipelines.PipelineConstants.CheckoutTaskInputs.Repository, true);
+            var repoAlias = executionContext.GetInput(DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.Repository, true);
             var repo = executionContext.Repositories.Single(x => string.Equals(x.Alias, repoAlias, StringComparison.OrdinalIgnoreCase));
 
             MergeCheckoutOptions(executionContext, repo);
 
-            var currentRepoPath = repo.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
+            var currentRepoPath = repo.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Path);
             var buildDirectory = executionContext.Variables.GetValueOrDefault("agent.builddirectory")?.Value;
             var tempDirectory = executionContext.Variables.GetValueOrDefault("agent.tempdirectory")?.Value;
 
@@ -181,7 +181,7 @@ namespace Agent.Plugins.Repository
                 }
 
                 executionContext.Output($"Repository will be located at '{expectRepoPath}'.");
-                repo.Properties.Set<string>(Pipelines.RepositoryPropertyNames.Path, expectRepoPath);
+                repo.Properties.Set<string>(DistributedTaskPipelines.RepositoryPropertyNames.Path, expectRepoPath);
             }
 
             ISourceProvider sourceProvider = SourceProviderFactory.GetSourceProvider(repo.Type);
@@ -220,28 +220,28 @@ namespace Agent.Plugins.Repository
         {
             ISourceProvider sourceProvider = null;
 
-            if (string.Equals(repositoryType, Pipelines.RepositoryTypes.GitHub, StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(repositoryType, Pipelines.RepositoryTypes.GitHubEnterprise, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(repositoryType, DistributedTaskPipelines.RepositoryTypes.GitHub, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(repositoryType, DistributedTaskPipelines.RepositoryTypes.GitHubEnterprise, StringComparison.OrdinalIgnoreCase))
             {
                 sourceProvider = new GitHubSourceProvider();
             }
-            else if (string.Equals(repositoryType, Pipelines.RepositoryTypes.Bitbucket, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(repositoryType, DistributedTaskPipelines.RepositoryTypes.Bitbucket, StringComparison.OrdinalIgnoreCase))
             {
                 sourceProvider = new BitbucketGitSourceProvider();
             }
-            else if (string.Equals(repositoryType, Pipelines.RepositoryTypes.ExternalGit, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(repositoryType, DistributedTaskPipelines.RepositoryTypes.ExternalGit, StringComparison.OrdinalIgnoreCase))
             {
                 sourceProvider = new ExternalGitSourceProvider();
             }
-            else if (string.Equals(repositoryType, Pipelines.RepositoryTypes.Git, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(repositoryType, DistributedTaskPipelines.RepositoryTypes.Git, StringComparison.OrdinalIgnoreCase))
             {
                 sourceProvider = new TfsGitSourceProvider();
             }
-            else if (string.Equals(repositoryType, Pipelines.RepositoryTypes.Tfvc, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(repositoryType, DistributedTaskPipelines.RepositoryTypes.Tfvc, StringComparison.OrdinalIgnoreCase))
             {
                 sourceProvider = new TfsVCSourceProvider();
             }
-            else if (string.Equals(repositoryType, Pipelines.RepositoryTypes.Svn, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(repositoryType, DistributedTaskPipelines.RepositoryTypes.Svn, StringComparison.OrdinalIgnoreCase))
             {
                 sourceProvider = new SvnSourceProvider();
             }

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Agent.Plugins.Log.TestResultParser.Contracts;
 using Agent.Sdk;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Agent.Plugins.Log.TestResultParser.Plugin
 {
@@ -68,7 +68,7 @@ namespace Agent.Plugins.Log.TestResultParser.Plugin
         }
 
         /// <inheritdoc />
-        public async Task ProcessLineAsync(IAgentLogPluginContext context, Pipelines.TaskStepDefinitionReference step, string line)
+        public async Task ProcessLineAsync(IAgentLogPluginContext context, DistributedTaskPipelines.TaskStepDefinitionReference step, string line)
         {
             await _inputDataParser.ProcessDataAsync(line);
         }

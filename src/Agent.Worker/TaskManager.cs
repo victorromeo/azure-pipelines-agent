@@ -4,7 +4,7 @@
 using Agent.Sdk;
 using Agent.Sdk.Knob;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Newtonsoft.Json;
 using System;
@@ -21,16 +21,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     [ServiceLocator(Default = typeof(TaskManager))]
     public interface ITaskManager : IAgentService
     {
-        Task DownloadAsync(IExecutionContext executionContext, IEnumerable<Pipelines.JobStep> steps);
+        Task DownloadAsync(IExecutionContext executionContext, IEnumerable<DistributedTaskPipelines.JobStep> steps);
 
-        Definition Load(Pipelines.TaskStep task);
+        Definition Load(DistributedTaskPipelines.TaskStep task);
 
         /// <summary>
         /// Extract a task that has already been downloaded.
         /// </summary>
         /// <param name="executionContext">Current execution context.</param>
         /// <param name="task">The task to be extracted.</param>
-        void Extract(IExecutionContext executionContext, Pipelines.TaskStep task);
+        void Extract(IExecutionContext executionContext, DistributedTaskPipelines.TaskStep task);
     }
 
     public class TaskManager : AgentService, ITaskManager
@@ -40,17 +40,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         //81920 is the default used by System.IO.Stream.CopyTo and is under the large object heap threshold (85k).
         private const int _defaultCopyBufferSize = 81920;
 
-        public async Task DownloadAsync(IExecutionContext executionContext, IEnumerable<Pipelines.JobStep> steps)
+        public async Task DownloadAsync(IExecutionContext executionContext, IEnumerable<DistributedTaskPipelines.JobStep> steps)
         {
             ArgUtil.NotNull(executionContext, nameof(executionContext));
             ArgUtil.NotNull(steps, nameof(steps));
 
             executionContext.Output(StringUtil.Loc("EnsureTasksExist"));
 
-            IEnumerable<Pipelines.TaskStep> tasks = steps.OfType<Pipelines.TaskStep>();
+            IEnumerable<DistributedTaskPipelines.TaskStep> tasks = steps.OfType<DistributedTaskPipelines.TaskStep>();
 
             //remove duplicate, disabled and built-in tasks
-            IEnumerable<Pipelines.TaskStep> uniqueTasks =
+            IEnumerable<DistributedTaskPipelines.TaskStep> uniqueTasks =
                 from task in tasks
                 group task by new
                 {
@@ -68,7 +68,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             foreach (var task in uniqueTasks.Select(x => x.Reference))
             {
-                if (task.Id == Pipelines.PipelineConstants.CheckoutTask.Id && task.Version == Pipelines.PipelineConstants.CheckoutTask.Version)
+                if (task.Id == DistributedTaskPipelines.PipelineConstants.CheckoutTask.Id && task.Version == DistributedTaskPipelines.PipelineConstants.CheckoutTask.Version)
                 {
                     Trace.Info("Skip download checkout task.");
                     continue;
@@ -77,26 +77,26 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        public virtual Definition Load(Pipelines.TaskStep task)
+        public virtual Definition Load(DistributedTaskPipelines.TaskStep task)
         {
             // Validate args.
             Trace.Entering();
             ArgUtil.NotNull(task, nameof(task));
 
-            if (task.Reference.Id == Pipelines.PipelineConstants.CheckoutTask.Id && task.Reference.Version == Pipelines.PipelineConstants.CheckoutTask.Version)
+            if (task.Reference.Id == DistributedTaskPipelines.PipelineConstants.CheckoutTask.Id && task.Reference.Version == DistributedTaskPipelines.PipelineConstants.CheckoutTask.Version)
             {
                 var checkoutTask = new Definition()
                 {
                     Directory = HostContext.GetDirectory(WellKnownDirectory.Tasks),
                     Data = new DefinitionData()
                     {
-                        Author = Pipelines.PipelineConstants.CheckoutTask.Author,
-                        Description = Pipelines.PipelineConstants.CheckoutTask.Description,
-                        FriendlyName = Pipelines.PipelineConstants.CheckoutTask.FriendlyName,
-                        HelpMarkDown = Pipelines.PipelineConstants.CheckoutTask.HelpMarkDown,
-                        Inputs = Pipelines.PipelineConstants.CheckoutTask.Inputs.ToArray(),
-                        Execution = StringUtil.ConvertFromJson<ExecutionData>(StringUtil.ConvertToJson(Pipelines.PipelineConstants.CheckoutTask.Execution)),
-                        PostJobExecution = StringUtil.ConvertFromJson<ExecutionData>(StringUtil.ConvertToJson(Pipelines.PipelineConstants.CheckoutTask.PostJobExecution))
+                        Author = DistributedTaskPipelines.PipelineConstants.CheckoutTask.Author,
+                        Description = DistributedTaskPipelines.PipelineConstants.CheckoutTask.Description,
+                        FriendlyName = DistributedTaskPipelines.PipelineConstants.CheckoutTask.FriendlyName,
+                        HelpMarkDown = DistributedTaskPipelines.PipelineConstants.CheckoutTask.HelpMarkDown,
+                        Inputs = DistributedTaskPipelines.PipelineConstants.CheckoutTask.Inputs.ToArray(),
+                        Execution = StringUtil.ConvertFromJson<ExecutionData>(StringUtil.ConvertToJson(DistributedTaskPipelines.PipelineConstants.CheckoutTask.Execution)),
+                        PostJobExecution = StringUtil.ConvertFromJson<ExecutionData>(StringUtil.ConvertToJson(DistributedTaskPipelines.PipelineConstants.CheckoutTask.PostJobExecution))
                     }
                 };
 
@@ -121,7 +121,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return definition;
         }
 
-        public void Extract(IExecutionContext executionContext, Pipelines.TaskStep task)
+        public void Extract(IExecutionContext executionContext, DistributedTaskPipelines.TaskStep task)
         {
             ArgUtil.NotNull(executionContext, nameof(executionContext));
             ArgUtil.NotNull(task, nameof(task));
@@ -140,7 +140,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             File.WriteAllText(destinationDirectory + ".completed", DateTime.UtcNow.ToString());
         }
 
-        private async Task DownloadAsync(IExecutionContext executionContext, Pipelines.TaskStepDefinitionReference task)
+        private async Task DownloadAsync(IExecutionContext executionContext, DistributedTaskPipelines.TaskStepDefinitionReference task)
         {
             Trace.Entering();
             ArgUtil.NotNull(executionContext, nameof(executionContext));
@@ -295,7 +295,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             File.WriteAllText(destinationDirectory + ".completed", DateTime.UtcNow.ToString());
         }
 
-        private string GetDirectory(Pipelines.TaskStepDefinitionReference task)
+        private string GetDirectory(DistributedTaskPipelines.TaskStepDefinitionReference task)
         {
             ArgUtil.NotEmpty(task.Id, nameof(task.Id));
             ArgUtil.NotNull(task.Name, nameof(task.Name));
@@ -306,7 +306,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 task.Version);
         }
 
-        private string GetTaskZipPath(Pipelines.TaskStepDefinitionReference task)
+        private string GetTaskZipPath(DistributedTaskPipelines.TaskStepDefinitionReference task)
         {
             ArgUtil.NotEmpty(task.Id, nameof(task.Id));
             ArgUtil.NotNull(task.Name, nameof(task.Name));

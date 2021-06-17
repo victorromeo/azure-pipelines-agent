@@ -13,7 +13,7 @@ using Agent.Sdk;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.TeamFoundation.Framework.Common;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
@@ -131,7 +131,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     Repositories = context.Repositories,
                     Endpoints = context.Endpoints,
                     Variables = new Dictionary<string, VariableValue>(),
-                    Steps = new Dictionary<string, Pipelines.TaskStepDefinitionReference>()
+                    Steps = new Dictionary<string, DistributedTaskPipelines.TaskStepDefinitionReference>()
                 };
 
                 // plugins

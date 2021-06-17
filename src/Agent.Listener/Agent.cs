@@ -10,7 +10,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Services.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -423,15 +423,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                                 }
                                 else
                                 {
-                                    Pipelines.AgentJobRequestMessage pipelineJobMessage = null;
+                                    DistributedTaskPipelines.AgentJobRequestMessage pipelineJobMessage = null;
                                     switch (message.MessageType)
                                     {
                                         case JobRequestMessageTypes.AgentJobRequest:
                                             var legacyJobMessage = JsonUtility.FromString<AgentJobRequestMessage>(message.Body);
-                                            pipelineJobMessage = Pipelines.AgentJobRequestMessageUtil.Convert(legacyJobMessage);
+                                            pipelineJobMessage = DistributedTaskPipelines.AgentJobRequestMessageUtil.Convert(legacyJobMessage);
                                             break;
                                         case JobRequestMessageTypes.PipelineAgentJobRequest:
-                                            pipelineJobMessage = JsonUtility.FromString<Pipelines.AgentJobRequestMessage>(message.Body);
+                                            pipelineJobMessage = JsonUtility.FromString<DistributedTaskPipelines.AgentJobRequestMessage>(message.Body);
                                             break;
                                     }
 

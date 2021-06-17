@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
@@ -35,7 +35,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         CancellationToken CancellationToken { get; }
         List<ServiceEndpoint> Endpoints { get; }
         List<SecureFile> SecureFiles { get; }
-        List<Pipelines.RepositoryResource> Repositories { get; }
+        List<DistributedTaskPipelines.RepositoryResource> Repositories { get; }
         Dictionary<string,string> JobSettings { get; }
 
         PlanFeatures Features { get; }
@@ -49,7 +49,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         List<TaskRestrictions> Restrictions { get; }
 
         // Initialize
-        void InitializeJob(Pipelines.AgentJobRequestMessage message, CancellationToken token);
+        void InitializeJob(DistributedTaskPipelines.AgentJobRequestMessage message, CancellationToken token);
         void CancelToken();
         IExecutionContext CreateChild(Guid recordId, string displayName, string refName, Variables taskVariables = null, bool outputForward = false, List<TaskRestrictions> taskRestrictions = null);
 
@@ -71,7 +71,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         void ForceTaskComplete();
         string TranslateToHostPath(string path);
         ExecutionTargetInfo StepTarget();
-        void SetStepTarget(Pipelines.StepTarget target);
+        void SetStepTarget(DistributedTaskPipelines.StepTarget target);
         string TranslatePathForStepTarget(string val);
         IHostContext GetHostContext();
     }
@@ -114,7 +114,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public CancellationToken CancellationToken => _cancellationTokenSource.Token;
         public List<ServiceEndpoint> Endpoints { get; private set; }
         public List<SecureFile> SecureFiles { get; private set; }
-        public List<Pipelines.RepositoryResource> Repositories { get; private set; }
+        public List<DistributedTaskPipelines.RepositoryResource> Repositories { get; private set; }
         public Dictionary<string, string> JobSettings { get; private set; }
         public Variables Variables { get; private set; }
         public Variables TaskVariables { get; private set; }
@@ -432,7 +432,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        public void InitializeJob(Pipelines.AgentJobRequestMessage message, CancellationToken token)
+        public void InitializeJob(DistributedTaskPipelines.AgentJobRequestMessage message, CancellationToken token)
         {
             // Validation
             Trace.Entering();
@@ -456,14 +456,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Repositories = message.Resources.Repositories;
 
             // JobSettings
-            var checkouts = message.Steps?.Where(x => Pipelines.PipelineConstants.IsCheckoutTask(x)).ToList();
+            var checkouts = message.Steps?.Where(x => DistributedTaskPipelines.PipelineConstants.IsCheckoutTask(x)).ToList();
             JobSettings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             JobSettings[WellKnownJobSettings.HasMultipleCheckouts] = Boolean.FalseString;
             if (checkouts != null && checkouts.Count > 0)
             {
                 JobSettings[WellKnownJobSettings.HasMultipleCheckouts] = checkouts.Count > 1 ? Boolean.TrueString : Boolean.FalseString;
-                var firstCheckout = checkouts.First() as Pipelines.TaskStep;
-                if (firstCheckout != null && Repositories != null && firstCheckout.Inputs.TryGetValue(Pipelines.PipelineConstants.CheckoutTaskInputs.Repository, out string repoAlias))
+                var firstCheckout = checkouts.First() as DistributedTaskPipelines.TaskStep;
+                if (firstCheckout != null && Repositories != null && firstCheckout.Inputs.TryGetValue(DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.Repository, out string repoAlias))
                 {
                     JobSettings[WellKnownJobSettings.FirstRepositoryCheckedOut] = repoAlias;
                     var repo = Repositories.Find(r => String.Equals(r.Alias, repoAlias, StringComparison.OrdinalIgnoreCase));
@@ -509,7 +509,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             if (!string.IsNullOrEmpty(imageName) &&
                 string.IsNullOrEmpty(message.JobContainer))
             {
-                var dockerContainer = new Pipelines.ContainerResource()
+                var dockerContainer = new DistributedTaskPipelines.ContainerResource()
                 {
                     Alias = "vsts_container_preview"
                 };
@@ -633,7 +633,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             _jobServerQueue.JobServerQueueThrottling += JobServerQueueThrottling_EventReceived;
         }
 
-        private string GetWorkspaceIdentifier(Pipelines.AgentJobRequestMessage message)
+        private string GetWorkspaceIdentifier(DistributedTaskPipelines.AgentJobRequestMessage message)
         {
             Variables.TryGetValue(Constants.Variables.System.CollectionId, out string collectionId);
             Variables.TryGetValue(Constants.Variables.System.DefinitionId, out string definitionId);
@@ -749,7 +749,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     string queryDate = endTime.AddHours(-1).ToString("s") + "," + endTime.ToString("s");
 
                     uriBuilder.Path += (Variables.System_TFCollectionUrl.EndsWith("/") ? "" : "/") + "_usersSettings/usage";
-                    query["tab"] = "pipelines";
+                    query["tab"] = "DistributedTaskPipelines";
                     query["queryDate"] = queryDate;
 
                     // Global RU link
@@ -806,7 +806,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return _defaultStepTarget;
         }
 
-        public void SetStepTarget(Pipelines.StepTarget target)
+        public void SetStepTarget(DistributedTaskPipelines.StepTarget target)
         {
             // When step targets are set, we need to take over control for translating paths
             // from the job execution context

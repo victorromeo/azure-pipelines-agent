@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 {
@@ -68,7 +67,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             else if (repoInfo.PrimaryRepository != null)
             {
                 // If there is only one checkout/repository, set it to the repository path
-                defaultPathRoot = repoInfo.PrimaryRepository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
+                defaultPathRoot = repoInfo.PrimaryRepository.Properties.Get<string>(RepositoryPropertyNames.Path);
                 Trace.Info($"The Default Path Root of Build JobExtension is repository.path: {defaultPathRoot}");
             }
 
@@ -111,7 +110,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 repoInfo.SourceProvider != null)
             {
                 // If we found a repo, calculate the relative path to the file
-                var repoPath = repoInfo.PrimaryRepository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
+                var repoPath = repoInfo.PrimaryRepository.Properties.Get<string>(RepositoryPropertyNames.Path);
                 if (!string.IsNullOrEmpty(repoPath))
                 {
                     sourcePath = IOUtil.MakeRelative(localPath, repoPath);
@@ -121,7 +120,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
         // Prepare build directory
         // Set all build related variables
-        public override void InitializeJobExtension(IExecutionContext executionContext, IList<Pipelines.JobStep> steps, Pipelines.WorkspaceOptions workspace)
+        public override void InitializeJobExtension(IExecutionContext executionContext, IList<JobStep> steps, WorkspaceOptions workspace)
         {
             // Validate args.
             Trace.Entering();
@@ -142,7 +141,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 throw new Exception(StringUtil.Loc("SupportedRepositoryEndpointNotFound"));
             }
 
-            executionContext.Debug($"Triggering repository: {repoInfo.TriggeringRepository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name)}. repository type: {repoInfo.TriggeringRepository.Type}");
+            executionContext.Debug($"Triggering repository: {repoInfo.TriggeringRepository.Properties.Get<string>(RepositoryPropertyNames.Name)}. repository type: {repoInfo.TriggeringRepository.Type}");
 
             // Set the repo variables.
             if (!string.IsNullOrEmpty(repoInfo.TriggeringRepository.Id)) // TODO: Move to const after source artifacts PR is merged.
@@ -150,7 +149,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 executionContext.SetVariable(Constants.Variables.Build.RepoId, repoInfo.TriggeringRepository.Id);
             }
 
-            executionContext.SetVariable(Constants.Variables.Build.RepoName, repoInfo.TriggeringRepository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name));
+            executionContext.SetVariable(Constants.Variables.Build.RepoName, repoInfo.TriggeringRepository.Properties.Get<string>(RepositoryPropertyNames.Name));
             executionContext.SetVariable(Constants.Variables.Build.RepoProvider, ConvertToLegacyRepositoryType(repoInfo.TriggeringRepository.Type));
             executionContext.SetVariable(Constants.Variables.Build.RepoUri, repoInfo.TriggeringRepository.Url?.AbsoluteUri);
 
@@ -308,31 +307,31 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
         private string ConvertToLegacyRepositoryType(string pipelineRepositoryType)
         {
-            if (String.Equals(pipelineRepositoryType, Pipelines.RepositoryTypes.Bitbucket, StringComparison.OrdinalIgnoreCase))
+            if (String.Equals(pipelineRepositoryType, RepositoryTypes.Bitbucket, StringComparison.OrdinalIgnoreCase))
             {
                 return "Bitbucket";
             }
-            else if (String.Equals(pipelineRepositoryType, Pipelines.RepositoryTypes.ExternalGit, StringComparison.OrdinalIgnoreCase))
+            else if (String.Equals(pipelineRepositoryType, RepositoryTypes.ExternalGit, StringComparison.OrdinalIgnoreCase))
             {
                 return "Git";
             }
-            else if (String.Equals(pipelineRepositoryType, Pipelines.RepositoryTypes.Git, StringComparison.OrdinalIgnoreCase))
+            else if (String.Equals(pipelineRepositoryType, RepositoryTypes.Git, StringComparison.OrdinalIgnoreCase))
             {
                 return "TfsGit";
             }
-            else if (String.Equals(pipelineRepositoryType, Pipelines.RepositoryTypes.GitHub, StringComparison.OrdinalIgnoreCase))
+            else if (String.Equals(pipelineRepositoryType, RepositoryTypes.GitHub, StringComparison.OrdinalIgnoreCase))
             {
                 return "GitHub";
             }
-            else if (String.Equals(pipelineRepositoryType, Pipelines.RepositoryTypes.GitHubEnterprise, StringComparison.OrdinalIgnoreCase))
+            else if (String.Equals(pipelineRepositoryType, RepositoryTypes.GitHubEnterprise, StringComparison.OrdinalIgnoreCase))
             {
                 return "GitHubEnterprise";
             }
-            else if (String.Equals(pipelineRepositoryType, Pipelines.RepositoryTypes.Svn, StringComparison.OrdinalIgnoreCase))
+            else if (String.Equals(pipelineRepositoryType, RepositoryTypes.Svn, StringComparison.OrdinalIgnoreCase))
             {
                 return "Svn";
             }
-            else if (String.Equals(pipelineRepositoryType, Pipelines.RepositoryTypes.Tfvc, StringComparison.OrdinalIgnoreCase))
+            else if (String.Equals(pipelineRepositoryType, RepositoryTypes.Tfvc, StringComparison.OrdinalIgnoreCase))
             {
                 return "TfsVersionControl";
             }
@@ -342,10 +341,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             }
         }
 
-        private string GetDefaultRepoLocalPathValue(IExecutionContext executionContext, IList<Pipelines.JobStep> steps, TrackingConfig trackingConfig, RepositoryInfo repoInfo)
+        private string GetDefaultRepoLocalPathValue(IExecutionContext executionContext, IList<JobStep> steps, TrackingConfig trackingConfig, RepositoryInfo repoInfo)
         {
             string selfRepoPath = null;
-            // For saving backward compatibility with the behavior of the Build.RepoLocalPath that was before this PR https://github.com/microsoft/azure-pipelines-agent/pull/3237
+            // For saving backward compatibility with the behavior of the Build.RepoLocalPath that was before this PR https://github.com/microsoft/azure-Pipelines-agent/pull/3237
             // We need to change how we set the default value of this variable
             // We need to allow the setting of paths from RepositoryTrackingInfo for checkout tasks where path input was provided by the user
             // and this input is not point to the default location for this repository
@@ -376,7 +375,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
         private bool IsCheckoutToCustomPath(TrackingConfig trackingConfig, RepositoryInfo repoInfo, TaskStep selfCheckoutTask)
         {
             string path;
-            string selfRepoName = RepositoryUtil.GetCloneDirectory(repoInfo.PrimaryRepository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Name));
+            string selfRepoName = RepositoryUtil.GetCloneDirectory(repoInfo.PrimaryRepository.Properties.Get<string>(RepositoryPropertyNames.Name));
             string defaultRepoCheckoutPath = Path.GetFullPath(Path.Combine(trackingConfig.SourcesDirectory, selfRepoName));
 
             return selfCheckoutTask != null
@@ -396,8 +395,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
         private class RepositoryInfo
         {
-            public Pipelines.RepositoryResource PrimaryRepository { set; get; }
-            public Pipelines.RepositoryResource TriggeringRepository { set; get; }
+            public RepositoryResource PrimaryRepository { set; get; }
+            public RepositoryResource TriggeringRepository { set; get; }
             public ISourceProvider SourceProvider { set; get; }
         }
     }

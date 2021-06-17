@@ -19,7 +19,7 @@ using System.Net.Http;
 using System.Diagnostics.Tracing;
 using Microsoft.TeamFoundation.DistributedTask.Logging;
 using System.Net.Http.Headers;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Microsoft.VisualStudio.Services.Agent
 {
@@ -40,7 +40,7 @@ namespace Microsoft.VisualStudio.Services.Agent
         event EventHandler Unloading;
         void ShutdownAgent(ShutdownReason reason);
         void WritePerfCounter(string counter);
-        ContainerInfo CreateContainerInfo(Pipelines.ContainerResource container, Boolean isJobContainer = true);
+        ContainerInfo CreateContainerInfo(DistributedTaskPipelines.ContainerResource container, Boolean isJobContainer = true);
     }
 
     public enum StartupType
@@ -457,7 +457,7 @@ namespace Microsoft.VisualStudio.Services.Agent
             _agentShutdownTokenSource.Cancel();
         }
 
-        public ContainerInfo CreateContainerInfo(Pipelines.ContainerResource container, Boolean isJobContainer = true)
+        public ContainerInfo CreateContainerInfo(DistributedTaskPipelines.ContainerResource container, Boolean isJobContainer = true)
         {
             ContainerInfo containerInfo = new ContainerInfo(container, isJobContainer);
             Dictionary<string, string> pathMappings = new Dictionary<string, string>();

@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Agent.Sdk;
 using Agent.Sdk.Knob;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Plugins.Repository
@@ -20,7 +20,7 @@ namespace Agent.Plugins.Repository
     {
         public async Task GetSourceAsync(
             AgentTaskPluginExecutionContext executionContext,
-            Pipelines.RepositoryResource repository,
+            DistributedTaskPipelines.RepositoryResource repository,
             CancellationToken cancellationToken)
         {
             // Validate args.
@@ -149,17 +149,17 @@ namespace Agent.Plugins.Repository
             executionContext.SetVariable("build.repository.tfvc.workspace", workspaceName);
 
             // Get the definition mappings.
-            var workspaceMappings = repository.Properties.Get<IList<Pipelines.WorkspaceMapping>>(Pipelines.RepositoryPropertyNames.Mappings);
+            var workspaceMappings = repository.Properties.Get<IList<DistributedTaskPipelines.WorkspaceMapping>>(DistributedTaskPipelines.RepositoryPropertyNames.Mappings);
             DefinitionWorkspaceMapping[] definitionMappings = workspaceMappings.Select(x => new DefinitionWorkspaceMapping() { ServerPath = x.ServerPath, LocalPath = x.LocalPath, MappingType = x.Exclude ? DefinitionMappingType.Cloak : DefinitionMappingType.Map }).ToArray();
 
             // Determine the sources directory.
-            string sourcesDirectory = repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
+            string sourcesDirectory = repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Path);
             ArgUtil.NotNullOrEmpty(sourcesDirectory, nameof(sourcesDirectory));
 
             // Attempt to re-use an existing workspace if the command manager supports scorch
             // or if clean is not specified.
             ITfsVCWorkspace existingTFWorkspace = null;
-            bool clean = StringUtil.ConvertToBoolean(executionContext.GetInput(Pipelines.PipelineConstants.CheckoutTaskInputs.Clean));
+            bool clean = StringUtil.ConvertToBoolean(executionContext.GetInput(DistributedTaskPipelines.PipelineConstants.CheckoutTaskInputs.Clean));
             if (tf.Features.HasFlag(TfsVCFeatures.Scorch) || !clean)
             {
                 existingTFWorkspace = WorkspaceUtil.MatchExactWorkspace(
@@ -315,7 +315,7 @@ namespace Agent.Plugins.Repository
             }
 
             // Steps for shelveset/gated.
-            string shelvesetName = repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Shelveset);
+            string shelvesetName = repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Shelveset);
             if (!string.IsNullOrEmpty(shelvesetName))
             {
                 // Steps for gated.
@@ -437,12 +437,12 @@ namespace Agent.Plugins.Repository
             executionContext.SetTaskVariable("repository", repository.Alias);
         }
 
-        public async Task PostJobCleanupAsync(AgentTaskPluginExecutionContext executionContext, Pipelines.RepositoryResource repository)
+        public async Task PostJobCleanupAsync(AgentTaskPluginExecutionContext executionContext, DistributedTaskPipelines.RepositoryResource repository)
         {
             bool undoShelvesetPendingChanges = StringUtil.ConvertToBoolean(executionContext.TaskVariables.GetValueOrDefault("UndoShelvesetPendingChanges")?.Value);
             if (undoShelvesetPendingChanges)
             {
-                string shelvesetName = repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Shelveset);
+                string shelvesetName = repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Shelveset);
                 executionContext.Debug($"Undo pending changes left by shelveset '{shelvesetName}'.");
 
                 // Create the tf command manager.
@@ -471,11 +471,11 @@ namespace Agent.Plugins.Repository
                 }
 
                 // Get the definition mappings.
-                var workspaceMappings = repository.Properties.Get<IList<Pipelines.WorkspaceMapping>>(Pipelines.RepositoryPropertyNames.Mappings);
+                var workspaceMappings = repository.Properties.Get<IList<DistributedTaskPipelines.WorkspaceMapping>>(DistributedTaskPipelines.RepositoryPropertyNames.Mappings);
                 DefinitionWorkspaceMapping[] definitionMappings = workspaceMappings.Select(x => new DefinitionWorkspaceMapping() { ServerPath = x.ServerPath, LocalPath = x.LocalPath, MappingType = x.Exclude ? DefinitionMappingType.Cloak : DefinitionMappingType.Map }).ToArray();
 
                 // Determine the sources directory.
-                string sourcesDirectory = repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
+                string sourcesDirectory = repository.Properties.Get<string>(DistributedTaskPipelines.RepositoryPropertyNames.Path);
                 ArgUtil.NotNullOrEmpty(sourcesDirectory, nameof(sourcesDirectory));
 
                 try

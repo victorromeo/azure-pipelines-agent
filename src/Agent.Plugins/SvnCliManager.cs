@@ -13,7 +13,7 @@ using System.Xml.Serialization;
 using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Agent.Sdk;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using DistributedTaskPipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Plugins.Repository
@@ -28,7 +28,7 @@ namespace Agent.Plugins.Repository
         /// <param name="cancellationToken">The cancellation token used to stop svn command execution</param>
         public void Init(
             AgentTaskPluginExecutionContext context,
-            Pipelines.RepositoryResource repository,
+            DistributedTaskPipelines.RepositoryResource repository,
             CancellationToken cancellationToken)
         {
             // Validation.
@@ -741,7 +741,7 @@ namespace Agent.Plugins.Repository
         private CancellationToken _cancellationToken;
 
         // The Subversion repository providing URL and untrusted certs acceptace information
-        private Pipelines.RepositoryResource _repository;
+        private DistributedTaskPipelines.RepositoryResource _repository;
 
         // The build commands' execution context
         private AgentTaskPluginExecutionContext _context;
