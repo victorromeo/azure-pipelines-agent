@@ -286,6 +286,7 @@ namespace Agent.Plugins.BuildArtifacts
             downloadParameters.IncludeArtifactNameInPath = true;
 
             context.Output(StringUtil.Loc("DownloadArtifactTo", targetPath));
+            System.Diagnostics.Debugger.Launch();
             await server.DownloadAsyncV2(context, downloadParameters, downloadOption, token);
             context.Output(StringUtil.Loc("DownloadArtifactFinished"));
         }

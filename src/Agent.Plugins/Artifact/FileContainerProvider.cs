@@ -90,7 +90,7 @@ namespace Agent.Plugins
             var items = await containerClient.QueryContainerItemsAsync(containerIdAndRoot.Item1, projectId, isShallow: false, includeBlobMetadata: true, containerIdAndRoot.Item2);
 
             tracer.Info($"Start downloading FCS artifact- {artifact.Name}");
-            IEnumerable<Func<string, bool>> minimatcherFuncs = MinimatchHelper.GetMinimatchFuncs(minimatchPatterns, tracer);
+            IEnumerable<Func<string, bool>> minimatcherFuncs = MinimatchHelper.GetMinimatchFuncs(minimatchPatterns, tracer, downloadParameters.BuildArtifactsTask);
 
             if (minimatcherFuncs != null && minimatcherFuncs.Count() != 0)
             {

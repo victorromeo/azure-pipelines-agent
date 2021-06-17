@@ -177,7 +177,6 @@ namespace Agent.Plugins
                             minimatchPatterns: downloadParameters.MinimatchFilters,
                             minimatchFilterWithArtifactName: downloadParameters.MinimatchFilterWithArtifactName,
                             buildArtifactsTask: downloadParameters.BuildArtifactsTask);
-
                         PipelineArtifactActionRecord downloadRecord = clientTelemetry.CreateRecord<PipelineArtifactActionRecord>((level, uri, type) =>
                             new PipelineArtifactActionRecord(level, uri, type, nameof(DownloadAsync), context));
                         await clientTelemetry.MeasureActionAsync(
