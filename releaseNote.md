@@ -1,6 +1,7 @@
 ## Features
  - Upload build artifacts to blob with batching (#3403)
  - Optimize DownloadBuildArtifactsV1 (#3425)
+ - Fallback to TFS stitch if env var is set (#3443)
 
 ## Bugs
  - Add checking the maximum timeout value (#3413)
