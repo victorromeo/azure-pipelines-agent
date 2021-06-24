@@ -6,7 +6,7 @@
 ## Bugs
  - Add checking the maximum timeout value (#3413)
  - Only connect to Blobstore when needed + Download telemetry (#3431)
- - Bump VssApiVersion to 0.5.164-private (#3435)
+ - Bump VssApiVersion to 0.5.166-private (#3439)
 
 ## Misc
  - Auto assign action - fixed token, area label name (#3427)
