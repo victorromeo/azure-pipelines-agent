@@ -17,7 +17,6 @@ using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Content.Common.Tracing;
 using Minimatch;
-using System.Text.RegularExpressions;
 
 namespace Agent.Plugins.BuildArtifacts
 {
