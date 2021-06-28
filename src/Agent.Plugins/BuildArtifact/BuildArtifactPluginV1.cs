@@ -73,9 +73,7 @@ namespace Agent.Plugins.BuildArtifacts
         static readonly string buildVersionToDownloadLatestFromBranch = "latestFromBranch";
         static readonly Options minimatchOptions = new Options() {
             Dot = true,
-            NoBrace = true,
-            NoCase = false,
-            AllowWindowsPaths = true
+            NoBrace = true
         };
 
         protected override async Task ProcessCommandInternalAsync(
@@ -111,6 +109,8 @@ namespace Agent.Plugins.BuildArtifacts
                 new[] { "\n" },
                 StringSplitOptions.RemoveEmptyEntries
             );
+
+            minimatchPatterns = minimatchPatterns.Select(item => item.Replace("\\\\", "/")).ToArray();
 
             string[] tagsInput = tags.Split(
                 new[] { "," },
