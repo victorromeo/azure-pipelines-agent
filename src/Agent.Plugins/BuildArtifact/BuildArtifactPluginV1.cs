@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.Services.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Content.Common.Tracing;
 using Minimatch;
+using System.Text.RegularExpressions;
 
 namespace Agent.Plugins.BuildArtifacts
 {
@@ -110,7 +111,7 @@ namespace Agent.Plugins.BuildArtifacts
                 StringSplitOptions.RemoveEmptyEntries
             );
 
-            minimatchPatterns = minimatchPatterns.Select(item => item.Replace("\\\\", "/")).ToArray();
+            minimatchPatterns = minimatchPatterns.Select(item => Regex.Replace(item, "/\\/g", "/")).ToArray();
 
             string[] tagsInput = tags.Split(
                 new[] { "," },
