@@ -126,7 +126,7 @@ namespace Agent.Sdk.Knob
             nameof(UseLegacyHttpHandler),
             "Use the libcurl-based HTTP handler rather than .NET's native HTTP handler, as we did on .NET Core 2.1",
             new EnvironmentKnobSource(LegacyHttpVariableName),
-            new BuiltInDefaultKnobSource("false"));
+            new BuiltInDefaultKnobSource("true"));
 
         public static readonly Knob HttpRetryCount = new Knob(
             nameof(HttpRetryCount),
@@ -203,7 +203,7 @@ namespace Agent.Sdk.Knob
             nameof(DisableAgentDowngrade),
             "Disable agent downgrades. Upgrades will still be allowed.",
             new EnvironmentKnobSource("AZP_AGENT_DOWNGRADE_DISABLED"),
-            new BuiltInDefaultKnobSource("false"));
+            new BuiltInDefaultKnobSource("true"));
 
         public static readonly Knob PermissionsCheckFailsafe = new Knob(
             nameof(PermissionsCheckFailsafe),
