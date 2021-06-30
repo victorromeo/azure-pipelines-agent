@@ -131,6 +131,44 @@ namespace Agent.Sdk
             get => PlatformUtil.HostArchitecture == Architecture.Arm64;
         }
 
+        public static Architecture BuiltOnArchitecture
+        {
+            get
+            {
+#if X86
+                return Architecture.X86;
+#elif X64
+                return Architecture.X64;
+#elif ARM
+                return Architecture.Arm;
+#elif ARM64            
+                return Architecture.Arm64;
+#else  
+                #error Unknown Architecture
+#endif
+            }
+        }
+
+        public static bool BuiltOnX86
+        {
+            get => BuiltOnArchitecture == Architecture.X86;
+        }
+
+        public static bool BuiltOnX64
+        {
+            get => BuiltOnArchitecture == Architecture.X64;
+        }
+
+        public static bool BuiltOnArm
+        {
+            get => BuiltOnArchitecture == Architecture.Arm;
+        }
+
+        public static bool BuiltOnArm64
+        {
+            get => BuiltOnArchitecture == Architecture.Arm64;
+        }
+
         public static bool UseLegacyHttpHandler
         {
             // In .NET Core 2.1, we couldn't use the new SocketsHttpHandler for Windows or Linux
