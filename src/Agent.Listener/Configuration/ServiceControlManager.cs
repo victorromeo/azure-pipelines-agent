@@ -33,9 +33,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 throw new InvalidOperationException(StringUtil.Loc("CannotFindHostName", settings.ServerUrl));
             }
 
-            string thirdPartServiceName = settings.PoolName ?? settings.EnvironmentName;
+            string resourceCollection = settings.PoolName ?? settings.EnvironmentName;
 
-            serviceName = StringUtil.Format(serviceNamePattern, accountName, thirdPartServiceName, settings.AgentName);
+            serviceName = StringUtil.Format(serviceNamePattern, accountName, resourceCollection, settings.AgentName);
 
             if (serviceName.Length > 80)
             {
@@ -67,12 +67,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     agentNameSubstring = StringUtil.SubstringPrefix(settings.AgentName, settings.AgentName.Length - exceededCharLength);
                 }
 
-                string thirdPartServiceNameSubstring = poolNameSubstring ?? environmentNameSubstring;
+                string resourceCollectionSubstring = poolNameSubstring ?? environmentNameSubstring;
 
-                serviceName = StringUtil.Format(serviceNamePattern, accountNameSubstring, thirdPartServiceNameSubstring, agentNameSubstring);
+                serviceName = StringUtil.Format(serviceNamePattern, accountNameSubstring, resourceCollectionSubstring, agentNameSubstring);
             }
 
-            serviceDisplayName = StringUtil.Format(serviceDisplayNamePattern, accountName, thirdPartServiceName, settings.AgentName);
+            serviceDisplayName = StringUtil.Format(serviceDisplayNamePattern, accountName, resourceCollection, settings.AgentName);
         
             Trace.Info($"Service name '{serviceName}' display name '{serviceDisplayName}' will be used for service configuration.");
         }
