@@ -90,10 +90,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener.Configuration
                     settings.PoolName = test.PoolName;
                     settings.EnvironmentName = test.EnvironmentName;
 
-                    string serviceName;
-                    string serviceDisplayName;
-
-                    scm.CalculateServiceName(settings, test.ServiceNamePattern, test.ServiceDisplayPattern, out serviceName, out serviceDisplayName);
+                    scm.CalculateServiceName(settings, test.ServiceNamePattern, test.ServiceDisplayPattern, out string serviceName, out string serviceDisplayName);
 
                     Assert.True(string.Equals(serviceName, test.ExpectedServiceName), $"{test.TestName} Service Name Expected: {test.ExpectedServiceName}, Got: {serviceName}");
                     Assert.True(serviceName.Length <= 80, $"{test.TestName} Service Name is <= 80");

@@ -33,17 +33,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 throw new InvalidOperationException(StringUtil.Loc("CannotFindHostName", settings.ServerUrl));
             }
 
- 
-            if (settings.PoolName != null)
-            {
-                serviceName = StringUtil.Format(serviceNamePattern, accountName, settings.PoolName, settings.AgentName);
-            }
-
-            if (settings.EnvironmentName != null)
-            {
-                serviceName = StringUtil.Format(serviceNamePattern, accountName, settings.EnvironmentName, settings.AgentName);
-            }
-
+            serviceName = StringUtil.Format(serviceNamePattern, accountName, settings.PoolName ?? settings.EnvironmentName, settings.AgentName);
 
             if (serviceName.Length > 80)
             {
@@ -74,29 +64,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 {
                     agentNameSubstring = StringUtil.SubstringPrefix(settings.AgentName, settings.AgentName.Length - exceededCharLength);
                 }
-
-                if (settings.PoolName != null)
-                {
-                   serviceName = StringUtil.Format(serviceNamePattern, accountNameSubstring, poolNameSubstring, agentNameSubstring);
-                }
-
-                if (settings.EnvironmentName != null)
-                {
-                    serviceName = StringUtil.Format(serviceNamePattern, accountNameSubstring, environmentNameSubstring, agentNameSubstring);                    
-                }
-
+        
+                serviceName = StringUtil.Format(serviceNamePattern, accountNameSubstring, poolNameSubstring ?? environmentNameSubstring, agentNameSubstring);
             }
 
-            if (settings.PoolName != null)
-            {
-                serviceDisplayName = StringUtil.Format(serviceDisplayNamePattern, accountName, settings.PoolName, settings.AgentName);
-            }
-
-            if (settings.EnvironmentName != null)
-            {
-                serviceDisplayName = StringUtil.Format(serviceDisplayNamePattern, accountName, settings.EnvironmentName, settings.AgentName);
-            }
-
+            serviceDisplayName = StringUtil.Format(serviceDisplayNamePattern, accountName, settings.PoolName ?? settings.EnvironmentName, settings.AgentName);
+        
             Trace.Info($"Service name '{serviceName}' display name '{serviceDisplayName}' will be used for service configuration.");
         }
     }
