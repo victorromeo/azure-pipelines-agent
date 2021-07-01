@@ -137,7 +137,7 @@ namespace Agent.Sdk
             {
 #if X86
                 return true;
-#else  
+#else
                 return false;
 #endif
             }
