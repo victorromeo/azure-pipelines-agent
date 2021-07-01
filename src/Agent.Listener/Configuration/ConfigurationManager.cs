@@ -271,6 +271,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             while (true)
             {
                 agentSettings.AgentName = command.GetAgentName();
+                agentSettings.EnvironmentName = command.GetEnvironmentName();
 
                 // Get the system capabilities.
                 // TODO: Hook up to ctrl+c cancellation token.

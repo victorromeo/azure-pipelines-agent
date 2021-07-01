@@ -54,7 +54,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 exceededCharLength -= accountName.Length - accountNameSubstring.Length;
 
                 string poolNameSubstring = StringUtil.SubstringPrefix(settings.PoolName, 25);
-                string EnvironmentNameSubstring = settings.EnvironmentName;
+                string environmentNameSubstring = StringUtil.SubstringPrefix(settings.EnvironmentName, 25);
 
                 if (settings.PoolName != null)
                 {
@@ -63,7 +63,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
                 if (settings.EnvironmentName != null)
                 {
-                    exceededCharLength -= EnvironmentNameSubstring.Length;
+                    exceededCharLength -= settings.EnvironmentName.Length - environmentNameSubstring.Length;
                 }
 
                 string agentNameSubstring = settings.AgentName;
@@ -81,7 +81,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
                 if (settings.EnvironmentName != null)
                 {
-                    serviceName = StringUtil.Format(serviceNamePattern, accountNameSubstring, EnvironmentNameSubstring, agentNameSubstring);
+                    serviceName = StringUtil.Format(serviceNamePattern, accountNameSubstring, environmentNameSubstring, agentNameSubstring);
                 }
 
             }
