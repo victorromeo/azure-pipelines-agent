@@ -1,3 +1,13 @@
+## Features
+
+
+## Bugs
+ - Added Patch Coverage API call to avoid BQC failure. (#3438)
+ - fixed service name for install multiple environments (#3455)
+
+## Misc
+
+
 
 ## Agent Downloads
 
