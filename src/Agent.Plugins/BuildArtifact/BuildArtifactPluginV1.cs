@@ -198,9 +198,9 @@ namespace Agent.Plugins.BuildArtifacts
                 {
                     throw new ArgumentNullException(StringUtil.Loc("CannotBeNullOrEmpty"), "Project Name");
                 }
-                Guid projectId;
+                Guid projectId; 
                 bool isProjGuid = Guid.TryParse(projectName, out projectId);
-                if (!isProjGuid)
+                if (!isProjGuid) 
                 {
                     projectId = await GetProjectIdAsync(context, projectName);
                 }
@@ -353,7 +353,7 @@ namespace Agent.Plugins.BuildArtifacts
 
         private async Task<int> GetPipelineIdAsync(AgentTaskPluginExecutionContext context, string pipelineDefinition, string buildVersionToDownload, string project, string[] tagFilters, BuildResult resultFilter = BuildResult.Succeeded, string branchName = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if(String.IsNullOrWhiteSpace(pipelineDefinition))
+            if(String.IsNullOrWhiteSpace(pipelineDefinition)) 
             {
                 throw new InvalidOperationException(StringUtil.Loc("CannotBeNullOrEmpty", "Pipeline Definition"));
             }
@@ -421,7 +421,7 @@ namespace Agent.Plugins.BuildArtifacts
 
             return result;
         }
-
+      
         private async Task<Guid> GetProjectIdAsync(AgentTaskPluginExecutionContext context, string projectName)
         {
             VssConnection connection = context.VssConnection;
