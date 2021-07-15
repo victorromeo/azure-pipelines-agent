@@ -54,6 +54,7 @@ namespace Agent.Plugins.BuildArtifacts
             public static readonly string ItemPattern = "itemPattern";
             public static readonly string DownloadType = "downloadType";
             public static readonly string DownloadPath = "downloadPath";
+            public static readonly string CleanDestinationFolder = "cleanDestinationFolder";
             public static readonly string BuildId = "buildId";
             public static readonly string RetryDownloadCount = "retryDownloadCount";
             public static readonly string ParallelizationLimit = "parallelizationLimit";
@@ -89,6 +90,7 @@ namespace Agent.Plugins.BuildArtifacts
             string specificBuildWithTriggering = context.GetInput(TaskProperties.SpecificBuildWithTriggering, required: false);
             string buildVersionToDownload = context.GetInput(TaskProperties.BuildVersionToDownload, required: false);
             string targetPath = context.GetInput(TaskProperties.DownloadPath, required: true);
+            string cleanDestinationFolder = context.GetInput(TaskProperties.CleanDestinationFolder, required: false);
             string environmentBuildId = context.Variables.GetValueOrDefault(BuildVariables.BuildId)?.Value ?? string.Empty; // BuildID provided by environment.
             string itemPattern = context.GetInput(TaskProperties.ItemPattern, required: false);
             string projectName = context.GetInput(TaskProperties.Project, required: false);
@@ -128,6 +130,12 @@ namespace Agent.Plugins.BuildArtifacts
             {
                 allowCanceledBuildsBool = false;
             }
+
+            if (!bool.TryParse(cleanDestinationFolder, out var cleanDestinationFolderBool))
+            {
+                cleanDestinationFolderBool = false;
+            }
+
             var resultFilter = GetResultFilter(allowPartiallySucceededBuildsBool, allowFailedBuildsBool, allowCanceledBuildsBool);
 
             PipelineArtifactServer server = new PipelineArtifactServer(tracer);
@@ -141,7 +149,7 @@ namespace Agent.Plugins.BuildArtifacts
                 {
                     throw new ArgumentNullException(StringUtil.Loc("CannotBeNullOrEmpty"), "Project ID");
                 }
-                
+
                 Guid projectId = Guid.Parse(projectIdStr);
                 ArgUtil.NotEmpty(projectId, nameof(projectId));
 
@@ -190,9 +198,9 @@ namespace Agent.Plugins.BuildArtifacts
                 {
                     throw new ArgumentNullException(StringUtil.Loc("CannotBeNullOrEmpty"), "Project Name");
                 }
-                Guid projectId; 
+                Guid projectId;
                 bool isProjGuid = Guid.TryParse(projectName, out projectId);
-                if (!isProjGuid) 
+                if (!isProjGuid)
                 {
                     projectId = await GetProjectIdAsync(context, projectName);
                 }
@@ -285,7 +293,10 @@ namespace Agent.Plugins.BuildArtifacts
             }
 
             string fullPath = this.CreateDirectoryIfDoesntExist(targetPath);
-
+            if (cleanDestinationFolderBool)
+            {
+                CleanDirectory(context, fullPath);
+            }
             var downloadOption = downloadType == "single" ? DownloadOptions.SingleDownload : DownloadOptions.MultiDownload;
 
             // Build artifacts always includes the artifact in the path name
@@ -307,9 +318,42 @@ namespace Agent.Plugins.BuildArtifacts
             return fullPath;
         }
 
+        private void CleanDirectory(AgentTaskPluginExecutionContext context, string directoryPath)
+        {
+            context.Output(StringUtil.Loc("CleaningDestinationFolder", directoryPath));
+
+            FileAttributes dirAttributes = File.GetAttributes(directoryPath);
+            if (dirAttributes.HasFlag(FileAttributes.Directory))
+            {
+                bool isDirectoryEmpty = !Directory.EnumerateFileSystemEntries(directoryPath).Any();
+                if (isDirectoryEmpty)
+                {
+                    context.Warning(StringUtil.Loc("NoFolderToClean", directoryPath));
+                    return;
+                }
+
+                // delete the child items
+                DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
+                foreach (FileInfo file in directoryInfo.GetFiles())
+                {
+                    file.Delete();
+                }
+
+                foreach (DirectoryInfo subDirectory in directoryInfo.GetDirectories())
+                {
+                    subDirectory.Delete(true);
+                }
+            }
+            else
+            {
+                // specified folder is not a directory. Delete it.
+                File.Delete(directoryPath);
+            }
+        }
+
         private async Task<int> GetPipelineIdAsync(AgentTaskPluginExecutionContext context, string pipelineDefinition, string buildVersionToDownload, string project, string[] tagFilters, BuildResult resultFilter = BuildResult.Succeeded, string branchName = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if(String.IsNullOrWhiteSpace(pipelineDefinition)) 
+            if(String.IsNullOrWhiteSpace(pipelineDefinition))
             {
                 throw new InvalidOperationException(StringUtil.Loc("CannotBeNullOrEmpty", "Pipeline Definition"));
             }
@@ -377,7 +421,7 @@ namespace Agent.Plugins.BuildArtifacts
 
             return result;
         }
-      
+
         private async Task<Guid> GetProjectIdAsync(AgentTaskPluginExecutionContext context, string projectName)
         {
             VssConnection connection = context.VssConnection;
