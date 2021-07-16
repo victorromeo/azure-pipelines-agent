@@ -31,6 +31,7 @@ namespace Agent.Plugins
         public int RetryDownloadCount { get; set; } = 4;
         public bool CheckDownloadedFiles { get; set; } = false;
         public Options CustomMinimatchOptions { get; set; } = null;
+        public bool ExtractTars { get; set; } = false;
     }
 
     internal enum BuildArtifactRetrievalOptions

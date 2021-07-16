@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.Services.FileContainer.Client;
 using Microsoft.VisualStudio.Services.WebApi;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -177,6 +178,11 @@ namespace Agent.Plugins
             {
                 CheckDownloads(items, rootPath, containerIdAndRoot.Item2, downloadParameters.IncludeArtifactNameInPath);
             }
+
+            if (downloadParameters.ExtractTars)
+            {
+                ExtractTarsIfPresent(items, rootPath);
+            }
         }
 
         private void CheckDownloads(IEnumerable<FileContainerItem> items, string rootPath, string artifactName, bool includeArtifactName)
@@ -311,6 +317,48 @@ namespace Agent.Plugins
                 tracer.Info($"Item excluded: {item.Path}");
             }
             return filteredItems;
+        }
+
+        private void ExtractTarsIfPresent(IEnumerable<FileContainerItem> items, string rootPath, string artifactName, bool includeArtifactName)
+        {
+            tracer.Info(StringUtil.Loc("BeginTarSearchAndExtraction"));
+            string extractedTarsTempDir = "extracted_tars";
+            string extractedTarsPath = Path.Combine(Constants.Variables.Agent.TempDirectory, extractedTarsTempDir);
+
+            foreach (FileContainerItem item in items)
+            {
+                if (item.ItemType == ContainerItemType.File && item.Path.EndsWith(".tar"))
+                {
+                    ExtractTar(item.Path, Path.Combine(extractedTarsPath, artifactName));
+
+                    item.Delete();
+                }
+            }
+
+            var extractedTarsDirectoryInfo = new DirectoryInfo(extractedTarsPath);
+            foreach (FileInfo file in extractedTarsDirectoryInfo.GetFiles("*", SearchOption.TopDirectoryOnly))
+            {
+                file.MoveTo(Path.Combine(rootPath, file.Name));
+            }
+            foreach (FileInfo subdirectory in extractedTarsDirectoryInfo.GetDirectories("*", SearchOption.TopDirectoryOnly))
+            {
+                subdirectory.MoveTo(Path.Combine(rootPath, subdirectory.Name));
+            }
+        }
+
+        private void ExtractTar(string tarArchivePath, string extractedFilesDir)
+        {
+            tracer.Info(StringUtil.Loc("TarExtracting", tarArchivePath));
+
+            Directory.CreateDirectory(extractedFilesDir);
+            Process extractionProcess = Process.Start("tar", $"xf {tarArchivePath} --directory {extractedFilesDir}");
+            extractionProcess.WaitForExit();
+
+            var extractionStderr = extractionProcess.StandardError.ToString();
+            if (extractionStderr.Length != 0 || extractionProcess.ExitCode != 0)
+            {
+                throw new Exception(StringUtil.Loc("TarExtractionError", tarArchivePath, extractionStderr));
+            }
         }
     }
 }
