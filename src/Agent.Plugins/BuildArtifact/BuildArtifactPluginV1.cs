@@ -72,6 +72,7 @@ namespace Agent.Plugins.BuildArtifacts
         static readonly string buildVersionToDownloadLatest = "latest";
         static readonly string buildVersionToDownloadSpecific = "specific";
         static readonly string buildVersionToDownloadLatestFromBranch = "latestFromBranch";
+        static readonly string extractedTarsTempDir = "extracted_tars";
         static readonly Options minimatchOptions = new Options() {
            Dot = true,
            NoBrace = true,
@@ -141,7 +142,6 @@ namespace Agent.Plugins.BuildArtifacts
             {
                 throw new ArgumentException(StringUtil.Loc("TarExtractionNotSupportedInWindows"));
             }
-
 
             PipelineArtifactServer server = new PipelineArtifactServer(tracer);
             ArtifactDownloadParameters downloadParameters;
@@ -290,7 +290,8 @@ namespace Agent.Plugins.BuildArtifacts
                     RetryDownloadCount = int.TryParse(retryDownloadCount, out var retryCount) ? retryCount : 4,
                     CheckDownloadedFiles = bool.TryParse(checkDownloadedFiles, out var checkDownloads) && checkDownloads,
                     CustomMinimatchOptions = minimatchOptions,
-                    ExtractTars = extractTarsBool
+                    ExtractTars = extractTarsBool,
+                    ExtractedTarsTempPath = Path.Combine(context.Variables.GetValueOrDefault("Agent.TempDirectory")?.Value, extractedTarsTempDir)
                 };
             }
             else

@@ -32,6 +32,7 @@ namespace Agent.Plugins
         public bool CheckDownloadedFiles { get; set; } = false;
         public Options CustomMinimatchOptions { get; set; } = null;
         public bool ExtractTars { get; set; } = false;
+        public string ExtractedTarsTempPath { get; set; }
     }
 
     internal enum BuildArtifactRetrievalOptions

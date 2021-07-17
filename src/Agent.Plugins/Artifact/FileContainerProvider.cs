@@ -181,7 +181,7 @@ namespace Agent.Plugins
 
             if (downloadParameters.ExtractTars)
             {
-                ExtractTarsIfPresent(items, rootPath);
+                ExtractTarsIfPresent(items, rootPath, containerIdAndRoot.Item2, downloadParameters.ExtractedTarsTempPath);
             }
         }
 
@@ -319,28 +319,27 @@ namespace Agent.Plugins
             return filteredItems;
         }
 
-        private void ExtractTarsIfPresent(IEnumerable<FileContainerItem> items, string rootPath, string artifactName, bool includeArtifactName)
+        private void ExtractTarsIfPresent(IEnumerable<FileContainerItem> items, string rootPath, string artifactName, string extractedTarsTempPath)
         {
             tracer.Info(StringUtil.Loc("BeginTarSearchAndExtraction"));
-            string extractedTarsTempDir = "extracted_tars";
-            string extractedTarsPath = Path.Combine(Constants.Variables.Agent.TempDirectory, extractedTarsTempDir);
 
             foreach (FileContainerItem item in items)
             {
                 if (item.ItemType == ContainerItemType.File && item.Path.EndsWith(".tar"))
                 {
-                    ExtractTar(item.Path, Path.Combine(extractedTarsPath, artifactName));
+                    var tarArchivePath = ResolveTargetPath(rootPath, item, artifactName, true);
+                    ExtractTar(tarArchivePath, Path.Combine(extractedTarsTempPath, artifactName));
 
-                    item.Delete();
+                    File.Delete(tarArchivePath);
                 }
             }
 
-            var extractedTarsDirectoryInfo = new DirectoryInfo(extractedTarsPath);
+            var extractedTarsDirectoryInfo = new DirectoryInfo(extractedTarsTempPath);
             foreach (FileInfo file in extractedTarsDirectoryInfo.GetFiles("*", SearchOption.TopDirectoryOnly))
             {
                 file.MoveTo(Path.Combine(rootPath, file.Name));
             }
-            foreach (FileInfo subdirectory in extractedTarsDirectoryInfo.GetDirectories("*", SearchOption.TopDirectoryOnly))
+            foreach (DirectoryInfo subdirectory in extractedTarsDirectoryInfo.GetDirectories("*", SearchOption.TopDirectoryOnly))
             {
                 subdirectory.MoveTo(Path.Combine(rootPath, subdirectory.Name));
             }
