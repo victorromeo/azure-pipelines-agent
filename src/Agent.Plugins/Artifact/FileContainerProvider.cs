@@ -369,7 +369,7 @@ namespace Agent.Plugins
             Process extractionProcess = Process.Start(extractionProcessInfo);
             extractionProcess.WaitForExit();
 
-            var extractionStderr = extractionProcess.StandardError.ToString();
+            var extractionStderr = extractionProcess.StandardError.ReadToEnd();
             if (extractionStderr.Length != 0 || extractionProcess.ExitCode != 0)
             {
                 throw new Exception(StringUtil.Loc("TarExtractionError", tarArchivePath, extractionStderr));
