@@ -360,7 +360,13 @@ namespace Agent.Plugins
             tracer.Info(StringUtil.Loc("TarExtraction", tarArchivePath));
 
             Directory.CreateDirectory(extractedFilesDir);
-            Process extractionProcess = Process.Start("tar", $"xf {tarArchivePath} --directory {extractedFilesDir}");
+            var extractionProcessInfo = new ProcessStartInfo("tar")
+            {
+                Arguments = $"xf {tarArchivePath} --directory {extractedFilesDir}",
+                UseShellExecute = false,
+                RedirectStandardError = true
+            };
+            Process extractionProcess = Process.Start(extractionProcessInfo);
             extractionProcess.WaitForExit();
 
             var extractionStderr = extractionProcess.StandardError.ToString();
