@@ -323,15 +323,25 @@ namespace Agent.Plugins
         {
             tracer.Info(StringUtil.Loc("BeginTarSearchAndExtraction"));
 
+            int tarsFoundCount = 0;
+
             foreach (FileContainerItem item in items)
             {
                 if (item.ItemType == ContainerItemType.File && item.Path.EndsWith(".tar"))
                 {
+                    tarsFoundCount += 1;
+
                     var tarArchivePath = ResolveTargetPath(rootPath, item, artifactName, true);
                     ExtractTar(tarArchivePath, Path.Combine(extractedTarsTempPath, artifactName));
 
                     File.Delete(tarArchivePath);
                 }
+            }
+
+            if (tarsFoundCount == 0) {
+                tracer.Warn(StringUtil.Loc("TarsNotFound"));
+            } else {
+                tracer.Info(StringUtil.Loc("TarsFound", tarsFoundCount));
             }
 
             var extractedTarsDirectoryInfo = new DirectoryInfo(extractedTarsTempPath);
@@ -347,7 +357,7 @@ namespace Agent.Plugins
 
         private void ExtractTar(string tarArchivePath, string extractedFilesDir)
         {
-            tracer.Info(StringUtil.Loc("TarExtracting", tarArchivePath));
+            tracer.Info(StringUtil.Loc("TarExtraction", tarArchivePath));
 
             Directory.CreateDirectory(extractedFilesDir);
             Process extractionProcess = Process.Start("tar", $"xf {tarArchivePath} --directory {extractedFilesDir}");

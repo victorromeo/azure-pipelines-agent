@@ -599,6 +599,8 @@
   "TarExtraction": "Extracting tar archive: {0}",
   "TarExtractionError": "Failed to extract tar archive {0}: {1}",
   "TarExtractionNotSupportedInWindows": "Tar extraction is not supported on Windows",
+  "TarsFound": "Found {0} tar archives to extract",
+  "TarsNotFound": "No tar archives were found to extract",
   "TaskDownloadFailed": "Failed to download task '{0}'. Error {1}",
   "TaskDownloadTimeout": "Task '{0}' didn't finish download within {1} seconds.",
   "TaskSignatureVerificationFailed": "Task signature verification failed.",
