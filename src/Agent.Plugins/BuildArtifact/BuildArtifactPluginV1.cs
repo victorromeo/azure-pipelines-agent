@@ -107,6 +107,8 @@ namespace Agent.Plugins.BuildArtifacts
             string checkDownloadedFiles = context.GetInput(TaskProperties.CheckDownloadedFiles, required: false);
             string extractTars = context.GetInput(TaskProperties.ExtractTars, required: false);
 
+            string extractedTarsTempPath = Path.Combine(context.Variables.GetValueOrDefault("Agent.TempDirectory")?.Value, extractedTarsTempDir);
+
             targetPath = Path.IsPathFullyQualified(targetPath) ? targetPath : Path.GetFullPath(Path.Combine(defaultWorkingDirectory, targetPath));
 
             string[] minimatchPatterns = itemPattern.Split(
@@ -194,7 +196,9 @@ namespace Agent.Plugins.BuildArtifacts
                     ParallelizationLimit = int.TryParse(parallelizationLimit, out var parallelLimit) ? parallelLimit : 8,
                     RetryDownloadCount = int.TryParse(retryDownloadCount, out var retryCount) ? retryCount : 4,
                     CheckDownloadedFiles = bool.TryParse(checkDownloadedFiles, out var checkDownloads) && checkDownloads,
-                    CustomMinimatchOptions = minimatchOptions
+                    CustomMinimatchOptions = minimatchOptions,
+                    ExtractTars = extractTarsBool,
+                    ExtractedTarsTempPath = extractedTarsTempPath
                 };
             }
             else if (buildType == buildTypeSpecific)
@@ -291,7 +295,7 @@ namespace Agent.Plugins.BuildArtifacts
                     CheckDownloadedFiles = bool.TryParse(checkDownloadedFiles, out var checkDownloads) && checkDownloads,
                     CustomMinimatchOptions = minimatchOptions,
                     ExtractTars = extractTarsBool,
-                    ExtractedTarsTempPath = Path.Combine(context.Variables.GetValueOrDefault("Agent.TempDirectory")?.Value, extractedTarsTempDir)
+                    ExtractedTarsTempPath = extractedTarsTempPath
                 };
             }
             else
