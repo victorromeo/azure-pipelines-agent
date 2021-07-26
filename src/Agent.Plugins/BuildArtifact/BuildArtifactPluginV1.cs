@@ -320,9 +320,19 @@ namespace Agent.Plugins.BuildArtifacts
 
         private void CleanDirectory(AgentTaskPluginExecutionContext context, string directoryPath)
         {
+            FileAttributes dirAttributes;
             context.Output(StringUtil.Loc("CleaningDestinationFolder", directoryPath));
+            
+            try
+            {
+                dirAttributes = File.GetAttributes(directoryPath);
+            }
+            catch (Exception ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
+            {
+                context.Warning(StringUtil.Loc("NoFolderToClean", directoryPath));
+                return;
+            }
 
-            FileAttributes dirAttributes = File.GetAttributes(directoryPath);
             if (dirAttributes.HasFlag(FileAttributes.Directory))
             {
                 bool isDirectoryEmpty = !Directory.EnumerateFileSystemEntries(directoryPath).Any();
