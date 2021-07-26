@@ -374,15 +374,7 @@ namespace Agent.Plugins
                 tracer.Info(StringUtil.Loc("TarsFound", tarsFoundCount));
             }
 
-            var extractedTarsDirectoryInfo = new DirectoryInfo(extractedTarsTempPath);
-            foreach (FileInfo file in extractedTarsDirectoryInfo.GetFiles("*", SearchOption.TopDirectoryOnly))
-            {
-                file.MoveTo(Path.Combine(rootPath, file.Name));
-            }
-            foreach (DirectoryInfo subdirectory in extractedTarsDirectoryInfo.GetDirectories("*", SearchOption.TopDirectoryOnly))
-            {
-                subdirectory.MoveTo(Path.Combine(rootPath, subdirectory.Name));
-            }
+            MoveDirectory(extractedTarsTempPath, rootPath);
         }
 
         private void ExtractTar(string tarArchivePath, string extractedFilesDir)
@@ -403,6 +395,31 @@ namespace Agent.Plugins
             if (extractionStderr.Length != 0 || extractionProcess.ExitCode != 0)
             {
                 throw new Exception(StringUtil.Loc("TarExtractionError", tarArchivePath, extractionStderr));
+            }
+        }
+
+        private void MoveDirectory(string sourcePath, string targetPath) {
+            var sourceDirectoryInfo = new DirectoryInfo(sourcePath);
+            foreach (FileInfo file in sourceDirectoryInfo.GetFiles("*", SearchOption.TopDirectoryOnly))
+            {
+                file.MoveTo(Path.Combine(targetPath, file.Name));
+            }
+            foreach (DirectoryInfo subdirectory in sourceDirectoryInfo.GetDirectories("*", SearchOption.TopDirectoryOnly))
+            {
+                string subdirectoryDestinationPath = Path.Combine(sourcePath, subdirectory.Name);
+                var subdirectoryDestination = new DirectoryInfo(subdirectoryDestinationPath);
+
+                if (subdirectoryDestination.Exists)
+                {
+                    MoveDirectory(
+                        Path.Combine(sourcePath, subdirectory.Name),
+                        Path.Combine(targetPath, subdirectory.Name)
+                    );
+                }
+                else
+                {
+                    subdirectory.MoveTo(Path.Combine(targetPath, subdirectory.Name));
+                }
             }
         }
     }
