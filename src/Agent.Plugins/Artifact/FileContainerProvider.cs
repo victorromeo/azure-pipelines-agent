@@ -341,7 +341,7 @@ namespace Agent.Plugins
 
         private void ExtractTarsIfPresent(IEnumerable<FileContainerItem> items, string rootPath, string artifactName, string extractedTarsTempPath)
         {
-            tracer.Info(StringUtil.Loc("BeginTarSearchAndExtraction"));
+            tracer.Info(StringUtil.Loc("TarSearchStart"));
 
             int tarsFoundCount = 0;
 
