@@ -45,15 +45,17 @@ namespace Agent.Plugins
 
         public async Task DownloadSingleArtifactAsync(ArtifactDownloadParameters downloadParameters, BuildArtifact buildArtifact, CancellationToken cancellationToken, AgentTaskPluginExecutionContext context)
         {
-            await this.DownloadFileContainerAsync(downloadParameters, buildArtifact, downloadParameters.TargetDirectory, context, cancellationToken);
+            IEnumerable<FileContainerItem> items = await GetArtifactItems(downloadParameters, buildArtifact);
+            await this.DownloadFileContainerAsync(items, downloadParameters, buildArtifact, downloadParameters.TargetDirectory, context, cancellationToken);
         }
 
         public async Task DownloadMultipleArtifactsAsync(ArtifactDownloadParameters downloadParameters, IEnumerable<BuildArtifact> buildArtifacts, CancellationToken cancellationToken, AgentTaskPluginExecutionContext context)
         {
             foreach (var buildArtifact in buildArtifacts)
             {
+                IEnumerable<FileContainerItem> items = await GetArtifactItems(downloadParameters, buildArtifact);
                 var dirPath = Path.Combine(downloadParameters.TargetDirectory, buildArtifact.Name);
-                await DownloadFileContainerAsync(downloadParameters, buildArtifact, dirPath, context, cancellationToken, isSingleArtifactDownload: false);
+                await DownloadFileContainerAsync(items, downloadParameters, buildArtifact, dirPath, context, cancellationToken, isSingleArtifactDownload: false);
             }
         }
 
@@ -83,12 +85,10 @@ namespace Agent.Plugins
             }
         }
 
-        private async Task DownloadFileContainerAsync(ArtifactDownloadParameters downloadParameters, BuildArtifact artifact, string rootPath, AgentTaskPluginExecutionContext context, CancellationToken cancellationToken, bool isSingleArtifactDownload = true)
+        private async Task DownloadFileContainerAsync(IEnumerable<FileContainerItem> items, ArtifactDownloadParameters downloadParameters, BuildArtifact artifact, string rootPath, AgentTaskPluginExecutionContext context, CancellationToken cancellationToken, bool isSingleArtifactDownload = true)
         {
             var containerIdAndRoot = ParseContainerId(artifact.Resource.Data);
             var projectId = downloadParameters.ProjectId;
-
-            var items = await GetArtifactItems(containerIdAndRoot, downloadParameters);
 
             tracer.Info($"Start downloading FCS artifact- {artifact.Name}");
 
@@ -178,8 +178,9 @@ namespace Agent.Plugins
             }
         }
 
-        private async Task<IEnumerable<FileContainerItem>> GetArtifactItems((long, string) containerIdAndRoot, ArtifactDownloadParameters downloadParameters)
+        private async Task<IEnumerable<FileContainerItem>> GetArtifactItems(ArtifactDownloadParameters downloadParameters, BuildArtifact buildArtifact)
         {
+            (long, string) containerIdAndRoot = ParseContainerId(buildArtifact.Resource.Data);
             Guid projectId = downloadParameters.ProjectId;
             string[] minimatchPatterns = downloadParameters.MinimatchFilters;
 
