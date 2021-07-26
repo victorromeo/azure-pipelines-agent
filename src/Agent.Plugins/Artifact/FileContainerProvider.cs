@@ -47,15 +47,29 @@ namespace Agent.Plugins
         {
             IEnumerable<FileContainerItem> items = await GetArtifactItems(downloadParameters, buildArtifact);
             await this.DownloadFileContainerAsync(items, downloadParameters, buildArtifact, downloadParameters.TargetDirectory, context, cancellationToken);
+
+            if (downloadParameters.ExtractTars)
+            {
+                ExtractTarsIfPresent(context, items, downloadParameters.TargetDirectory, downloadParameters.ExtractedTarsTempPath);
+            }
         }
 
         public async Task DownloadMultipleArtifactsAsync(ArtifactDownloadParameters downloadParameters, IEnumerable<BuildArtifact> buildArtifacts, CancellationToken cancellationToken, AgentTaskPluginExecutionContext context)
         {
+            var allItems = new List<FileContainerItem>();
+
             foreach (var buildArtifact in buildArtifacts)
             {
                 IEnumerable<FileContainerItem> items = await GetArtifactItems(downloadParameters, buildArtifact);
+                allItems.AddRange(items);
+
                 var dirPath = Path.Combine(downloadParameters.TargetDirectory, buildArtifact.Name);
                 await DownloadFileContainerAsync(items, downloadParameters, buildArtifact, dirPath, context, cancellationToken, isSingleArtifactDownload: false);
+            }
+
+            if (downloadParameters.ExtractTars)
+            {
+                ExtractTarsIfPresent(context, allItems, downloadParameters.TargetDirectory, downloadParameters.ExtractedTarsTempPath);
             }
         }
 
@@ -170,11 +184,6 @@ namespace Agent.Plugins
             if (downloadParameters.CheckDownloadedFiles)
             {
                 CheckDownloads(items, rootPath, containerIdAndRoot.Item2, downloadParameters.IncludeArtifactNameInPath);
-            }
-
-            if (downloadParameters.ExtractTars)
-            {
-                ExtractTarsIfPresent(items, rootPath, containerIdAndRoot.Item2, downloadParameters.ExtractedTarsTempPath);
             }
         }
 
@@ -340,7 +349,7 @@ namespace Agent.Plugins
             return filteredItems;
         }
 
-        private void ExtractTarsIfPresent(IEnumerable<FileContainerItem> items, string rootPath, string artifactName, string extractedTarsTempPath)
+        private void ExtractTarsIfPresent(AgentTaskPluginExecutionContext context, IEnumerable<FileContainerItem> items, string rootPath, string extractedTarsTempPath)
         {
             tracer.Info(StringUtil.Loc("TarSearchStart"));
 
@@ -352,15 +361,15 @@ namespace Agent.Plugins
                 {
                     tarsFoundCount += 1;
 
-                    var tarArchivePath = ResolveTargetPath(rootPath, item, artifactName, true);
-                    ExtractTar(tarArchivePath, Path.Combine(extractedTarsTempPath, artifactName));
+                    var tarArchivePath = Path.Combine(rootPath, item.Path);
+                    ExtractTar(tarArchivePath, Path.Combine(extractedTarsTempPath, item.Path));
 
                     File.Delete(tarArchivePath);
                 }
             }
 
             if (tarsFoundCount == 0) {
-                tracer.Warn(StringUtil.Loc("TarsNotFound"));
+                context.Warning(StringUtil.Loc("TarsNotFound"));
             } else {
                 tracer.Info(StringUtil.Loc("TarsFound", tarsFoundCount));
             }
