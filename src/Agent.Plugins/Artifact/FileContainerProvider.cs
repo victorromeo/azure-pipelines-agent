@@ -87,17 +87,10 @@ namespace Agent.Plugins
         {
             var containerIdAndRoot = ParseContainerId(artifact.Resource.Data);
             var projectId = downloadParameters.ProjectId;
-            var minimatchPatterns = downloadParameters.MinimatchFilters;
 
-            var items = await containerClient.QueryContainerItemsAsync(containerIdAndRoot.Item1, projectId, isShallow: false, includeBlobMetadata: true, containerIdAndRoot.Item2);
+            var items = await GetArtifactItems(containerIdAndRoot, downloadParameters);
 
             tracer.Info($"Start downloading FCS artifact- {artifact.Name}");
-            IEnumerable<Func<string, bool>> minimatcherFuncs = MinimatchHelper.GetMinimatchFuncs(minimatchPatterns, tracer, downloadParameters.CustomMinimatchOptions);
-
-            if (minimatcherFuncs != null && minimatcherFuncs.Count() != 0)
-            {
-                items = this.GetFilteredItems(items, minimatcherFuncs);
-            }
 
             if (!isSingleArtifactDownload && items.Any())
             {
@@ -183,6 +176,33 @@ namespace Agent.Plugins
             {
                 ExtractTarsIfPresent(items, rootPath, containerIdAndRoot.Item2, downloadParameters.ExtractedTarsTempPath);
             }
+        }
+
+        private async Task<IEnumerable<FileContainerItem>> GetArtifactItems((long, string) containerIdAndRoot, ArtifactDownloadParameters downloadParameters)
+        {
+            Guid projectId = downloadParameters.ProjectId;
+            string[] minimatchPatterns = downloadParameters.MinimatchFilters;
+
+            List<FileContainerItem> items = await containerClient.QueryContainerItemsAsync(
+                containerIdAndRoot.Item1,
+                projectId,
+                isShallow: false,
+                includeBlobMetadata: true,
+                containerIdAndRoot.Item2
+            );
+
+            IEnumerable<Func<string, bool>> minimatcherFuncs = MinimatchHelper.GetMinimatchFuncs(
+                minimatchPatterns,
+                tracer,
+                downloadParameters.CustomMinimatchOptions
+            );
+
+            if (minimatcherFuncs != null && minimatcherFuncs.Count() != 0)
+            {
+                items = this.GetFilteredItems(items, minimatcherFuncs);
+            }
+
+            return items;
         }
 
         private void CheckDownloads(IEnumerable<FileContainerItem> items, string rootPath, string artifactName, bool includeArtifactName)
