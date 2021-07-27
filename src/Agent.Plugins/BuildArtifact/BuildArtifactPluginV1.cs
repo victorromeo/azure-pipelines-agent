@@ -291,6 +291,10 @@ namespace Agent.Plugins.BuildArtifacts
             // Build artifacts always includes the artifact in the path name
             downloadParameters.IncludeArtifactNameInPath = true;
 
+            // By default, file container provider appends artifact name to target path when downloading specific files
+            // This is undesirable because DownloadBuildArtifactsV0 doesn't do that
+            downloadParameters.AppendArtifactNameToTargetPath = false;
+
             context.Output(StringUtil.Loc("DownloadArtifactTo", targetPath));
             await server.DownloadAsyncV2(context, downloadParameters, downloadOption, token);
             context.Output(StringUtil.Loc("DownloadArtifactFinished"));
