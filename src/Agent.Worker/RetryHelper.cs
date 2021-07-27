@@ -42,6 +42,39 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         var delay = timeDelayInterval(retryCounter);
                         await Task.Delay(delay);
                     }
+                    
+                    retryCounter++;
+                }
+            } while (true);
+
+        }
+
+
+        public async Task RetryStep(Func<Task> action, Func<int, int> timeDelayInterval, Func<Exception, bool> shouldRetryOnException)
+        {
+            int retryCounter = 0;
+            do
+            {
+                using (new SimpleTimer($"RetryHelper Method:{action.Method} ", Debug))
+                {
+                    try
+                    {
+                        Debug($"Invoking Method: {action.Method}. Attempt count: {retryCounter}");
+                        await action();
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (!shouldRetryOnException(ex) || ExhaustedRetryCount(retryCounter))
+                        {
+                            throw;
+                        }
+
+                        Warning($"Retry attempt {retryCounter}. Exception: {ex.Message} ");
+                        var delay = timeDelayInterval(retryCounter);
+                        await Task.Delay(delay);
+                    }
+
                     retryCounter++;
                 }
             } while (true);

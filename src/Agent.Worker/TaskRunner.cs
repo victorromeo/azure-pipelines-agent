@@ -362,7 +362,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     taskDirectory: definition.Directory);
 
                 // Run the task.
-                await handler.RunAsync();
+
+                RetryHelper rh = new RetryHelper(ExecutionContext, 2);
+                await rh.RetryStep(async () => await handler.RunAsync(), (retryCounter) => (int)Math.Pow(retryCounter, 2) * 5,
+                                                    (exception) => true);
+
+                //await handler.RunAsync();
+
+
             }
         }
 

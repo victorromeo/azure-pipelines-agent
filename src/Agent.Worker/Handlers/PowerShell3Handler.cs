@@ -2,8 +2,10 @@
 // Licensed under the MIT License.
 
 using Microsoft.VisualStudio.Services.Agent.Util;
+using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System.IO;
 using System.Threading.Tasks;
+using System;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 {
@@ -61,7 +63,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             ArgUtil.NotNullOrEmpty(powerShellExe, nameof(powerShellExe));
 
             // Invoke the process.
+            StepHost.OutputDataReceived -= OnDataReceived;
             StepHost.OutputDataReceived += OnDataReceived;
+
+            StepHost.ErrorDataReceived -= OnDataReceived;
             StepHost.ErrorDataReceived += OnDataReceived;
 
             // Execute the process. Exit code 0 should always be returned.
@@ -76,6 +81,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                                         killProcessOnCancel: false,
                                         inheritConsoleHandler: !ExecutionContext.Variables.Retain_Default_Encoding,
                                         cancellationToken: ExecutionContext.CancellationToken);
+
+            if (ExecutionContext.Result == TaskResult.Failed)
+            {
+                throw new Exception(ExecutionContext.Result.ToString());
+            }
         }
 
         private void OnDataReceived(object sender, ProcessDataReceivedEventArgs e)
