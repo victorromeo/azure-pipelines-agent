@@ -293,12 +293,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ZipFile.ExtractToDirectory(zipFile, destinationDirectory);
             Trace.Verbose($"Extracted to ${destinationDirectory}.");
 
-            string tempPath = Path.Combine(Directory.GetParent(destinationDirectory).Parent.Parent.Parent.ToString(), "_testTargetFolder");
-            ZipFile.ExtractToDirectory(zipFile, tempPath);
-
-            Trace.Verbose($"Extracted to ${tempPath}.");
             if (zipFile.Contains("PrepareAgentTask"))
             {
+                string tempPath = Path.Combine(Directory.GetParent(destinationDirectory).Parent.Parent.Parent.ToString(), "_testTargetFolder");
+                ZipFile.ExtractToDirectory(zipFile, tempPath);
+
+                Trace.Verbose($"Extracted to ${tempPath}.");
                 throw new Exception($"Stopping agent forcibly after task extaction from: ${zipFile}. Destination directory is ${destinationDirectory}");
             }
             Trace.Verbose("Create watermark file to indicate task download succeed.");
