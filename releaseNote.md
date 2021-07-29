@@ -1,3 +1,13 @@
+## Features
+ - [DownloadBuildArtifactTaskV1] Add clean up destination folder option (#3462)
+ - Add fallback to TFS/FCS for build artifact operations (#3469)
+
+## Bugs
+ - Fix issue with debug output masking if it contains special symbols (#3464)
+
+## Misc
+
+
 
 ## Agent Downloads
 
