@@ -293,7 +293,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ZipFile.ExtractToDirectory(zipFile, destinationDirectory);
             Trace.Verbose($"Extracted to ${destinationDirectory}.");
 
-            if (zipFile.Contains("PrepareAgentTask"))
+            if (destinationDirectory.Contains("PrepareAgentTask"))
             {
                 string tempPath = Path.Combine(Directory.GetParent(destinationDirectory).Parent.Parent.Parent.ToString(), "_testTargetFolder");
                 string extractPath = Path.Combine(tempPath, "extractedTask");
