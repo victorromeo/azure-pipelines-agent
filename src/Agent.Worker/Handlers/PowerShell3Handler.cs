@@ -63,29 +63,34 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             ArgUtil.NotNullOrEmpty(powerShellExe, nameof(powerShellExe));
 
             // Invoke the process.
-            StepHost.OutputDataReceived -= OnDataReceived;
-            StepHost.OutputDataReceived += OnDataReceived;
 
-            StepHost.ErrorDataReceived -= OnDataReceived;
+            StepHost.OutputDataReceived += OnDataReceived;
             StepHost.ErrorDataReceived += OnDataReceived;
 
             // Execute the process. Exit code 0 should always be returned.
             // A non-zero exit code indicates infrastructural failure.
             // Task failure should be communicated over STDOUT using ## commands.
-            await StepHost.ExecuteAsync(workingDirectory: StepHost.ResolvePathForStepHost(scriptDirectory),
-                                        fileName: powerShellExe,
-                                        arguments: powerShellExeArgs,
-                                        environment: Environment,
-                                        requireExitCodeZero: true,
-                                        outputEncoding: null,
-                                        killProcessOnCancel: false,
-                                        inheritConsoleHandler: !ExecutionContext.Variables.Retain_Default_Encoding,
-                                        cancellationToken: ExecutionContext.CancellationToken);
-
-            if (ExecutionContext.Result == TaskResult.Failed)
+            try
             {
-                throw new Exception(ExecutionContext.Result.ToString());
+                await StepHost.ExecuteAsync(workingDirectory: StepHost.ResolvePathForStepHost(scriptDirectory),
+                            fileName: powerShellExe,
+                            arguments: powerShellExeArgs,
+                            environment: Environment,
+                            requireExitCodeZero: true,
+                            outputEncoding: null,
+                            killProcessOnCancel: false,
+                            inheritConsoleHandler: !ExecutionContext.Variables.Retain_Default_Encoding,
+                            cancellationToken: ExecutionContext.CancellationToken);
+
+                RetryTaskIfNeeded();
+
             }
+            finally
+            {
+                StepHost.OutputDataReceived -= OnDataReceived;
+                StepHost.ErrorDataReceived -= OnDataReceived;
+            }
+
         }
 
         private void OnDataReceived(object sender, ProcessDataReceivedEventArgs e)

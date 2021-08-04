@@ -285,5 +285,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 AddEnvironmentVariable(Constants.PathVariable, newPath);
             }
         }
+
+        protected void RetryTaskIfNeeded()
+        {
+            //Throws an exception if the result of the task is Failed to initiate retry
+            if (ExecutionContext.Result == TeamFoundation.DistributedTask.WebApi.TaskResult.Failed)
+            {
+                string exceptionMessage = $"Task result ${ExecutionContext.Result}";
+                ExecutionContext.Result = null;
+
+                throw new Exception(exceptionMessage);
+            }
+        }
     }
 }
