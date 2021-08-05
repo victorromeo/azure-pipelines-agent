@@ -250,8 +250,8 @@ namespace Agent.Sdk.Knob
         public static readonly Knob EnableIncompatibleBuildArtifactsPathResolution = new Knob(
             nameof(EnableIncompatibleBuildArtifactsPathResolution),
             "Return DownloadBuildArtifactsV1 target path resolution behavior back to how it was originally implemented. This breaks back compatibility with DownloadBuildArtifactsV0.",
-            new RuntimeKnobSource("ENABLE_INCOMPATIBLE_BUILD_ARTIFACTS_PATH_RESOLUTION"),
-            new EnvironmentKnobSource("ENABLE_INCOMPATIBLE_BUILD_ARTIFACTS_PATH_RESOLUTION"),
+            new RuntimeKnobSource("system.EnableIncompatibleBuildArtifactsPathResolution"),
+            new EnvironmentKnobSource("system.EnableIncompatibleBuildArtifactsPathResolution"),
             new BuiltInDefaultKnobSource("false"));
     }
 }
