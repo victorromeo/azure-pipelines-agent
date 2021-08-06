@@ -69,9 +69,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
         public async Task ConfigureAsync(CommandSettings command)
         {
-            Console.WriteLine("src/Agent.Listener/Configuration/ConfigurationManager.cs - ConfigureAsync");
+            _term.WriteLine("src/Agent.Listener/Configuration/ConfigurationManager.cs - ConfigureAsync");
 
-            Console.WriteLine(OSPlatform.Linux);
+            _term.WriteLine(OSPlatform.Linux);
 
             ArgUtil.NotNull(command, nameof(command));
 
