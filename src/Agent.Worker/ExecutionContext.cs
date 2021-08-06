@@ -105,6 +105,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private string _buildLogsFile;
         private FileStream _buildLogsData;
         private StreamWriter _buildLogsWriter;
+        private CancellationTokenSource _forceCompleteCancellationTokenSource = new CancellationTokenSource();
 
         // only job level ExecutionContext will track throttling delay.
         private long _totalThrottlingDelayInMilliseconds = 0;
@@ -112,6 +113,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public Guid Id => _record.Id;
         public Task ForceCompleted => _forceCompleted.Task;
         public CancellationToken CancellationToken => _cancellationTokenSource.Token;
+        public CancellationToken ForceCompleteCancellationToken => _forceCompleteCancellationTokenSource.Token;
         public List<ServiceEndpoint> Endpoints { get; private set; }
         public List<SecureFile> SecureFiles { get; private set; }
         public List<Pipelines.RepositoryResource> Repositories { get; private set; }
@@ -181,9 +183,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Trace.Info("Force finish current task in 5 sec.");
             Task.Run(async () =>
             {
-                await Task.Delay(TimeSpan.FromSeconds(5));
-                _forceCompleted?.TrySetResult(1);
+                await Task.Delay(TimeSpan.FromSeconds(5), ForceCompleteCancellationToken);
+                if (!ForceCompleteCancellationToken.IsCancellationRequested)
+                {
+                    _forceCompleted?.TrySetResult(1);
+                }
             });
+        }
+
+        public void UnsetForceTaskComplete()
+        {
+            this._forceCompleteCancellationTokenSource.Cancel();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1721: Property names should not match get methods")]
@@ -842,6 +852,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             _buildLogsWriter = null;
             _buildLogsData?.Dispose();
             _buildLogsData = null;
+            _forceCompleteCancellationTokenSource?.Dispose();
         }
     }
 

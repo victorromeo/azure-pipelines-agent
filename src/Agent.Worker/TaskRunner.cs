@@ -364,15 +364,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Run the task.
 
                 RetryHelper rh = new RetryHelper(ExecutionContext, 2);
-                await rh.RetryStep(async () => await handler.RunAsync(), (retryCounter) => (int)Math.Pow(retryCounter, 2) * 5,
-                                                    (exception) => {
-                                                        if (exception is TimeoutException || exception is OperationCanceledException) {
-                                                            return false;
-                                                        } else
-                                                        {   
-                                                            return true;
-                                                        }
-                                                    });
+                await rh.RetryStep(async () => await handler.RunAsync(), (retryCounter) => (int)Math.Pow(retryCounter, 2) * 5);
 
                 //await handler.RunAsync();
 
