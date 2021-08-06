@@ -150,18 +150,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                                                   cancellationToken: ExecutionContext.CancellationToken);
 
                 // Wait for either the node exit or force finish through ##vso command
-                await System.Threading.Tasks.Task.WhenAny(step, ExecutionContext.ForceCompleted);
+                //await System.Threading.Tasks.Task.WhenAny(step, System.Threading.Tasks.Task.Delay()).WithCancellation;
 
-                if (ExecutionContext.ForceCompleted.IsCompleted)
+                //await step.WithCancellation(ExecutionContext.cancellationTokenSource.Token);
+
+                await System.Threading.Tasks.Task.Run(() => step, ExecutionContext.ForceCompleteToken);
+
+                if (ExecutionContext.ForceCompleteToken.IsCancellationRequested)
                 {
                     ExecutionContext.Debug("The task was marked as \"done\", but the process has not closed after 5 seconds. Treating the task as complete.");
                 }
-                else
-                {
-                    await step;
-                }
-
-                RetryTaskIfNeeded();
             }
             finally
             {
@@ -191,7 +189,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         private void OnDataReceived(object sender, ProcessDataReceivedEventArgs e)
         {
             // drop any outputs after the task get force completed.
-            if (ExecutionContext.ForceCompleted.IsCompleted)
+            if (ExecutionContext.ForceCompleteToken.IsCancellationRequested)
             {
                 return;
             }

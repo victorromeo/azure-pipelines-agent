@@ -362,21 +362,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     taskDirectory: definition.Directory);
 
                 // Run the task.
+                // TODO: get retryCount from azdo
+                int retryCount = 2;
 
-                RetryHelper rh = new RetryHelper(ExecutionContext, 2);
-                await rh.RetryStep(async () => await handler.RunAsync(), (retryCounter) => (int)Math.Pow(retryCounter, 2) * 5,
-                                                    (exception) => {
-                                                        if (exception is TimeoutException || exception is OperationCanceledException) {
-                                                            return false;
-                                                        } else
-                                                        {   
-                                                            return true;
-                                                        }
-                                                    });
-
-                //await handler.RunAsync();
-
-
+                if(retryCount >= 0)
+                {
+                    RetryHelper rh = new RetryHelper(ExecutionContext, retryCount);
+                    await rh.RetryStep(async () => await handler.RunAsync(), (retryCounter) => (int)Math.Pow(retryCounter, 2) * 5);
+                }
+                else
+                {
+                    await handler.RunAsync();
+                }
             }
         }
 

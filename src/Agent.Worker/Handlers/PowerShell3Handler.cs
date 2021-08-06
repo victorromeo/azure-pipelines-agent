@@ -82,8 +82,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                             inheritConsoleHandler: !ExecutionContext.Variables.Retain_Default_Encoding,
                             cancellationToken: ExecutionContext.CancellationToken);
 
-                RetryTaskIfNeeded();
-
             }
             finally
             {

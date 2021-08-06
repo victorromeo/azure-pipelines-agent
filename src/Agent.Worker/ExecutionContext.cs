@@ -28,7 +28,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     public interface IExecutionContext : IAgentService, IKnobValueContext
     {
         Guid Id { get; }
-        Task ForceCompleted { get; }
         TaskResult? Result { get; set; }
         string ResultCode { get; set; }
         TaskResult? CommandResult { get; set; }
@@ -38,6 +37,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         List<Pipelines.RepositoryResource> Repositories { get; }
         Dictionary<string,string> JobSettings { get; }
 
+        CancellationToken ForceCompleteToken { get; }
         PlanFeatures Features { get; }
         Variables Variables { get; }
         Variables TaskVariables { get; }
@@ -96,7 +96,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private Guid _detailTimelineId;
         private int _childTimelineRecordOrder = 0;
         private CancellationTokenSource _cancellationTokenSource;
-        private TaskCompletionSource<int> _forceCompleted = new TaskCompletionSource<int>();
         private bool _throttlingReported = false;
         private ExecutionTargetInfo _defaultStepTarget;
         private ExecutionTargetInfo _currentStepTarget;
@@ -105,12 +104,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private string _buildLogsFile;
         private FileStream _buildLogsData;
         private StreamWriter _buildLogsWriter;
+        private CancellationTokenSource _forceCompleteTokenSource = new CancellationTokenSource();
 
         // only job level ExecutionContext will track throttling delay.
         private long _totalThrottlingDelayInMilliseconds = 0;
 
         public Guid Id => _record.Id;
-        public Task ForceCompleted => _forceCompleted.Task;
+        public CancellationToken ForceCompleteToken => _forceCompleteTokenSource.Token;
         public CancellationToken CancellationToken => _cancellationTokenSource.Token;
         public List<ServiceEndpoint> Endpoints { get; private set; }
         public List<SecureFile> SecureFiles { get; private set; }
@@ -179,11 +179,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public void ForceTaskComplete()
         {
             Trace.Info("Force finish current task in 5 sec.");
-            Task.Run(async () =>
-            {
-                await Task.Delay(TimeSpan.FromSeconds(5));
-                _forceCompleted?.TrySetResult(1);
-            });
+
+            _forceCompleteTokenSource.CancelAfter(TimeSpan.FromSeconds(5));
+        }
+
+        public void UnsetForceTaskComplete()
+        {
+            _forceCompleteTokenSource = new CancellationTokenSource();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1721: Property names should not match get methods")]
@@ -842,6 +844,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             _buildLogsWriter = null;
             _buildLogsData?.Dispose();
             _buildLogsData = null;
+            _forceCompleteTokenSource?.Dispose();
         }
     }
 

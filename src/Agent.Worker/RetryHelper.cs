@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.TeamFoundation.DistributedTask.WebApi;
+using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
@@ -10,6 +11,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Debug = (str) => executionContext.Debug(str);
             Warning = (str) => executionContext.Warning(str);
             MaxRetries = maxRetries;
+            ExecutionContext = executionContext;
         }
 
         public RetryHelper(IAsyncCommandContext commandContext, int maxRetries = 3)
@@ -50,7 +52,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         }
 
 
-        public async Task RetryStep(Func<Task> action, Func<int, int> timeDelayInterval, Func<Exception, bool> shouldRetryOnException)
+        public async Task RetryStep(Func<Task> action, Func<int, int> timeDelayInterval)
         {
             int retryCounter = 0;
             do
@@ -58,23 +60,31 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 using (new SimpleTimer($"RetryHelper Method:{action.Method} ", Debug))
                 {
                     try
-                    {
+                    {                         
                         Debug($"Invoking Method: {action.Method}. Attempt count: {retryCounter}");
                         await action();
-                        return;
+                        //
+                        if (ExecutionContext.Result != TaskResult.Failed || ExhaustedRetryCount(retryCounter))
+                        {
+                            return;
+                        }
+                        else
+                        {
+                            string exceptionMessage = $"Task result ${ExecutionContext.Result}";
+                            ExecutionContext.Result = null;
+                            ((ExecutionContext)ExecutionContext).UnsetForceTaskComplete();
+                            Warning($"RetryHelper encountered task failure, will retry (attempt #: {retryCounter}) ");
+                        }
                     }
                     catch (Exception ex)
                     {
-                        if (!shouldRetryOnException(ex) || ExhaustedRetryCount(retryCounter))
+                        if (!ShouldRetryStepOnException(ex) || ExhaustedRetryCount(retryCounter))
                         {
                             throw;
                         }
-
-                        Warning($"Retry attempt {retryCounter}. Exception: {ex.Message} ");
-                        var delay = timeDelayInterval(retryCounter);
-                        await Task.Delay(delay);
+                        Warning($"RetryHelper encountered exception, will retry (attempt #: {retryCounter} {ex.Message}) ");
                     }
-
+                    await Task.Delay(timeDelayInterval(retryCounter));
                     retryCounter++;
                 }
             } while (true);
@@ -91,8 +101,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return false;
         }
 
+        private bool ShouldRetryStepOnException(Exception exception)
+        {
+            return !(exception is TimeoutException) && !(exception is OperationCanceledException);
+        }
+
         private readonly int MaxRetries;
         private readonly Action<string> Debug;
         private readonly Action<string> Warning;
+        private readonly IExecutionContext ExecutionContext;
     }
 }
