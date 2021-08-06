@@ -138,14 +138,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             // A non-zero exit code indicates infrastructural failure.
             // Task failure should be communicated over STDOUT using ## commands.
             Task step = StepHost.ExecuteAsync(workingDirectory: StepHost.ResolvePathForStepHost(workingDirectory),
-                                                fileName: StepHost.ResolvePathForStepHost(file),
-                                                arguments: arguments,
-                                                environment: Environment,
-                                                requireExitCodeZero: true,
-                                                outputEncoding: outputEncoding,
-                                                killProcessOnCancel: false,
-                                                inheritConsoleHandler: !ExecutionContext.Variables.Retain_Default_Encoding,
-                                                cancellationToken: ExecutionContext.CancellationToken);
+                                              fileName: StepHost.ResolvePathForStepHost(file),
+                                              arguments: arguments,
+                                              environment: Environment,
+                                              requireExitCodeZero: true,
+                                              outputEncoding: outputEncoding,
+                                              killProcessOnCancel: false,
+                                              inheritConsoleHandler: !ExecutionContext.Variables.Retain_Default_Encoding,
+                                              cancellationToken: ExecutionContext.CancellationToken);
 
             // Wait for either the node exit or force finish through ##vso command
             //await System.Threading.Tasks.Task.WhenAny(step, System.Threading.Tasks.Task.Delay()).WithCancellation;
