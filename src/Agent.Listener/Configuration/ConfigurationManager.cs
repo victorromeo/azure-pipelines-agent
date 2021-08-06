@@ -71,7 +71,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
         {
             _term.WriteLine("src/Agent.Listener/Configuration/ConfigurationManager.cs - ConfigureAsync");
 
-            _term.WriteLine(OSPlatform.Linux);
+            _term.WriteLine($"Operating system is Linux: {RuntimeInformation.IsOSPlatform(OSPlatform.Linux)}");
 
             ArgUtil.NotNull(command, nameof(command));
 
