@@ -141,12 +141,7 @@ namespace Microsoft.VisualStudio.Services.Agent
 
             foreach (string bypass in proxyBypassEnv.Split(new [] {',', ';'}).Where(value => !string.IsNullOrWhiteSpace(value)).Select(value => value.Trim()))
             {
-                string saveRegexString = bypass;
-
-                var regExp = new Regex("(?<!\\\\)([.])(?!\\*)");
-                var replace = "\\$1";
-
-                saveRegexString = regExp.Replace(saveRegexString, replace);
+                const string saveRegexString = ProcessProxyByPassFromEnv(bypass);
 
                 Trace.Info($"Bypass proxy for: {saveRegexString}.");
                 ProxyBypassList.Add(saveRegexString);
@@ -226,6 +221,22 @@ namespace Microsoft.VisualStudio.Services.Agent
             {
                 Trace.Info($"No proxy setting found.");
             }
+        }
+
+        /// <summary>
+        /// Used to escape dots in proxy bypass hosts that was recieved from no_proxy variable
+        /// It is requred since we convert host string to the regular expression pattern and
+        /// all the dots that are parts of domains will be interpreted as special symbol in regular expression while converting
+        /// this leads to false positive matches while check the patterns for bepassing.
+        /// We don't escape dots that are parts of .* wildcard.
+        /// Also, we don't escape dots that are already prepended by escaping symbols.
+        /// </summary>
+        private string ProcessProxyByPassFromEnv(string bypass)
+        {
+            var regExp = new Regex("(?<!\\\\)([.])(?!\\*)");
+            var replace = "\\$1";
+
+            return regExp.Replace(saveRegexString, replace);
         }
     }
 }
