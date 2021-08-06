@@ -134,37 +134,29 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 outputEncoding = Encoding.UTF8;
             }
 
-            try
+            // Execute the process. Exit code 0 should always be returned.
+            // A non-zero exit code indicates infrastructural failure.
+            // Task failure should be communicated over STDOUT using ## commands.
+            Task step = StepHost.ExecuteAsync(workingDirectory: StepHost.ResolvePathForStepHost(workingDirectory),
+                                                fileName: StepHost.ResolvePathForStepHost(file),
+                                                arguments: arguments,
+                                                environment: Environment,
+                                                requireExitCodeZero: true,
+                                                outputEncoding: outputEncoding,
+                                                killProcessOnCancel: false,
+                                                inheritConsoleHandler: !ExecutionContext.Variables.Retain_Default_Encoding,
+                                                cancellationToken: ExecutionContext.CancellationToken);
+
+            // Wait for either the node exit or force finish through ##vso command
+            //await System.Threading.Tasks.Task.WhenAny(step, System.Threading.Tasks.Task.Delay()).WithCancellation;
+
+            //await step.WithCancellation(ExecutionContext.cancellationTokenSource.Token);
+
+            await System.Threading.Tasks.Task.Run(() => step, ExecutionContext.ForceCompleteToken);
+
+            if (ExecutionContext.ForceCompleteToken.IsCancellationRequested)
             {
-                // Execute the process. Exit code 0 should always be returned.
-                // A non-zero exit code indicates infrastructural failure.
-                // Task failure should be communicated over STDOUT using ## commands.
-                Task step = StepHost.ExecuteAsync(workingDirectory: StepHost.ResolvePathForStepHost(workingDirectory),
-                                                  fileName: StepHost.ResolvePathForStepHost(file),
-                                                  arguments: arguments,
-                                                  environment: Environment,
-                                                  requireExitCodeZero: true,
-                                                  outputEncoding: outputEncoding,
-                                                  killProcessOnCancel: false,
-                                                  inheritConsoleHandler: !ExecutionContext.Variables.Retain_Default_Encoding,
-                                                  cancellationToken: ExecutionContext.CancellationToken);
-
-                // Wait for either the node exit or force finish through ##vso command
-                //await System.Threading.Tasks.Task.WhenAny(step, System.Threading.Tasks.Task.Delay()).WithCancellation;
-
-                //await step.WithCancellation(ExecutionContext.cancellationTokenSource.Token);
-
-                await System.Threading.Tasks.Task.Run(() => step, ExecutionContext.ForceCompleteToken);
-
-                if (ExecutionContext.ForceCompleteToken.IsCancellationRequested)
-                {
-                    ExecutionContext.Debug("The task was marked as \"done\", but the process has not closed after 5 seconds. Treating the task as complete.");
-                }
-            }
-            finally
-            {
-                StepHost.OutputDataReceived -= OnDataReceived;
-                StepHost.ErrorDataReceived -= OnDataReceived;
+                ExecutionContext.Debug("The task was marked as \"done\", but the process has not closed after 5 seconds. Treating the task as complete.");
             }
         }
 
