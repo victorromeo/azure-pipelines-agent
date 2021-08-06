@@ -141,7 +141,7 @@ namespace Microsoft.VisualStudio.Services.Agent
 
             foreach (string bypass in proxyBypassEnv.Split(new [] {',', ';'}).Where(value => !string.IsNullOrWhiteSpace(value)).Select(value => value.Trim()))
             {
-                const string saveRegexString = ProcessProxyByPassFromEnv(bypass);
+                var saveRegexString = ProcessProxyByPassFromEnv(bypass);
 
                 Trace.Info($"Bypass proxy for: {saveRegexString}.");
                 ProxyBypassList.Add(saveRegexString);
@@ -236,7 +236,7 @@ namespace Microsoft.VisualStudio.Services.Agent
             var regExp = new Regex("(?<!\\\\)([.])(?!\\*)");
             var replace = "\\$1";
 
-            return regExp.Replace(saveRegexString, replace);
+            return regExp.Replace(bypass, replace);
         }
     }
 }
