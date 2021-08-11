@@ -34,6 +34,13 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("AGENT_SKIP_POST_EXECUTION_IF_CONTAINER_STOPPED"),
             new BuiltInDefaultKnobSource("false"));
 
+        public static readonly Knob SetMTU = new Knob(
+            nameof(SetMTU),
+            "Set MTU value manually",
+            new RuntimeKnobSource("AGENT_MTU_VALUE"),
+            new EnvironmentKnobSource("AGENT_MTU_VALUE"),
+            new BuiltInDefaultKnobSource("1500"));
+
         // Directory structure
         public static readonly Knob AgentToolsDirectory = new Knob(
             nameof(AgentToolsDirectory),
