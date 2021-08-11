@@ -229,10 +229,19 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
             var MTUValue = AgentKnobs.SetMTU.GetValue(_knobContext).AsInt();
 
             if (usingWindowsContainers && networkDrivers.Contains("nat"))
-            {
-                return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} -o {MTUValue} --driver nat", context.CancellationToken);
+            {   
+                if (MTUValue) {
+                    return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} -o {MTUValue} --driver nat", context.CancellationToken);
+                }
+
+                return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} --driver nat", context.CancellationToken);
             }
-            return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} -o {MTUValue} ", context.CancellationToken);
+
+            if (MTUValue) {
+                return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} -o {MTUValue}", context.CancellationToken);
+            }
+    
+            return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network}", context.CancellationToken);
         }
 
         public async Task<int> DockerNetworkRemove(IExecutionContext context, string network)

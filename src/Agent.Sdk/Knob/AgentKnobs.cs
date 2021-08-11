@@ -39,7 +39,7 @@ namespace Agent.Sdk.Knob
             "Set MTU value manually",
             new RuntimeKnobSource("AGENT_MTU_VALUE"),
             new EnvironmentKnobSource("AGENT_MTU_VALUE"),
-            new BuiltInDefaultKnobSource("1500"));
+            new BuiltInDefaultKnobSource(string.Empty));
 
         // Directory structure
         public static readonly Knob AgentToolsDirectory = new Knob(
