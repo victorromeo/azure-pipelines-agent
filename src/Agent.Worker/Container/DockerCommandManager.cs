@@ -44,6 +44,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
 
         public string DockerInstanceLabel { get; private set; }
 
+        private static UtilKnobValueContext _knobContext = UtilKnobValueContext.Instance();
+
         public override void Initialize(IHostContext hostContext)
         {
             ArgUtil.NotNull(hostContext, nameof(hostContext));
@@ -227,21 +229,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
             var usingWindowsContainers = context.Containers.Where(x => x.ExecutionOS != PlatformUtil.OS.Windows).Count() == 0;
             var networkDrivers = await ExecuteDockerCommandAsync(context, "info", "-f \"{{range .Plugins.Network}}{{println .}}{{end}}\"");
             var MTUValue = AgentKnobs.SetMTU.GetValue(_knobContext).AsInt();
+            string optionMTU;
+            
+            if (Convert.ToBoolean(MTUValue)) {
+                optionMTU = $"-o {MTUValue}";
+            }   
 
             if (usingWindowsContainers && networkDrivers.Contains("nat"))
             {   
-                if (MTUValue) {
-                    return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} -o {MTUValue} --driver nat", context.CancellationToken);
-                }
-
-                return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} --driver nat", context.CancellationToken);
+                return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} {MTUValue} --driver nat", context.CancellationToken);
             }
 
-            if (MTUValue) {
-                return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} -o {MTUValue}", context.CancellationToken);
-            }
-    
-            return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network}", context.CancellationToken);
+            return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} {MTUValue}", context.CancellationToken);
         }
 
         public async Task<int> DockerNetworkRemove(IExecutionContext context, string network)
