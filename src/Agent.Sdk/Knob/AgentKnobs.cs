@@ -34,8 +34,8 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("AGENT_SKIP_POST_EXECUTION_IF_CONTAINER_STOPPED"),
             new BuiltInDefaultKnobSource("false"));
 
-        public static readonly Knob SetMTU = new Knob(
-            nameof(SetMTU),
+        public static readonly Knob SetMTUForContainerJobs = new Knob(
+            nameof(SetMTUForContainerJobs),
             "Set MTU value manually",
             new EnvironmentKnobSource("AGENT_MTU_VALUE"),
             new BuiltInDefaultKnobSource(string.Empty));

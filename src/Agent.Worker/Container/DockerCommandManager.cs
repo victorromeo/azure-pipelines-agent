@@ -226,7 +226,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
             ArgUtil.NotNull(network, nameof(network));
             var usingWindowsContainers = context.Containers.Where(x => x.ExecutionOS != PlatformUtil.OS.Windows).Count() == 0;
             var networkDrivers = await ExecuteDockerCommandAsync(context, "info", "-f \"{{range .Plugins.Network}}{{println .}}{{end}}\"");
-            var MTUValue = AgentKnobs.SetMTU.GetValue(_knobContext).AsString();
+            var MTUValue = AgentKnobs.SetMTUForContainerJobs.GetValue(_knobContext).AsString();
             string optionMTU = "";
             
             if (!String.IsNullOrEmpty(MTUValue)) {
@@ -235,7 +235,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
 
             if (usingWindowsContainers && networkDrivers.Contains("nat"))
             {   
-                return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} {optionMTU} --driver nat", context.CancellationToken);
+               return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} {optionMTU} --driver nat", context.CancellationToken);
             }
 
             return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} {optionMTU}", context.CancellationToken);
