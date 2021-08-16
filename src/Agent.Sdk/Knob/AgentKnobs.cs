@@ -36,7 +36,7 @@ namespace Agent.Sdk.Knob
 
         public static readonly Knob SetMTUForContainerJobs = new Knob(
             nameof(SetMTUForContainerJobs),
-            "Set MTU value manually",
+            "Allow to specify MTU value for networks used by container jobs (useful for docker-in-docker scenarios in k8s cluster).",
             new EnvironmentKnobSource("AGENT_MTU_VALUE"),
             new BuiltInDefaultKnobSource(string.Empty));
 
