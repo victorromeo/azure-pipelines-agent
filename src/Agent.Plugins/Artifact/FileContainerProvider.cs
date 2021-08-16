@@ -380,7 +380,12 @@ namespace Agent.Plugins
                 {
                     tarsFoundCount += 1;
 
-                    ExtractTar(fileArtifactPath, Path.Combine(extractedTarsTempPath, fileArtifactPath));
+                    // fileArtifactPath is a combination of rootPath and the relative artifact path
+                    string relativeFileArtifactPath = fileArtifactPath.Substring(rootPath.Length);
+                    string relativeFileArtifactDirPath = Path.GetDirectoryName(relativeFileArtifactPath);
+                    string extractedFilesDir = Path.Combine(extractedTarsTempPath, relativeFileArtifactDirPath);
+
+                    ExtractTar(fileArtifactPath, extractedFilesDir);
 
                     File.Delete(fileArtifactPath);
                 }
