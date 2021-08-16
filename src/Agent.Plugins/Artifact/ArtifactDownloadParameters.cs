@@ -33,6 +33,7 @@ namespace Agent.Plugins
         public Options CustomMinimatchOptions { get; set; } = null;
         public bool ExtractTars { get; set; } = false;
         public string ExtractedTarsTempPath { get; set; }
+        public bool AppendArtifactNameToTargetPath { get; set; } = true;
     }
 
     internal enum BuildArtifactRetrievalOptions

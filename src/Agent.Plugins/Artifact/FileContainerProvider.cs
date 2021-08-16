@@ -63,7 +63,9 @@ namespace Agent.Plugins
                 IEnumerable<FileContainerItem> items = await GetArtifactItems(downloadParameters, buildArtifact);
                 allItems.AddRange(items);
 
-                var dirPath = Path.Combine(downloadParameters.TargetDirectory, buildArtifact.Name);
+                var dirPath = downloadParameters.AppendArtifactNameToTargetPath
+                    ? Path.Combine(downloadParameters.TargetDirectory, buildArtifact.Name)
+                    : downloadParameters.TargetDirectory;
                 await DownloadFileContainerAsync(items, downloadParameters, buildArtifact, dirPath, context, cancellationToken, isSingleArtifactDownload: false);
             }
 
