@@ -48,30 +48,38 @@ namespace Agent.Plugins
             IEnumerable<FileContainerItem> items = await GetArtifactItems(downloadParameters, buildArtifact);
             await this.DownloadFileContainerAsync(items, downloadParameters, buildArtifact, downloadParameters.TargetDirectory, context, cancellationToken);
 
+            IEnumerable<string> fileArtifactPaths = items
+                .Where((item) => item.ItemType == ContainerItemType.File)
+                .Select((fileItem) => Path.Combine(downloadParameters.TargetDirectory, fileItem.Path));
+
             if (downloadParameters.ExtractTars)
             {
-                ExtractTarsIfPresent(context, items, downloadParameters.TargetDirectory, downloadParameters.ExtractedTarsTempPath);
+                ExtractTarsIfPresent(context, fileArtifactPaths, downloadParameters.TargetDirectory, downloadParameters.ExtractedTarsTempPath);
             }
         }
 
         public async Task DownloadMultipleArtifactsAsync(ArtifactDownloadParameters downloadParameters, IEnumerable<BuildArtifact> buildArtifacts, CancellationToken cancellationToken, AgentTaskPluginExecutionContext context)
         {
-            var allItems = new List<FileContainerItem>();
+            var allFileArtifactPaths = new List<string>();
 
             foreach (var buildArtifact in buildArtifacts)
             {
-                IEnumerable<FileContainerItem> items = await GetArtifactItems(downloadParameters, buildArtifact);
-                allItems.AddRange(items);
-
                 var dirPath = downloadParameters.AppendArtifactNameToTargetPath
                     ? Path.Combine(downloadParameters.TargetDirectory, buildArtifact.Name)
                     : downloadParameters.TargetDirectory;
+
+                IEnumerable<FileContainerItem> items = await GetArtifactItems(downloadParameters, buildArtifact);
+                IEnumerable<string> fileArtifactPaths = items
+                    .Where((item) => item.ItemType == ContainerItemType.File)
+                    .Select((fileItem) => Path.Combine(dirPath, fileItem.Path));
+                allFileArtifactPaths.AddRange(fileArtifactPaths);
+
                 await DownloadFileContainerAsync(items, downloadParameters, buildArtifact, dirPath, context, cancellationToken, isSingleArtifactDownload: false);
             }
 
             if (downloadParameters.ExtractTars)
             {
-                ExtractTarsIfPresent(context, allItems, downloadParameters.TargetDirectory, downloadParameters.ExtractedTarsTempPath);
+                ExtractTarsIfPresent(context, allFileArtifactPaths, downloadParameters.TargetDirectory, downloadParameters.ExtractedTarsTempPath);
             }
         }
 
@@ -360,22 +368,21 @@ namespace Agent.Plugins
             return filteredItems;
         }
 
-        private void ExtractTarsIfPresent(AgentTaskPluginExecutionContext context, IEnumerable<FileContainerItem> items, string rootPath, string extractedTarsTempPath)
+        private void ExtractTarsIfPresent(AgentTaskPluginExecutionContext context, IEnumerable<string> fileArtifactPaths, string rootPath, string extractedTarsTempPath)
         {
             tracer.Info(StringUtil.Loc("TarSearchStart"));
 
             int tarsFoundCount = 0;
 
-            foreach (FileContainerItem item in items)
+            foreach (var fileArtifactPath in fileArtifactPaths)
             {
-                if (item.ItemType == ContainerItemType.File && item.Path.EndsWith(".tar"))
+                if (fileArtifactPath.EndsWith(".tar"))
                 {
                     tarsFoundCount += 1;
 
-                    var tarArchivePath = Path.Combine(rootPath, item.Path);
-                    ExtractTar(tarArchivePath, Path.Combine(extractedTarsTempPath, item.Path));
+                    ExtractTar(fileArtifactPath, Path.Combine(extractedTarsTempPath, fileArtifactPath));
 
-                    File.Delete(tarArchivePath);
+                    File.Delete(fileArtifactPath);
                 }
             }
 
