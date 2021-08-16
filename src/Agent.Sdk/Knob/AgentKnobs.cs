@@ -37,7 +37,6 @@ namespace Agent.Sdk.Knob
         public static readonly Knob SetMTU = new Knob(
             nameof(SetMTU),
             "Set MTU value manually",
-            new RuntimeKnobSource("AGENT_MTU_VALUE"),
             new EnvironmentKnobSource("AGENT_MTU_VALUE"),
             new BuiltInDefaultKnobSource(string.Empty));
 

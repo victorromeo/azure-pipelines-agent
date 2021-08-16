@@ -43,7 +43,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
         public string DockerPath { get; private set; }
 
         public string DockerInstanceLabel { get; private set; }
-
         private static UtilKnobValueContext _knobContext = UtilKnobValueContext.Instance();
 
         public override void Initialize(IHostContext hostContext)
@@ -225,22 +224,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
         {
             ArgUtil.NotNull(context, nameof(context));
             ArgUtil.NotNull(network, nameof(network));
-
             var usingWindowsContainers = context.Containers.Where(x => x.ExecutionOS != PlatformUtil.OS.Windows).Count() == 0;
             var networkDrivers = await ExecuteDockerCommandAsync(context, "info", "-f \"{{range .Plugins.Network}}{{println .}}{{end}}\"");
             var MTUValue = AgentKnobs.SetMTU.GetValue(_knobContext).AsInt();
-            string optionMTU;
+
+            string optionMTU = "";
             
             if (Convert.ToBoolean(MTUValue)) {
-                optionMTU = $"-o {MTUValue}";
+                optionMTU = $"-o \"com.docker.network.driver.mtu={MTUValue}\"";
             }   
 
             if (usingWindowsContainers && networkDrivers.Contains("nat"))
             {   
-                return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} {MTUValue} --driver nat", context.CancellationToken);
+                return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} {optionMTU} --driver nat", context.CancellationToken);
             }
 
-            return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} {MTUValue}", context.CancellationToken);
+            return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} {optionMTU}", context.CancellationToken);
         }
 
         public async Task<int> DockerNetworkRemove(IExecutionContext context, string network)
