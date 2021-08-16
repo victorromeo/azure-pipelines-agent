@@ -234,8 +234,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
             }   
 
             if (usingWindowsContainers && networkDrivers.Contains("nat"))
-            {   
-               return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} {optionMTU} --driver nat", context.CancellationToken);
+            {
+                return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} {optionMTU} --driver nat", context.CancellationToken);
             }
 
             return await ExecuteDockerCommandAsync(context, "network", $"create --label {DockerInstanceLabel} {network} {optionMTU}", context.CancellationToken);
