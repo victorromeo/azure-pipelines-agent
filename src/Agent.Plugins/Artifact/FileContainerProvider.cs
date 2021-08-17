@@ -396,7 +396,7 @@ namespace Agent.Plugins
             } else {
                 tracer.Info(StringUtil.Loc("TarsFound", tarsFoundCount));
 
-                MoveDirectory(extractedTarsTempPath, rootPath);
+                MoveDirectory(extractedTarsTempPath, Path.Combine(rootPath, "extracted_tars"));
             }
         }
 
