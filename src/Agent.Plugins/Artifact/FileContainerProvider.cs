@@ -206,6 +206,7 @@ namespace Agent.Plugins
             }
         }
 
+        // Returns all artifact items. Uses minimatch filters specified in downloadParameters.
         private async Task<IEnumerable<FileContainerItem>> GetArtifactItems(ArtifactDownloadParameters downloadParameters, BuildArtifact buildArtifact)
         {
             (long, string) containerIdAndRoot = ParseContainerId(buildArtifact.Resource.Data);
@@ -368,6 +369,8 @@ namespace Agent.Plugins
             return filteredItems;
         }
 
+        // Checks all specified artifact paths, searches for files ending with '.tar'.
+        // If any files were found, extracts them to extractedTarsTempPath and moves to rootPath/extracted_tars.
         private void ExtractTarsIfPresent(AgentTaskPluginExecutionContext context, IEnumerable<string> fileArtifactPaths, string rootPath, string extractedTarsTempPath)
         {
             tracer.Info(StringUtil.Loc("TarSearchStart"));
@@ -402,6 +405,9 @@ namespace Agent.Plugins
             }
         }
 
+        // Extracts tar archive at tarArchivePath to extractedFilesDir.
+        // Uses 'tar' utility like this: tar xf `tarArchivePath` --directory `extractedFilesDir`.
+        // Throws if any errors are encountered.
         private void ExtractTar(string tarArchivePath, string extractedFilesDir)
         {
             tracer.Info(StringUtil.Loc("TarExtraction", tarArchivePath));
@@ -423,6 +429,7 @@ namespace Agent.Plugins
             }
         }
 
+        // Recursively moves sourcePath directory to targetPath
         private void MoveDirectory(string sourcePath, string targetPath) {
             var sourceDirectoryInfo = new DirectoryInfo(sourcePath);
             foreach (FileInfo file in sourceDirectoryInfo.GetFiles("*", SearchOption.TopDirectoryOnly))
