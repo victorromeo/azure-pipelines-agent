@@ -425,7 +425,7 @@ namespace Agent.Plugins
             var sourceDirectoryInfo = new DirectoryInfo(sourcePath);
             foreach (FileInfo file in sourceDirectoryInfo.GetFiles("*", SearchOption.TopDirectoryOnly))
             {
-                file.MoveTo(Path.Combine(targetPath, file.Name));
+                file.MoveTo(Path.Combine(targetPath, file.Name), true);
             }
             foreach (DirectoryInfo subdirectory in sourceDirectoryInfo.GetDirectories("*", SearchOption.TopDirectoryOnly))
             {
