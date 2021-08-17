@@ -226,11 +226,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Container
             ArgUtil.NotNull(network, nameof(network));
             var usingWindowsContainers = context.Containers.Where(x => x.ExecutionOS != PlatformUtil.OS.Windows).Count() == 0;
             var networkDrivers = await ExecuteDockerCommandAsync(context, "info", "-f \"{{range .Plugins.Network}}{{println .}}{{end}}\"");
-            var MTUValue = AgentKnobs.SetMTUForContainerJobs.GetValue(_knobContext).AsString();
+            var valueMTU = AgentKnobs.MTUValueForContainerJobs.GetValue(_knobContext).AsString();
             string optionMTU = "";
             
-            if (!String.IsNullOrEmpty(MTUValue)) {
-                optionMTU = $"-o \"com.docker.network.driver.mtu={MTUValue}\"";
+            if (!String.IsNullOrEmpty(valueMTU)) {
+                optionMTU = $"-o \"com.docker.network.driver.mtu={valueMTU}\"";
             }   
 
             if (usingWindowsContainers && networkDrivers.Contains("nat"))
