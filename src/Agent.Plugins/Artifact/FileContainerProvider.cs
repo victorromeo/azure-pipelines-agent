@@ -429,7 +429,7 @@ namespace Agent.Plugins
             }
             foreach (DirectoryInfo subdirectory in sourceDirectoryInfo.GetDirectories("*", SearchOption.TopDirectoryOnly))
             {
-                string subdirectoryDestinationPath = Path.Combine(sourcePath, subdirectory.Name);
+                string subdirectoryDestinationPath = Path.Combine(targetPath, subdirectory.Name);
                 var subdirectoryDestination = new DirectoryInfo(subdirectoryDestinationPath);
 
                 if (subdirectoryDestination.Exists)
