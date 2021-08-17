@@ -395,9 +395,9 @@ namespace Agent.Plugins
                 context.Warning(StringUtil.Loc("TarsNotFound"));
             } else {
                 tracer.Info(StringUtil.Loc("TarsFound", tarsFoundCount));
-            }
 
-            MoveDirectory(extractedTarsTempPath, rootPath);
+                MoveDirectory(extractedTarsTempPath, rootPath);
+            }
         }
 
         private void ExtractTar(string tarArchivePath, string extractedFilesDir)
