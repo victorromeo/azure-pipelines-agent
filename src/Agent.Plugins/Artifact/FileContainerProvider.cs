@@ -382,7 +382,7 @@ namespace Agent.Plugins
 
                     // fileArtifactPath is a combination of rootPath and the relative artifact path
                     string relativeFileArtifactPath = fileArtifactPath.Substring(rootPath.Length);
-                    string relativeFileArtifactDirPath = Path.GetDirectoryName(relativeFileArtifactPath);
+                    string relativeFileArtifactDirPath = Path.GetDirectoryName(relativeFileArtifactPath).TrimStart('/');
                     string extractedFilesDir = Path.Combine(extractedTarsTempPath, relativeFileArtifactDirPath);
 
                     ExtractTar(fileArtifactPath, extractedFilesDir);
