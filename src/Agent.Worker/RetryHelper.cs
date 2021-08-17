@@ -44,7 +44,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         var delay = timeDelayInterval(retryCounter);
                         await Task.Delay(delay);
                     }
-
                     retryCounter++;
                 }
             } while (true);

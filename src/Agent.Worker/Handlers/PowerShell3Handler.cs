@@ -2,10 +2,8 @@
 // Licensed under the MIT License.
 
 using Microsoft.VisualStudio.Services.Agent.Util;
-using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using System.IO;
 using System.Threading.Tasks;
-using System;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 {
@@ -63,7 +61,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             ArgUtil.NotNullOrEmpty(powerShellExe, nameof(powerShellExe));
 
             // Invoke the process.
-
             StepHost.OutputDataReceived += OnDataReceived;
             StepHost.ErrorDataReceived += OnDataReceived;
 

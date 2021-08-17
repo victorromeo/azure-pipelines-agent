@@ -107,7 +107,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private FileStream _buildLogsData;
         private StreamWriter _buildLogsWriter;
 
-
         // only job level ExecutionContext will track throttling delay.
         private long _totalThrottlingDelayInMilliseconds = 0;
 
