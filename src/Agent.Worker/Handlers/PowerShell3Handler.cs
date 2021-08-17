@@ -73,24 +73,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             try
             {
                 await StepHost.ExecuteAsync(workingDirectory: StepHost.ResolvePathForStepHost(scriptDirectory),
-                            fileName: powerShellExe,
-                            arguments: powerShellExeArgs,
-                            environment: Environment,
-                            requireExitCodeZero: true,
-                            outputEncoding: null,
-                            killProcessOnCancel: false,
-                            inheritConsoleHandler: !ExecutionContext.Variables.Retain_Default_Encoding,
-                            cancellationToken: ExecutionContext.CancellationToken);
-
-                RetryTaskIfNeeded();
-
+                                            fileName: powerShellExe,
+                                            arguments: powerShellExeArgs,
+                                            environment: Environment,
+                                            requireExitCodeZero: true,
+                                            outputEncoding: null,
+                                            killProcessOnCancel: false,
+                                            inheritConsoleHandler: !ExecutionContext.Variables.Retain_Default_Encoding,
+                                            cancellationToken: ExecutionContext.CancellationToken);
             }
             finally
             {
                 StepHost.OutputDataReceived -= OnDataReceived;
                 StepHost.ErrorDataReceived -= OnDataReceived;
             }
-
         }
 
         private void OnDataReceived(object sender, ProcessDataReceivedEventArgs e)

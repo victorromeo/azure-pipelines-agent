@@ -264,8 +264,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                         ExecutionContext.Result = TaskResult.Failed;
                         ExecutionContext.Error(StringUtil.Loc("VSTSHostNonZeroReturn", exitCode));
                     }
-
-                    RetryTaskIfNeeded();
                 }
                 finally
                 {

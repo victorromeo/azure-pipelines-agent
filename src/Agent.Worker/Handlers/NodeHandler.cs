@@ -160,8 +160,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 {
                     await step;
                 }
-
-                RetryTaskIfNeeded();
             }
             finally
             {
