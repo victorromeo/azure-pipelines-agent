@@ -209,16 +209,21 @@ then
             fi
         fi
     else
+
         # we might on OpenSUSE
         OSTYPE=$(grep ID_LIKE /etc/os-release | cut -f2 -d=)
+        if [ -z $OSTYPE ]
+            OSTYPE=$(grep ID /etc/os-release | cut -f2 -d=)
+        fi
         echo $OSTYPE
-        if [ $OSTYPE == '"suse"' ]
+
+        if  [ -z $OSTYPE ] || [ $OSTYPE == '"suse"' ] || [ $OSTYPE == '"sles"' ] || [ $OSTYPE == '"sles_sap"' ]
         then
             echo "The current OS is SUSE based"
             command -v zypper
             if [ $? -eq 0 ]
             then
-                zypper -n install lttng-ust libopenssl1_0_0 krb5 zlib libicu52_1
+                zypper -n install lttng-ust libopenssl1_0_0 krb5 zlib libicu
                 if [ $? -ne 0 ]
                 then
                     echo "'zypper' failed with exit code '$?'"
