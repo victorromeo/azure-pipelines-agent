@@ -217,13 +217,22 @@ then
         fi
         echo $OSTYPE
 
-        if  [ -z $OSTYPE ] || [ $OSTYPE == '"suse"' ] || [ $OSTYPE == '"sles"' ] || [ $OSTYPE == '"sles_sap"' ]
+        # is_sles=1 if it is a SLES OS
+        [ -n $OSTYPE ] && ([ $OSTYPE == '"sles"' ] || [ $OSTYPE == '"sles_sap"' ]) && is_sles=1
+
+        if  [[ -n $OSTYPE && ( $OSTYPE == '"suse"'  || $is_sles == 1)]]
         then
             echo "The current OS is SUSE based"
             command -v zypper
             if [ $? -eq 0 ]
             then
-                zypper -n install lttng-ust libopenssl1_0_0 krb5 zlib libicu
+                if [[ -n $is_sles ]]
+                then
+                    zypper -n install lttng-ust libopenssl1_1 krb5 zlib libicu
+                else
+                    zypper -n install lttng-ust libopenssl1_0_0 krb5 zlib libicu
+                fi
+
                 if [ $? -ne 0 ]
                 then
                     echo "'zypper' failed with exit code '$?'"
