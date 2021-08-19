@@ -220,7 +220,7 @@ then
         # is_sles=1 if it is a SLES OS
         [ -n $OSTYPE ] && ([ $OSTYPE == '"sles"' ] || [ $OSTYPE == '"sles_sap"' ]) && is_sles=1
 
-        if  [[ -n $OSTYPE && ( $OSTYPE == '"suse"'  || $is_sles == 1)]]
+        if  [[ -n $OSTYPE && ( $OSTYPE == '"suse"'  || $is_sles == 1) ]]
         then
             echo "The current OS is SUSE based"
             command -v zypper
