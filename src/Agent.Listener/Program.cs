@@ -20,11 +20,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
     {
         public static int Main(string[] args)
         {
-            _term.WriteLine("src/Agent.Listener/Program.cs - Main - START");
+            Console.WriteLine("src/Agent.Listener/Program.cs - Main - START");
 
-            _term.WriteLine($"Operating system is Linux: {RuntimeInformation.IsOSPlatform(OSPlatform.Linux)}");
+            Console.WriteLine($"Operating system is Linux: {RuntimeInformation.IsOSPlatform(OSPlatform.Linux)}");
 
-            _term.WriteLine("src/Agent.Listener/Program.cs - Main - END");
+            Console.WriteLine("src/Agent.Listener/Program.cs - Main - END");
 
             if (PlatformUtil.UseLegacyHttpHandler)
             {
