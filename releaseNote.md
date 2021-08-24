@@ -1,3 +1,18 @@
+## Features
+ - [DownloadBuildArtifactsV1] Tar extraction on download (#3467)
+ - Allow to specify MTU value for networks used by container jobs (#3500)
+
+## Bugs
+ - [DownloadBuildArtifactsV1] Fix inconsistent download path (#3470)
+ - Updating vss-api-nuget package - fix blobstore client header length exceeds limits (#3485)
+ - Added processing of NO_PROXY variable (#3493)
+ - [AgentService] Fix invalid argument passing on reruns (#3497)
+ - Fixed issue with installing dependencies for suse systems (#3507)
+ - Fixed issue with dependency installation on OpenSUSE platforms (#3510)
+
+## Misc
+ - Fix typo (#3496)
+
 
 ## Agent Downloads
 
