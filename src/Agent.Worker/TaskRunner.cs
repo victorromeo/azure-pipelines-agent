@@ -363,13 +363,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 // Run the task.
 
-                // TODO: get retryCount from azdo
-                int retryCount = 2;
+                int retryCount = this.Task.RetryCountOnTaskFailure;
 
-                if (retryCount >= 0)
+                if (retryCount > 0)
                 {
                     RetryHelper rh = new RetryHelper(ExecutionContext, retryCount);
                     ExecutionContext.IsStepRetriable = true;
+
                     await rh.RetryStep(async () => await handler.RunAsync(), (retryCounter) => (int)Math.Pow(retryCounter, 2) * 5);
                 }
                 else

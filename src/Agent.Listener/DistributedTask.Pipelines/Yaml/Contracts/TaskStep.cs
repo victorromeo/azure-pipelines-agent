@@ -24,6 +24,8 @@ namespace Microsoft.TeamFoundation.DistributedTask.Orchestration.Server.Pipeline
 
         internal Int32 TimeoutInMinutes { get; set; }
 
+        internal Int32 RetryCountOnTaskFailure { get; set; }
+
         public ISimpleStep Clone()
         {
             return new TaskStep()
@@ -36,6 +38,7 @@ namespace Microsoft.TeamFoundation.DistributedTask.Orchestration.Server.Pipeline
                 Inputs = new Dictionary<String, String>(Inputs ?? new Dictionary<String, String>(0, StringComparer.OrdinalIgnoreCase)),
                 Reference = Reference?.Clone(),
                 TimeoutInMinutes = TimeoutInMinutes,
+                RetryCountOnTaskFailure = RetryCountOnTaskFailure
             };
         }
     }

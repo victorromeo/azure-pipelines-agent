@@ -19,5 +19,7 @@ namespace Microsoft.TeamFoundation.DistributedTask.Orchestration.Server.Pipeline
         internal IList<String> Tags { get; set; }
 
         internal String TimeoutInMinutes { get; set; }
+
+        internal String RetryCountOnTaskFailure { get; set; }
     }
 }
