@@ -69,11 +69,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
         public async Task ConfigureAsync(CommandSettings command)
         {
-            //_term.WriteLine("src/Agent.Listener/Configuration/ConfigurationManager.cs - ConfigureAsync - START");
+            _term.WriteLine("src/Agent.Listener/Configuration/ConfigurationManager.cs - ConfigureAsync - START");
 
-            //_term.WriteLine($"Operating system is Linux: {RuntimeInformation.IsOSPlatform(OSPlatform.Linux)}");
+            _term.WriteLine($"Operating system is Linux: {RuntimeInformation.IsOSPlatform(OSPlatform.Linux)}");
 
-            //_term.WriteLine("src/Agent.Listener/Configuration/ConfigurationManager.cs - ConfigureAsync - END");
+            _term.WriteLine("src/Agent.Listener/Configuration/ConfigurationManager.cs - ConfigureAsync - END");
 
             ArgUtil.NotNull(command, nameof(command));
 
