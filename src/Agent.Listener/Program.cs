@@ -20,8 +20,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
     {
         public static int Main(string[] args)
         {
-            RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-
             if (PlatformUtil.UseLegacyHttpHandler)
             {
                 AppContext.SetSwitch("System.Net.Http.UseSocketsHttpHandler", false);
