@@ -6,6 +6,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
     internal class RetryHelper
     {
+        /// <summary>
+        /// Returns exponential delay - depending on number of retry
+        /// </summary>
+        /// <returns></returns>
+        public static int ExponentialDelay(int retryNumber)
+        {
+            return (int)(Math.Pow(retryNumber, 2) * 5);
+        }
+
+
         public RetryHelper(IExecutionContext executionContext, int maxRetries = 3)
         {
             Debug = (str) => executionContext.Debug(str);
