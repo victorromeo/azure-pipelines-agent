@@ -155,7 +155,9 @@ function editReleaseNotesFile(body)
         newReleaseNotes += `## ${category}\n${newPRs[category].join('\n')}\n\n`;
     });
 
-    newReleaseNotes += existingReleaseNotes;
+    const existingReleaseNotesWithHashes = addHashesToReleaseNotes(existingReleaseNotes);
+
+    newReleaseNotes += existingReleaseNotesWithHashes;
     var editorCmd = `${process.env.EDITOR} ${releaseNotesFile}`;
     console.log(editorCmd);
     if (opt.options.dryrun)
@@ -180,6 +182,27 @@ function editReleaseNotesFile(body)
             process.exit(-1);
         }
     }
+}
+
+function addHashesToReleaseNotes(releaseNotes) {
+    const hashes = util.getHashes();
+
+    const lines = releaseNotes.split('\n');
+    const modifiedLines = lines.map((line) => {
+        if (!line.includes('<HASH>')) {
+            return line;
+        }
+
+        // Package is the second column in the releaseNote.md file, get it's value
+        const columns = line.split('|').filter((column) => column.length !== 0);
+        const packageColumn = columns[1];
+        // Inside package column, we have the package name inside the square brackets
+        const packageName = packageColumn.substring(line.indexOf('[') + 1, line.indexOf(']'));
+
+        return line.replace('<HASH>', hashes[packageName]);
+    });
+
+    return modifiedLines.join('\n');
 }
 
 function commitAndPush(directory, release, branch)

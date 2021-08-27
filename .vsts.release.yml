@@ -30,7 +30,7 @@ extends:
     publishArtifacts: true
 
     ${{ if not(parameters.buildStageOnly) }}:
-      preBuildStages:
+      postBuildStages:
       - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
         - stage: Create_Release_Branch
           displayName: Create Release Branch
@@ -50,6 +50,15 @@ extends:
               inputs:
                 versionSpec: "14.15.1"
 
+            - task: DownloadBuildArtifacts@0
+              displayName: Download agent package hashes
+              inputs:
+                buildType: 'current'
+                downloadType: 'single'
+                artifactName: 'agent'
+                itemPattern: '**/*.sha256'
+                downloadPath: '_hashes'
+
             - script: |
                 cd release
                 npm install
@@ -59,8 +68,6 @@ extends:
                 PAT: $(GithubToken)
               displayName: Push release branch to GitHub
 
-    ${{ if not(parameters.buildStageOnly) }}:
-      postBuildStages:
       - stage: Release
         jobs:
         ################################################################################

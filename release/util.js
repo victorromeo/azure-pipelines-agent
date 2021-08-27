@@ -46,17 +46,66 @@ exports.execInForeground = function(command, directory, dryrun = false)
     }
 }
 
-exports.versionifySync = function(template, destination, version)
+exports.fillInstallAgentPackageParameters = function(template, destination, version)
 {
     try
     {
         var data = fs.readFileSync(template, 'utf8');
         data = data.replace(/<AGENT_VERSION>/g, version);
+
+        const hashes = exports.getHashes();
+        const dataLines = data.split('\n');
+        const modifiedDataLines = dataLines.map((line) => {
+            if (!line.includes('AddTaskPackageData')) {
+                return line;
+            }
+
+            const packageNameStart = line.indexOf('filename="') + 'filename="'.length;
+            const packageNameEnd = line.slice(packageNameStart).indexOf('"');
+            const packageName = line.substring(packageNameStart, packageNameEnd);
+            
+            return line.replace('<HASH_VALUE>', hashes[packageName]);
+        });
+
+        data = modifiedDataLines.join('\n');
+
         console.log(`Generating ${destination}`);
         fs.writeFileSync(destination, data);
     }
     catch(e)
     {
         console.log('Error:', e.stack);
+    }
+}
+
+exports.getHashes = function() {
+    const hashesDirPath = path.join(__dirname, '..', '_hashes');
+    const allFiles = getAllFilesRecursively(hashesDirPath);
+    const hashFiles = allFiles.filter((file) => file.endsWith('.sha256'));
+
+    const hashes = {};
+    for (const hashFile of hashFiles) {
+        const hashFileName = path.basename(hashFile);
+        const agentPackageFileName = hashFileName.replace('.sha256', '');
+
+        const hashFileContent = fs.readFileSync(hashFile, 'utf-8').trim();
+        // Last 64 characters are the sha256 hash value
+        const hashStringLength = 64;
+        const hash = hashFileContent.slice(hashFileContent.length - hashStringLength);
+
+        hashes[agentPackageFileName] = hash;
+    }
+
+    return hashes;
+}
+
+function getAllFilesRecursively(directory) {
+    const allFiles = [];
+    for (const fileOrDir of fs.readdirSync(directory)) {
+        if (fs.statSync(fileOrDir).isDirectory()) {
+            allFiles.push(...getAllFilesRecursively(path.join(directory, fileOrDir)));
+        } else {
+            allFiles.push(path.join(directory, fileOrDir));
+        }
     }
 }

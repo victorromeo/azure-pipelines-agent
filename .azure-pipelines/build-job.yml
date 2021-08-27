@@ -182,6 +182,10 @@ jobs:
       workingDirectory: src
       displayName: Package Release
 
+    - script: "${{ variables.devCommand }} hash"
+      workingDirectory: src
+      displayName: Hash Package
+
     # Upload agent package zip as build artifact
     - task: PublishBuildArtifacts@1
       displayName: Publish Artifact
