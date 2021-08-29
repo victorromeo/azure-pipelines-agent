@@ -30,7 +30,7 @@ extends:
     publishArtifacts: true
 
     ${{ if not(parameters.buildStageOnly) }}:
-      postBuildStages:
+      preBuildStages:
       - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
         - stage: Create_Release_Branch
           displayName: Create Release Branch
@@ -50,15 +50,6 @@ extends:
               inputs:
                 versionSpec: "14.15.1"
 
-            - task: DownloadBuildArtifacts@0
-              displayName: Download agent package hashes
-              inputs:
-                buildType: 'current'
-                downloadType: 'single'
-                artifactName: 'agent'
-                itemPattern: '**/*.sha256'
-                downloadPath: '_hashes'
-
             - script: |
                 cd release
                 npm install
@@ -68,6 +59,8 @@ extends:
                 PAT: $(GithubToken)
               displayName: Push release branch to GitHub
 
+    ${{ if not(parameters.buildStageOnly) }}:
+      postBuildStages:
       - stage: Release
         jobs:
         ################################################################################
@@ -127,10 +120,23 @@ extends:
               Publish-AzureRmCdnEndpointContent -EndpointName vstsagentpackage -ProfileName vstsagentpackage -ResourceGroupName vstsagentpackage -LoadContent $uploadFiles
             displayName: Upload to Azure Blob
 
+          # Copy all hash files to a directory that is more convinient to work with
+          - task: CopyFiles@2
+            displayName: Copy Hash Files
+            inputs:
+              SourceFolder: '$(System.ArtifactsDirectory)/agent'
+              Contents: '**/*.sha256'
+              TargetFolder: '$(Build.SourcesDirectory)/_hashes'
+
+          # Fill release notes with agent version and package hashes
+          - script: |
+              cd release
+              node fillReleaseNotesTemplate.js ${{ parameters.version }}
+
           # Create agent release on Github
           - powershell: |
               Write-Host "Creating github release."
-              $releaseNotes = [System.IO.File]::ReadAllText("$(Build.SourcesDirectory)\releaseNote.md").Replace("<AGENT_VERSION>","${{ parameters.version }}")
+              $releaseNotes = [System.IO.File]::ReadAllText("$(Build.SourcesDirectory)\releaseNote.md")
               $releaseData = @{
                 tag_name = "v${{ parameters.version }}";
                 target_commitish = "$(Build.SourceVersion)";

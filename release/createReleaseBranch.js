@@ -123,7 +123,7 @@ async function fetchPRsSinceLastReleaseAndEditReleaseNotes(newRelease, callback)
 function editReleaseNotesFile(body)
 {
     var releaseNotesFile = path.join(__dirname, '..', 'releaseNote.md');
-    var existingReleaseNotes = fs.readFileSync(releaseNotesFile, 'utf-8');
+    var existingReleaseNotes = fs.readFileSync(releaseNotesFile);
     var newPRs = { 'Features': [], 'Bugs': [], 'Misc': [] };
     body.items.forEach(function (item) {
         var category = 'Misc';
@@ -155,9 +155,7 @@ function editReleaseNotesFile(body)
         newReleaseNotes += `## ${category}\n${newPRs[category].join('\n')}\n\n`;
     });
 
-    const existingReleaseNotesWithHashes = addHashesToReleaseNotes(existingReleaseNotes);
-
-    newReleaseNotes += existingReleaseNotesWithHashes;
+    newReleaseNotes += existingReleaseNotes;
     var editorCmd = `${process.env.EDITOR} ${releaseNotesFile}`;
     console.log(editorCmd);
     if (opt.options.dryrun)
@@ -182,27 +180,6 @@ function editReleaseNotesFile(body)
             process.exit(-1);
         }
     }
-}
-
-function addHashesToReleaseNotes(releaseNotes) {
-    const hashes = util.getHashes();
-
-    const lines = releaseNotes.split('\n');
-    const modifiedLines = lines.map((line) => {
-        if (!line.includes('<HASH>')) {
-            return line;
-        }
-
-        // Package is the second column in the releaseNote.md file, get it's value
-        const columns = line.split('|').filter((column) => column.length !== 0);
-        const packageColumn = columns[1];
-        // Inside package column, we have the package name inside the square brackets
-        const packageName = packageColumn.substring(packageColumn.indexOf('[') + 1, packageColumn.indexOf(']'));
-
-        return line.replace('<HASH>', hashes[packageName]);
-    });
-
-    return modifiedLines.join('\n');
 }
 
 function commitAndPush(directory, release, branch)
