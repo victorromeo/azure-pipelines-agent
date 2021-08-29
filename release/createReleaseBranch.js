@@ -123,7 +123,7 @@ async function fetchPRsSinceLastReleaseAndEditReleaseNotes(newRelease, callback)
 function editReleaseNotesFile(body)
 {
     var releaseNotesFile = path.join(__dirname, '..', 'releaseNote.md');
-    var existingReleaseNotes = fs.readFileSync(releaseNotesFile);
+    var existingReleaseNotes = fs.readFileSync(releaseNotesFile, 'utf-8');
     var newPRs = { 'Features': [], 'Bugs': [], 'Misc': [] };
     body.items.forEach(function (item) {
         var category = 'Misc';
@@ -197,7 +197,7 @@ function addHashesToReleaseNotes(releaseNotes) {
         const columns = line.split('|').filter((column) => column.length !== 0);
         const packageColumn = columns[1];
         // Inside package column, we have the package name inside the square brackets
-        const packageName = packageColumn.substring(line.indexOf('[') + 1, line.indexOf(']'));
+        const packageName = packageColumn.substring(packageColumn.indexOf('[') + 1, packageColumn.indexOf(']'));
 
         return line.replace('<HASH>', hashes[packageName]);
     });
@@ -241,28 +241,6 @@ function checkGitStatus()
     return git_status;
 }
 
-async function main()
-{
-    try {
-        var newRelease = opt.argv[0];
-        if (newRelease === undefined)
-        {
-            console.log('Error: You must supply a version');
-            process.exit(-1);
-        }
-        util.verifyMinimumNodeVersion();
-        util.verifyMinimumGitVersion();
-        await verifyNewReleaseTagOk(newRelease);
-        checkGitStatus();
-        writeAgentVersionFile(newRelease);
-        await fetchPRsSinceLastReleaseAndEditReleaseNotes(newRelease);
-        commitAgentChanges(path.join(__dirname, '..'), newRelease);
-        console.log('done.');
-    }
-    catch (err) {
-        tl.setResult(tl.TaskResult.Failed, err.message || 'run() failed', true);
-        throw err;
-    }
-}
+// main();
 
-main();
+fetchPRsSinceLastReleaseAndEditReleaseNotes('2.130.30')

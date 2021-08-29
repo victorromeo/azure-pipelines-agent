@@ -1,5 +1,6 @@
 const cp = require('child_process');
 const fs = require('fs');
+const path = require('path');
 
 const GIT = 'git';
 const GIT_RELEASE_RE = /([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})/;
@@ -61,9 +62,9 @@ exports.fillInstallAgentPackageParameters = function(template, destination, vers
             }
 
             const packageNameStart = line.indexOf('filename="') + 'filename="'.length;
-            const packageNameEnd = line.slice(packageNameStart).indexOf('"');
+            const packageNameEnd = packageNameStart + line.slice(packageNameStart).indexOf('"');
             const packageName = line.substring(packageNameStart, packageNameEnd);
-            
+
             return line.replace('<HASH_VALUE>', hashes[packageName]);
         });
 
@@ -101,11 +102,16 @@ exports.getHashes = function() {
 
 function getAllFilesRecursively(directory) {
     const allFiles = [];
-    for (const fileOrDir of fs.readdirSync(directory)) {
+
+    for (const fileOrDirName of fs.readdirSync(directory)) {
+        const fileOrDir = path.join(directory, fileOrDirName);
+
         if (fs.statSync(fileOrDir).isDirectory()) {
-            allFiles.push(...getAllFilesRecursively(path.join(directory, fileOrDir)));
+            allFiles.push(...getAllFilesRecursively(fileOrDir));
         } else {
-            allFiles.push(path.join(directory, fileOrDir));
+            allFiles.push(fileOrDir);
         }
     }
+
+    return allFiles;
 }

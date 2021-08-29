@@ -16,6 +16,7 @@ _l1
 _package
 _reports
 _dotnetsdk
+_hashes
 TestResults
 TestLogs
 .DS_Store
@@ -23,4 +24,3 @@ TestLogs
 
 #generated
 src/Microsoft.VisualStudio.Services.Agent/BuildConstants.cs
-
