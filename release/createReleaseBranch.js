@@ -241,6 +241,28 @@ function checkGitStatus()
     return git_status;
 }
 
-// main();
+async function main()
+{
+    try {
+        var newRelease = opt.argv[0];
+        if (newRelease === undefined)
+        {
+            console.log('Error: You must supply a version');
+            process.exit(-1);
+        }
+        util.verifyMinimumNodeVersion();
+        util.verifyMinimumGitVersion();
+        await verifyNewReleaseTagOk(newRelease);
+        checkGitStatus();
+        writeAgentVersionFile(newRelease);
+        await fetchPRsSinceLastReleaseAndEditReleaseNotes(newRelease);
+        commitAgentChanges(path.join(__dirname, '..'), newRelease);
+        console.log('done.');
+    }
+    catch (err) {
+        tl.setResult(tl.TaskResult.Failed, err.message || 'run() failed', true);
+        throw err;
+    }
+}
 
-fetchPRsSinceLastReleaseAndEditReleaseNotes('2.130.30')
+main();
