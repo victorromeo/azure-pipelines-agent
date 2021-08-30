@@ -487,7 +487,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             if (eventProperties.TryGetValue(TaskCompleteEventProperties.Done, out string doneText) &&
                 !String.IsNullOrEmpty(doneText) &&
-                StringUtil.ConvertToBoolean(doneText) && !context.IsStepRetriable)
+                StringUtil.ConvertToBoolean(doneText))
             {
                 context.ForceTaskComplete();
             }

@@ -75,7 +75,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                         if (ExecutionContext.Result != TaskResult.Failed || ExhaustedRetryCount(retryCounter))
                         {
-                            ExecutionContext.IsStepRetriable = false;
                             return;
                         }
                         else

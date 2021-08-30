@@ -368,7 +368,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 if (retryCount > 0)
                 {
                     RetryHelper rh = new RetryHelper(ExecutionContext, retryCount);
-                    ExecutionContext.IsStepRetriable = true;
 
                     await rh.RetryStep(async () => await handler.RunAsync(), RetryHelper.ExponentialDelay);
                 }

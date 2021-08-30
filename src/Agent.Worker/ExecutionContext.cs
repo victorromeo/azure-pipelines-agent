@@ -74,7 +74,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         void SetStepTarget(Pipelines.StepTarget target);
         string TranslatePathForStepTarget(string val);
         IHostContext GetHostContext();
-        bool IsStepRetriable { get; set; }
     }
 
     public sealed class ExecutionContext : AgentService, IExecutionContext, IDisposable
@@ -121,7 +120,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public Variables TaskVariables { get; private set; }
         public HashSet<string> OutputVariables => _outputvariables;
         public bool WriteDebug { get; private set; }
-        public bool IsStepRetriable { get; set; }
         public List<string> PrependPath { get; private set; }
         public List<ContainerInfo> Containers { get; private set; }
         public List<ContainerInfo> SidecarContainers { get; private set; }
