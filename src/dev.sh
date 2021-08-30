@@ -227,13 +227,15 @@ function cmd_hash ()
     number_of_files=`wc -l <<< "$files"`
 
     if [[ number_of_files -ne 1 ]]; then
-        echo "Expecting to find exactly one file in $PACKAGE_DIR"
+        echo "Expecting to find exactly one file (agent package) in $PACKAGE_DIR"
         exit 1
     fi
 
     agent_package_file=$files
 
-    openssl dgst -sha256 $agent_package_file >> "$agent_package_file.sha256"
+    rm -rf ../../_package_hash
+    mkdir ../../_package_hash
+    openssl dgst -sha256 $agent_package_file >> "../../_package_hash/$agent_package_file.sha256"
 
     popd > /dev/null
 }

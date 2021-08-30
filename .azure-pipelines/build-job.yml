@@ -194,6 +194,14 @@ jobs:
         artifactName: agent
         artifactType: container
 
+    # Publish agent package hash too
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Artifact
+      inputs:
+        pathToPublish: _package_hash
+        artifactName: hash
+        artifactType: container
+
   # Signing verification
   - ${{ if parameters.verifySigning }}:
 

@@ -36,7 +36,8 @@ function main() {
     const releaseNotesPath = path.join(__dirname, '..', 'releaseNote.md');
     const releaseNotes = fs.readFileSync(releaseNotesPath, 'utf-8');
 
-    const filledReleaseNotes = addHashesToReleaseNotes(addAgentVersionToReleaseNotes(releaseNotes, agentVersion));
+    const releaseNotesWithAgentVersion = addAgentVersionToReleaseNotes(releaseNotes, agentVersion);
+    const filledReleaseNotes = addHashesToReleaseNotes(releaseNotesWithAgentVersion);
     fs.writeFileSync(releaseNotesPath, filledReleaseNotes);
 }
 
