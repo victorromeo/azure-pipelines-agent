@@ -89,7 +89,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     {
                         if (!ShouldRetryStepOnException(ex) || ExhaustedRetryCount(retryCounter))
                         {
-                            throw;
+                            throw ex;
                         }
                         Warning($"RetryHelper encountered exception, will retry (attempt #: {retryCounter} {ex.Message}) ");
                     }
