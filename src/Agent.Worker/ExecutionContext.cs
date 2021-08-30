@@ -74,6 +74,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         void SetStepTarget(Pipelines.StepTarget target);
         string TranslatePathForStepTarget(string val);
         IHostContext GetHostContext();
+        /// <summary>
+        /// Re-initializes force completed - between next retry attempt
+        /// </summary>
+        /// <returns></returns>
+        void ReInitializeForceCompleted();
     }
 
     public sealed class ExecutionContext : AgentService, IExecutionContext, IDisposable
@@ -832,6 +837,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public IScopedEnvironment GetScopedEnvironment()
         {
             return new SystemEnvironment();
+        }
+
+        public void ReInitializeForceCompleted()
+        {
+            this._forceCompleted = new TaskCompletionSource<int>();
         }
 
         public void Dispose()

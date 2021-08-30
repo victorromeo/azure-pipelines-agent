@@ -70,6 +70,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     try
                     {
+                        if (retryCounter > 0)
+                        {
+                            ExecutionContext.ReInitializeForceCompleted();
+                        }
+
                         Debug($"Invoking Method: {action.Method}. Attempt count: {retryCounter}");
                         await action();
 
