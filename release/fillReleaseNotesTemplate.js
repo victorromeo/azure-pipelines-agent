@@ -5,6 +5,10 @@ const util = require('./util');
 function addHashesToReleaseNotes(releaseNotes) {
     const hashes = util.getHashes();
 
+    console.log(releaseNotes);
+
+    console.log(hashes);
+
     const lines = releaseNotes.split('\n');
     const modifiedLines = lines.map((line) => {
         if (!line.includes('<HASH>')) {
@@ -16,6 +20,8 @@ function addHashesToReleaseNotes(releaseNotes) {
         const packageColumn = columns[1];
         // Inside package column, we have the package name inside the square brackets
         const packageName = packageColumn.substring(packageColumn.indexOf('[') + 1, packageColumn.indexOf(']'));
+
+        console.log(packageColumn, packageName);
 
         return line.replace('<HASH>', hashes[packageName]);
     });

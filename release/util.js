@@ -84,6 +84,8 @@ exports.getHashes = function() {
     const allFiles = getAllFilesRecursively(hashesDirPath);
     const hashFiles = allFiles.filter((file) => file.endsWith('.sha256'));
 
+    console.log(hashesDirPath, allFiles, hashFiles);
+
     const hashes = {};
     for (const hashFile of hashFiles) {
         const hashFileName = path.basename(hashFile);
