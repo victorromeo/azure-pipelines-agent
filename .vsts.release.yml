@@ -134,7 +134,7 @@ extends:
               buildVersionToDownload: 'specific'
               buildId: '15878078'
               artifactName: hash
-              targetPath: $(Build.SourcesDirectory)/_hashes
+              downloadPath: $(Build.SourcesDirectory)/_hashes
 
           - bash: |
               set -x

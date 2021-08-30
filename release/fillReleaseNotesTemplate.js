@@ -38,6 +38,7 @@ function main() {
 
     const releaseNotesWithAgentVersion = addAgentVersionToReleaseNotes(releaseNotes, agentVersion);
     const filledReleaseNotes = addHashesToReleaseNotes(releaseNotesWithAgentVersion);
+    console.log(filledReleaseNotes);
     fs.writeFileSync(releaseNotesPath, filledReleaseNotes);
 }
 
