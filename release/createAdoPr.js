@@ -58,7 +58,7 @@ function sparseClone(directory, url)
 async function commitADOL2Changes(directory, release)
 {
     console.log('Fake commiting InstallAgentPackage.xml to AzDO:');
-    console.log(fs.readFileSync(path.join(directory, targetDirectory, 'InstallAgentPackage.xml')));
+    console.log(fs.readFileSync(path.join(directory, targetDirectory, 'InstallAgentPackage.xml'), 'utf-8'));
     return;
 
     var gitUrl =  `https://${process.env.PAT}@dev.azure.com/mseng/AzureDevOps/_git/AzureDevOps`
