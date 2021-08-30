@@ -86,7 +86,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         {
                             string exceptionMessage = $"Task result ${ExecutionContext.Result}";
                             ExecutionContext.Result = null;
-                            Warning($"RetryHelper encountered task failure, will retry (attempt #: {retryCounter}) ");
+                            Warning($"RetryHelper encountered task failure, will retry (attempt #: {retryCounter + 1}) out of {this.MaxRetries}");
                         }
                     }
                     catch (Exception ex)
