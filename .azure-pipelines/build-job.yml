@@ -101,8 +101,6 @@ jobs:
       parameters:
         branch: ${{ parameters.branch }}
 
-  - script: echo '2.130.30' > src/agentversion
-
   # Build agent layout
   - script: ${{ variables.devCommand }} layout Release
     workingDirectory: src
