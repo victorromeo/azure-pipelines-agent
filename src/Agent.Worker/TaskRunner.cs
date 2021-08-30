@@ -363,7 +363,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 // Run the task.
 
-                int retryCount = this.Task.RetryCountOnTaskFailure;
+                int retryCount = 5; // this.Task.RetryCountOnTaskFailure;
 
                 if (retryCount > 0)
                 {
