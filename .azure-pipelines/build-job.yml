@@ -101,120 +101,122 @@ jobs:
       parameters:
         branch: ${{ parameters.branch }}
 
-  # # Build agent layout
-  # - script: ${{ variables.devCommand }} layout Release
-  #   workingDirectory: src
-  #   displayName: Build & Layout Release
-  #   ${{ if parameters.enableADOLogIssue }}:
-  #     env:
-  #       ADO_ENABLE_LOGISSUE: true
+  - bash: echo '2.130.30' > src/agentversion
 
-  # # Run l0 tests
-  # - ${{ if parameters.unitTests }}:
-  #   - script: ${{ variables.devCommand }} testl0
-  #     workingDirectory: src
-  #     displayName: Unit tests
+  # Build agent layout
+  - script: ${{ variables.devCommand }} layout Release
+    workingDirectory: src
+    displayName: Build & Layout Release
+    ${{ if parameters.enableADOLogIssue }}:
+      env:
+        ADO_ENABLE_LOGISSUE: true
 
-  # # Install nuget
-  # - ${{ if eq(parameters.os, 'win') }}:
-  #   - task: NuGetToolInstaller@1
-  #     displayName: Install NuGet for signing tests
+  # Run l0 tests
+  - ${{ if parameters.unitTests }}:
+    - script: ${{ variables.devCommand }} testl0
+      workingDirectory: src
+      displayName: Unit tests
 
-  # # Run l1 tests
-  # - ${{ if parameters.functionalTests }}:
-  #   - script: ${{ variables.devCommand }} testl1
-  #     workingDirectory: src
-  #     displayName: Functional tests
+  # Install nuget
+  - ${{ if eq(parameters.os, 'win') }}:
+    - task: NuGetToolInstaller@1
+      displayName: Install NuGet for signing tests
 
-  # - ${{ if or(parameters.unitTests, parameters.functionalTests) }}:
-  #   # Publish test results
-  #   - task: PublishTestResults@2
-  #     displayName: Publish Test Results **/*.trx
-  #     inputs:
-  #       testRunner: VSTest
-  #       testResultsFiles: '**/*.trx'
-  #       testRunTitle: 'Agent Tests - ${{ parameters.os }}-${{ parameters.arch }}'
-  #     condition: always()
+  # Run l1 tests
+  - ${{ if parameters.functionalTests }}:
+    - script: ${{ variables.devCommand }} testl1
+      workingDirectory: src
+      displayName: Functional tests
 
-  #   # Upload test log
-  #   - task: PublishBuildArtifacts@1
-  #     displayName: Publish Test logs
-  #     inputs:
-  #       pathToPublish: src/Test/TestLogs
-  #       artifactName: ${{ parameters.os }}-${{ parameters.arch }}-$(System.JobId)
-  #       artifactType: container
-  #     condition: always()
+  - ${{ if or(parameters.unitTests, parameters.functionalTests) }}:
+    # Publish test results
+    - task: PublishTestResults@2
+      displayName: Publish Test Results **/*.trx
+      inputs:
+        testRunner: VSTest
+        testResultsFiles: '**/*.trx'
+        testRunTitle: 'Agent Tests - ${{ parameters.os }}-${{ parameters.arch }}'
+      condition: always()
 
-  # # Code coverage
-  # - ${{ if and(parameters.codeCoverage, parameters.unitTests, parameters.functionalTests) }}:
-  #   - script: dotnet tool install --global dotnet-reportgenerator-globaltool
-  #     displayName: Install Report Generator
+    # Upload test log
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Test logs
+      inputs:
+        pathToPublish: src/Test/TestLogs
+        artifactName: ${{ parameters.os }}-${{ parameters.arch }}-$(System.JobId)
+        artifactType: container
+      condition: always()
 
-  #   - script: ${{ variables.devCommand }} report
-  #     displayName: Generate Code Coverage report
-  #     workingDirectory: src
+  # Code coverage
+  - ${{ if and(parameters.codeCoverage, parameters.unitTests, parameters.functionalTests) }}:
+    - script: dotnet tool install --global dotnet-reportgenerator-globaltool
+      displayName: Install Report Generator
 
-  #   - task: PublishCodeCoverageResults@1
-  #     inputs:
-  #       codeCoverageTool: 'cobertura'
-  #       summaryFileLocation: _reports/**/Cobertura.xml
-  #       pathToSources: src
+    - script: ${{ variables.devCommand }} report
+      displayName: Generate Code Coverage report
+      workingDirectory: src
 
-  # - ${{ if parameters.sign }}:
-  #   # Signing steps
-  #   - template: signing.yml
-  #     parameters:
-  #       layoutRoot: ${{ variables.layoutRoot }}
-  #       isWindows: ${{ eq(parameters.os, 'win') }}
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: 'cobertura'
+        summaryFileLocation: _reports/**/Cobertura.xml
+        pathToSources: src
 
-  # # Publish artifacts
-  # - ${{ if parameters.publishArtifact }}:
+  - ${{ if parameters.sign }}:
+    # Signing steps
+    - template: signing.yml
+      parameters:
+        layoutRoot: ${{ variables.layoutRoot }}
+        isWindows: ${{ eq(parameters.os, 'win') }}
 
-  #   # Package .NET Core Windows dependency (VC++ Redistributable)
-  #   - ${{ if eq(parameters.os, 'win') }}:
-  #     - template: package-vcredist.yml
-  #       parameters:
-  #         layoutRoot: ${{ variables.layoutRoot }}
-  #         flavor: ${{ parameters.arch }}
+  # Publish artifacts
+  - ${{ if parameters.publishArtifact }}:
 
-  #   # Create agent package zip
-  #   - script: "${{ variables.devCommand }} package Release"
-  #     workingDirectory: src
-  #     displayName: Package Release
+    # Package .NET Core Windows dependency (VC++ Redistributable)
+    - ${{ if eq(parameters.os, 'win') }}:
+      - template: package-vcredist.yml
+        parameters:
+          layoutRoot: ${{ variables.layoutRoot }}
+          flavor: ${{ parameters.arch }}
 
-  #   - script: "${{ variables.devCommand }} hash"
-  #     workingDirectory: src
-  #     displayName: Hash Package
+    # Create agent package zip
+    - script: "${{ variables.devCommand }} package Release"
+      workingDirectory: src
+      displayName: Package Release
 
-  #   # Upload agent package zip as build artifact
-  #   - task: PublishBuildArtifacts@1
-  #     displayName: Publish Artifact
-  #     inputs:
-  #       pathToPublish: _package
-  #       artifactName: agent
-  #       artifactType: container
+    - script: "${{ variables.devCommand }} hash"
+      workingDirectory: src
+      displayName: Hash Package
 
-  #   # Publish agent package hash too
-  #   - task: PublishBuildArtifacts@1
-  #     displayName: Publish Artifact
-  #     inputs:
-  #       pathToPublish: _package_hash
-  #       artifactName: hash
-  #       artifactType: container
+    # Upload agent package zip as build artifact
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Artifact
+      inputs:
+        pathToPublish: _package
+        artifactName: agent
+        artifactType: container
 
-  # # Signing verification
-  # - ${{ if parameters.verifySigning }}:
+    # Publish agent package hash too
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Artifact
+      inputs:
+        pathToPublish: _package_hash
+        artifactName: hash
+        artifactType: container
 
-  #   # Verify all binaries are signed (generate report)
-  #   - task: securedevelopmentteam.vss-secure-development-tools.build-task-codesignvalidation.CodesignValidation@0
-  #     displayName: 'Generate Codesign Report'
-  #     inputs:
-  #       path: ${{ variables.layoutRoot }}
+  # Signing verification
+  - ${{ if parameters.verifySigning }}:
 
-  #   # Verify all binaries are signed (check report)
-  #   - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
-  #     displayName: 'Verify Codesign Report'
-  #     inputs:
-  #       CodesignValidation: true
-  #       CodesignValidationBreakOn: WarningAbove
-  #       ToolLogsNotFoundAction: Error
+    # Verify all binaries are signed (generate report)
+    - task: securedevelopmentteam.vss-secure-development-tools.build-task-codesignvalidation.CodesignValidation@0
+      displayName: 'Generate Codesign Report'
+      inputs:
+        path: ${{ variables.layoutRoot }}
+
+    # Verify all binaries are signed (check report)
+    - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
+      displayName: 'Verify Codesign Report'
+      inputs:
+        CodesignValidation: true
+        CodesignValidationBreakOn: WarningAbove
+        ToolLogsNotFoundAction: Error
