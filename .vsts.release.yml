@@ -125,7 +125,7 @@ extends:
             displayName: Download Agent Hashes
             inputs:
               artifactName: hash
-              targetPath: $(Build.SourcesDirectory)/_hashes
+              downloadPath: $(Build.SourcesDirectory)/_hashes
 
           # Fill release notes with agent version and package hashes
           - script: |
@@ -191,7 +191,7 @@ extends:
             displayName: Download Agent Hashes
             inputs:
               artifactName: hash
-              targetPath: $(Build.SourcesDirectory)/_hashes
+              downloadPath: $(Build.SourcesDirectory)/_hashes
 
           - bash: |
               set -x
