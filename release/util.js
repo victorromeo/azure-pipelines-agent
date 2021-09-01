@@ -80,16 +80,14 @@ exports.fillInstallAgentPackageParameters = function(template, destination, vers
 }
 
 exports.getHashes = function() {
-    const hashesDirPath = path.join(__dirname, '..', '_hashes');
-    const allFiles = getAllFilesRecursively(hashesDirPath);
-    const hashFiles = allFiles.filter((file) => file.endsWith('.sha256'));
+    const hashesDirPath = path.join(__dirname, '..', '_hashes', 'hash');
+    const hashFiles = fs.readdirSync(hashesDirPath);
 
     const hashes = {};
-    for (const hashFile of hashFiles) {
-        const hashFileName = path.basename(hashFile);
+    for (const hashFileName of hashFiles) {
         const agentPackageFileName = hashFileName.replace('.sha256', '');
 
-        const hashFileContent = fs.readFileSync(hashFile, 'utf-8').trim();
+        const hashFileContent = fs.readFileSync(path.join(hashesDirPath, hashFileName), 'utf-8').trim();
         // Last 64 characters are the sha256 hash value
         const hashStringLength = 64;
         const hash = hashFileContent.slice(hashFileContent.length - hashStringLength);
@@ -98,20 +96,4 @@ exports.getHashes = function() {
     }
 
     return hashes;
-}
-
-function getAllFilesRecursively(directory) {
-    const allFiles = [];
-
-    for (const fileOrDirName of fs.readdirSync(directory)) {
-        const fileOrDir = path.join(directory, fileOrDirName);
-
-        if (fs.statSync(fileOrDir).isDirectory()) {
-            allFiles.push(...getAllFilesRecursively(fileOrDir));
-        } else {
-            allFiles.push(fileOrDir);
-        }
-    }
-
-    return allFiles;
 }
