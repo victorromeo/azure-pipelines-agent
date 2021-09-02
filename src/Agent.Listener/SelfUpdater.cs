@@ -244,11 +244,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                                 FileStream archiveStream = archiveInfo.Open(FileMode.Open);
                                 archiveStream.Position = 0;
                                 byte[] archiveHashAsBytes = sha256.ComputeHash(archiveStream);
-                                string archiveHashAsString = BitConverter.ToString(archiveHashAsBytes);
-                                string archiveHash = String.Join("", archiveHashAsString.Split("-"));
-                                bool checksumValidationSecceeded = _targetPackage.HashValue == archiveHash;
+                                string archiveHash = BitConverter.ToString(archiveHashAsBytes);
+                                bool hashesMatch = hashNormalizer(_targetPackage.HashValue) == hashNormalizer(archiveHash);
 
-                                if (checksumValidationSecceeded) {
+                                if (hashesMatch) {
                                     Trace.Info($"Checksum validation secceeded");
                                     downloadSucceeded = true;
                                     break;

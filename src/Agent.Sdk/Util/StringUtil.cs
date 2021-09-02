@@ -233,5 +233,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 s_locStrings = locStrings;
             }
         }
+
+        public static string hashNormalizer(string hash)
+        {
+            return String.Join("", hash.Split("-")).ToLower();
+        }
     }
 }
