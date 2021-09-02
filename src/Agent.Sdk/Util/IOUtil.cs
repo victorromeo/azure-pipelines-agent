@@ -64,7 +64,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
         }
 
-        public static sting GetFileHash(sting path)
+        public static string GetFileHash(string path)
         {
             using (SHA256 sha256hash = SHA256.Create())
             {

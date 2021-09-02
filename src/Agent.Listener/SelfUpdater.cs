@@ -239,9 +239,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                             Trace.Info($"Download agent: finished download");
 
                             string archiveHash = IOUtil.GetFileHash(archiveFile);
-                            bool hashesMatch = StringUtil.HashNormalizer(_targetPackage.HashValue) == StringUtil.HashNormalizer(archiveHash);
-
-                            if (hashesMatch) {
+                            if (StringUtil.HashesMatch(archiveHash, _targetPackage.HashValue)) {
                                 Trace.Info($"Checksum validation secceeded");
                                 downloadSucceeded = true;
                                 break;

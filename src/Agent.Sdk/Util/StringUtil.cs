@@ -238,5 +238,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
         {
             return String.Join("", hash.Split("-")).ToLower();
         }
+
+        public static bool HashesMatch(string hash1, string hash2)
+        {
+            return HashNormalizer(hash1) == HashNormalizer(hash2);
+        }
     }
 }
