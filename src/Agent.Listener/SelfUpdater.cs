@@ -239,10 +239,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                             Trace.Info($"Download agent: finished download");
 
                             SHA256 sha256 = SHA256.Create();
-                            FileStream archiveFileStream = archiveFile.Open(FileMode.Open);
-                            archiveFileStream.Position = 0;
-                            byte[] archiveFileHashValue = sha256.ComputeHash(archiveFileStream);
-                            bool checksumValidationSecceeded = _targetPackage.HashValue == archiveFileHashValue;
+                            FileStream archiveStream = archiveFile.Open(FileMode.Open);
+                            archiveStream.Position = 0;
+                            byte[] archiveHashAsBytes = sha256.ComputeHash(archiveStream);
+                            string archiveHash = String.Join("", BitConverter.ToString(archiveHashAsBytes).Split("-"));
+                            bool checksumValidationSecceeded = _targetPackage.HashValue == archiveHash;
 
                             if (checksumValidationSecceeded) {
                                 Trace.Info($"Checksum validation secceeded");
