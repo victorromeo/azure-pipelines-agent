@@ -64,6 +64,19 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
         }
 
+        public static sting GetFileHash(sting path)
+        {
+            using (SHA256 sha256hash = SHA256.Create())
+            {
+                FileInfo info = new FileInfo(path);
+                FileStream stream = info.Open(FileMode.Open);
+                stream.Position = 0;
+                byte[] hashAsBytes = sha256hash.ComputeHash(stream);
+                string hash = BitConverter.ToString(hashAsBytes);
+                return hash;
+            }
+        }
+
         public static void Delete(string path, CancellationToken cancellationToken)
         {
             DeleteDirectory(path, cancellationToken);

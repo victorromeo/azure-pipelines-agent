@@ -238,24 +238,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
                             Trace.Info($"Download agent: finished download");
 
-                            using (SHA256 sha256 = SHA256.Create())
-                            {
-                                FileInfo archiveInfo = new FileInfo(archiveFile);
-                                FileStream archiveStream = archiveInfo.Open(FileMode.Open);
-                                archiveStream.Position = 0;
-                                byte[] archiveHashAsBytes = sha256.ComputeHash(archiveStream);
-                                string archiveHash = BitConverter.ToString(archiveHashAsBytes);
-                                bool hashesMatch = StringUtil.HashNormalizer(_targetPackage.HashValue) == StringUtil.HashNormalizer(archiveHash);
+                            string archiveHash = IOUtil.GetFileHash(archiveFile);
+                            bool hashesMatch = StringUtil.HashNormalizer(_targetPackage.HashValue) == StringUtil.HashNormalizer(archiveHash);
 
-                                if (hashesMatch) {
-                                    Trace.Info($"Checksum validation secceeded");
-                                    downloadSucceeded = true;
-                                    break;
-                                }
-                                else {
-                                    Trace.Warning($"Checksum validation failed");
-                                    continue;
-                                }
+                            if (hashesMatch) {
+                                Trace.Info($"Checksum validation secceeded");
+                                downloadSucceeded = true;
+                                break;
+                            }
+                            else {
+                                Trace.Warning($"Checksum validation failed");
+                                continue;
                             }
                         }
                         catch (OperationCanceledException) when (token.IsCancellationRequested)
