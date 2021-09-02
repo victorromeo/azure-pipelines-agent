@@ -239,7 +239,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                             Trace.Info($"Download agent: finished download");
 
                             SHA256 sha256 = SHA256.Create();
-                            FileStream archiveStream = archiveFile.Open(FileMode.Open);
+                            FileInfo archiveInfo = new FileInfo(archiveFile);
+                            FileStream archiveStream = archiveInfo.Open(FileMode.Open);
                             archiveStream.Position = 0;
                             byte[] archiveHashAsBytes = sha256.ComputeHash(archiveStream);
                             string archiveHash = String.Join("", BitConverter.ToString(archiveHashAsBytes).Split("-"));
