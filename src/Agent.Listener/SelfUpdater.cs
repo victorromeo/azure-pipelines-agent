@@ -244,7 +244,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                                 FileStream archiveStream = archiveInfo.Open(FileMode.Open);
                                 archiveStream.Position = 0;
                                 byte[] archiveHashAsBytes = sha256.ComputeHash(archiveStream);
-                                string archiveHash = String.Join("", BitConverter.ToString(archiveHashAsBytes).Split("-"));
+                                string archiveHashAsString = BitConverter.ToString(archiveHashAsBytes);
+                                string archiveHash = String.Join("", archiveHashAsString.Split("-"));
                                 bool checksumValidationSecceeded = _targetPackage.HashValue == archiveHash;
 
                                 if (checksumValidationSecceeded) {
