@@ -47,6 +47,13 @@ exports.execInForeground = function(command, directory, dryrun = false)
     }
 }
 
+/**
+ * Replaces `<AGENT_VERSION>` and `<HASH_VALUE>` with the right values
+ * 
+ * @param {*} template InstallAgentPackage.template.xml path
+ * @param {*} destination Path where the filled InstallAgentPackage.xml should be written
+ * @param {*} version Agent version, e.g. 2.193.0
+ */
 exports.fillInstallAgentPackageParameters = function(template, destination, version)
 {
     try
@@ -79,6 +86,9 @@ exports.fillInstallAgentPackageParameters = function(template, destination, vers
     }
 }
 
+/**
+ * @returns A map where the keys are the agent package file names and the values are corresponding packages hashes
+ */
 exports.getHashes = function() {
     const hashesDirPath = path.join(__dirname, '..', '_hashes', 'hash');
     const hashFiles = fs.readdirSync(hashesDirPath);

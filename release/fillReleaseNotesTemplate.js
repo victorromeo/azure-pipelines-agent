@@ -2,6 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const util = require('./util');
 
+/**
+ * @param {*} releaseNotes Release notes template text content
+ * @returns Release notes where `<HASH>` is replaced with the provided agents package hash
+ */
 function addHashesToReleaseNotes(releaseNotes) {
     const hashes = util.getHashes();
 
@@ -23,10 +27,20 @@ function addHashesToReleaseNotes(releaseNotes) {
     return modifiedLines.join('\n');
 }
 
+/**
+ * @param {string} releaseNotes Release notes template text content
+ * @param {string} agentVersion Agent version, e.g. 2.193.0
+ * @returns Release notes where `<AGENT_VERSION>` is replaced with the provided agent version
+ */
 function addAgentVersionToReleaseNotes(releaseNotes, agentVersion) {
     return releaseNotes.replace(/<AGENT_VERSION>/g, agentVersion);
 }
 
+/**
+ * Takes agent version as the first cmdline argument.
+ * 
+ * Reads the releaseNote.md template file content and replaces `<AGENT_VERSION>` and `<HASH>` with agent version and package hash respectively.
+ */
 function main() {
     const agentVersion = process.argv[2];
     if (agentVersion === undefined) {
