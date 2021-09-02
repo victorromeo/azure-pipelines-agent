@@ -254,7 +254,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                                     break;
                                 }
                                 else {
-                                    Trace.Info($"Checksum validation failed");
+                                    Trace.Warning($"Checksum validation failed");
                                     continue;
                                 }
                             }
