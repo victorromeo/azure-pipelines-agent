@@ -238,22 +238,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
                             Trace.Info($"Download agent: finished download");
 
-                            SHA256 sha256 = SHA256.Create();
-                            FileInfo archiveInfo = new FileInfo(archiveFile);
-                            FileStream archiveStream = archiveInfo.Open(FileMode.Open);
-                            archiveStream.Position = 0;
-                            byte[] archiveHashAsBytes = sha256.ComputeHash(archiveStream);
-                            string archiveHash = String.Join("", BitConverter.ToString(archiveHashAsBytes).Split("-"));
-                            bool checksumValidationSecceeded = _targetPackage.HashValue == archiveHash;
+                            using (SHA256 sha256 = SHA256.Create())
+                            {
+                                FileInfo archiveInfo = new FileInfo(archiveFile);
+                                FileStream archiveStream = archiveInfo.Open(FileMode.Open);
+                                archiveStream.Position = 0;
+                                byte[] archiveHashAsBytes = sha256.ComputeHash(archiveStream);
+                                string archiveHash = String.Join("", BitConverter.ToString(archiveHashAsBytes).Split("-"));
+                                bool checksumValidationSecceeded = _targetPackage.HashValue == archiveHash;
 
-                            if (checksumValidationSecceeded) {
-                                Trace.Info($"Checksum validation secceeded");
-                                downloadSucceeded = true;
-                                break;
-                            }
-                            else {
-                                Trace.Info($"Checksum validation failed");
-                                continue;
+                                if (checksumValidationSecceeded) {
+                                    Trace.Info($"Checksum validation secceeded");
+                                    downloadSucceeded = true;
+                                    break;
+                                }
+                                else {
+                                    Trace.Info($"Checksum validation failed");
+                                    continue;
+                                }
                             }
                         }
                         catch (OperationCanceledException) when (token.IsCancellationRequested)
