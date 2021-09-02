@@ -245,7 +245,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                                 archiveStream.Position = 0;
                                 byte[] archiveHashAsBytes = sha256.ComputeHash(archiveStream);
                                 string archiveHash = BitConverter.ToString(archiveHashAsBytes);
-                                bool hashesMatch = hashNormalizer(_targetPackage.HashValue) == hashNormalizer(archiveHash);
+                                bool hashesMatch = StringUtil.HashNormalizer(_targetPackage.HashValue) == StringUtil.HashNormalizer(archiveHash);
 
                                 if (hashesMatch) {
                                     Trace.Info($"Checksum validation secceeded");

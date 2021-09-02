@@ -234,7 +234,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
         }
 
-        public static string hashNormalizer(string hash)
+        public static string HashNormalizer(string hash)
         {
             return String.Join("", hash.Split("-")).ToLower();
         }
