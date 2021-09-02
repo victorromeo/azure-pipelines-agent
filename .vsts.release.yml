@@ -131,6 +131,7 @@ extends:
           - script: |
               cd release
               node fillReleaseNotesTemplate.js ${{ parameters.version }}
+            displayName: Fill release notes
 
           # Create agent release on Github
           - powershell: |
