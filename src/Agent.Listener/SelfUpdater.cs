@@ -11,6 +11,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Services.WebApi;
@@ -236,8 +237,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                             }
 
                             Trace.Info($"Download agent: finished download");
-                            downloadSucceeded = true;
-                            break;
+
+                            SHA256 sha256 = SHA256.Create();
+                            FileStream archiveFileStream = archiveFile.Open(FileMode.Open);
+                            archiveFileStream.Position = 0;
+                            byte[] archiveFileHashValue = sha256.ComputeHash(archiveFileStream);
+                            bool checksumValidationSecceeded = _targetPackage.HashValue == archiveFileHashValue;
+
+                            if (checksumValidationSecceeded) {
+                                Trace.Info($"Checksum validation secceeded");
+                                downloadSucceeded = true;
+                                break;
+                            }
+                            else {
+                                Trace.Info($"Checksum validation failed");
+                                continue;
+                            }
                         }
                         catch (OperationCanceledException) when (token.IsCancellationRequested)
                         {
