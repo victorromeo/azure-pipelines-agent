@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
+using Microsoft.VisualStudio.Services.Agent.Worker.Handlers;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -61,41 +62,53 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         }
 
 
-        public async Task RetryStep(Func<Task> action, Func<int, int> timeDelayInterval)
+        public async Task RetryStep(IHandler handler, Func<int, int> timeDelayInterval)
         {
             int retryCounter = 0;
+            TaskResult lastRetryResult = TaskResult.Failed;
             do
             {
-                using (new SimpleTimer($"RetryHelper Method:{action.Method} ", Debug))
+                var retryExecutionContext = ExecutionContext.CreateChild(Guid.NewGuid(), $"{handler.Task.Name} retry step {retryCounter}", handler.Task.Name, handler.RuntimeVariables);
+
+                handler.ExecutionContext = retryExecutionContext;
+                using (new SimpleTimer($"RetryHelper Method: ", handler.ExecutionContext.Debug))
                 {
                     try
                     {
                         if (retryCounter > 0)
                         {
-                            ExecutionContext.ReInitializeForceCompleted();
+                            handler.ExecutionContext.ReInitializeForceCompleted();
                         }
 
-                        Debug($"Invoking Method: {action.Method}. Attempt count: {retryCounter}");
-                        await action();
+                        handler.ExecutionContext.Debug($"Invoking Method. Attempt count: {retryCounter}");
+                        await handler.RunAsync();
 
-                        if (ExecutionContext.Result != TaskResult.Failed || ExhaustedRetryCount(retryCounter))
+                        if (handler.ExecutionContext.Result != TaskResult.Failed || ExhaustedRetryCount(retryCounter))
                         {
+                            handler.ExecutionContext.Complete(result: handler.ExecutionContext.Result, $"Retry step {retryCounter}");
+                            if (ExhaustedRetryCount(retryCounter))
+                            {
+                                ExecutionContext.Complete(result: handler.ExecutionContext.Result);
+                            }
                             return;
                         }
                         else
                         {
-                            string exceptionMessage = $"Task result ${ExecutionContext.Result}";
-                            ExecutionContext.Result = null;
-                            Warning($"RetryHelper encountered task failure, will retry (attempt #: {retryCounter + 1}) out of {this.MaxRetries}");
+                            string exceptionMessage = $"Task result ${handler.ExecutionContext.Result}";
+                            handler.ExecutionContext.Result = null;
+                            handler.ExecutionContext.Warning($"RetryHelper encountered task failure, will retry (attempt #: {retryCounter + 1}) out of {this.MaxRetries}");;
+                            handler.ExecutionContext.Complete(result: TaskResult.Failed, $"Retry step {retryCounter}");
                         }
                     }
                     catch (Exception ex)
                     {
                         if (!ShouldRetryStepOnException(ex) || ExhaustedRetryCount(retryCounter))
                         {
+                            handler.ExecutionContext.Complete(result: TaskResult.Failed, $"Retry step {retryCounter}");
                             throw;
                         }
-                        Warning($"RetryHelper encountered exception, will retry (attempt #: {retryCounter} {ex.Message}) ");
+                        handler.ExecutionContext.Warning($"RetryHelper encountered exception, will retry (attempt #: {retryCounter} {ex.Message}) ");
+                        handler.ExecutionContext.Complete(result: TaskResult.Failed, $"Retry step {retryCounter}");
                     }
                     await Task.Delay(timeDelayInterval(retryCounter));
                     retryCounter++;
@@ -121,6 +134,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private readonly int MaxRetries;
         private readonly Action<string> Debug;
         private readonly Action<string> Warning;
-        private readonly IExecutionContext ExecutionContext;
+        private IExecutionContext ExecutionContext;
     }
 }

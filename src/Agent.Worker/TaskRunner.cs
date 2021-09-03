@@ -369,7 +369,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     RetryHelper rh = new RetryHelper(ExecutionContext, retryCount);
 
-                    await rh.RetryStep(async () => await handler.RunAsync(), RetryHelper.ExponentialDelay);
+                    await rh.RetryStep(handler, RetryHelper.ExponentialDelay);
                 }
                 else
                 {
