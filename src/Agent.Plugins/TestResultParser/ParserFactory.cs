@@ -28,7 +28,7 @@ namespace Agent.Plugins.Log.TestResultParser.Plugin
                    }
                    catch
                    {
-                       // Skipping issues with assemblies load via reflection - since there are some issues with assemblies like Microsoft.VisualStudio.Services.Agent', although this assembly is not relevant here
+                       // Skipping issues with assemblies load via reflection - since there are some issues with 'Microsoft.VisualStudio.Services.Agent', although this assembly is not relevant here
                        return new Type[0];
                    }
                })
