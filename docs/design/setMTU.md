@@ -5,16 +5,16 @@
  
 ## Configuration
 
-You need to set the environment variable AGENT_MTU_VALUE to set the MTU value, after that config and run the self-hosted agent.
+You need to set the environment variable AGENT_MTU_VALUE to set the MTU value, after that restart the self-hosted agent. How you can restart self-hosted agent tou can find [here](https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/v2-windows?view=azure-devops#how-do-i-restart-the-agent).
 
 This allows you to set up a network parameter for job container, the use of this command is similar to the use of the next command while container network configuration:
 
 ```-o com.docker.network.driver.mtu=AGENT_MTU_VALUE```
 
-## To create environment variables on Windows:
+## To set up environment variables on Windows:
 
 ```setx AGENT_MTU_VALUE=<VALUE>```
 
-## To create environment variables on Linux:
+## To set up environment variables on Linux:
 
 ```export AGENT_MTU_VALUE=<VALUE>```
