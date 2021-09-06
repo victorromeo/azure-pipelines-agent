@@ -240,12 +240,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                             string archiveHash = IOUtil.GetFileHash(archiveFile);
                             bool hashesMatch = StringUtil.HashesMatch(archiveHash, _targetPackage.HashValue);
 
-                            if (hashesMatch) {
+                            if (hashesMatch)
+                            {
                                 Trace.Info($"Checksum validation secceeded");
                                 downloadSucceeded = true;
                                 break;
                             }
-                            else {
+                            else
+                            {
                                 Trace.Warning($"Checksum validation failed");
                                 continue;
                             }
