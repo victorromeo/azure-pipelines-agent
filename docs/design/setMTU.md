@@ -10,10 +10,10 @@ You need to set the environment variable AGENT_MTU_VALUE to set the MTU value, a
 This allows you to set up a network parameter for job container, the use of this command is similar to the use of the next command while container network configuration:
 ````-o com.docker.network.driver.mtu=AGENT_MTU_VALUE```
 
-# To create environment variables on Windows:
+## To create environment variables on Windows:
 
 ```setx AGENT_MTU_VALUE=<VALUE>```
 
-# To create environment variables on Linux:
+## To create environment variables on Linux:
 
 ```export AGENT_MTU_VALUE=<VALUE>```
