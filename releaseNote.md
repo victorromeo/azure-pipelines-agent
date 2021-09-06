@@ -1,3 +1,12 @@
+## Features
+
+
+## Bugs
+ - Update VssApiVersion to 0.5.170-private (#3519)
+
+## Misc
+ - Added info about job cancellation (#3518)
+
 
 ## Agent Downloads
 
