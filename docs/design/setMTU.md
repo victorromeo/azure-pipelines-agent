@@ -10,3 +10,11 @@ You need to set the environment variable AGENT_MTU_VALUE to set the MTU value, a
 This allows you to set the option when starting a container with an agent:
 
 ```-o com.docker.network.driver.mtu=AGENT_MTU_VALUE```
+
+# To create environment variables on Windows:
+
+```setx AGENT_MTU_VALUE=<VALUE>```
+
+# To create environment variables on Linux:
+
+```export AGENT_MTU_VALUE=<VALUE>```
