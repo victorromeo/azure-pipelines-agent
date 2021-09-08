@@ -8,11 +8,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     {
         /// <summary>
         /// Returns exponential delay - depending on number of retry
+        /// Considers that retryNumber starts from 0
+        /// Initial delay - 1 second
         /// </summary>
         /// <returns></returns>
         public static int ExponentialDelay(int retryNumber)
         {
-            return (int)(Math.Pow(retryNumber, 2) * 5);
+            return (int)(Math.Pow(retryNumber + 1, 2) * 1000);
         }
 
 
@@ -60,7 +62,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         }
 
-
+        /// <summary>
+        /// Runs action with maxRetries number of retries
+        /// </summary>
+        /// <param name="action">Action to execute with retries</param>
+        /// <param name="timeDelayInterval">Function to calculate delay between retries depending on retry number. Should take retry number as argument and consider that it starts from 0.</param>
+        /// <returns></returns>
         public async Task RetryStep(Func<Task> action, Func<int, int> timeDelayInterval)
         {
             int retryCounter = 0;
@@ -68,6 +75,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 using (new SimpleTimer($"RetryHelper Method:{action.Method} ", Debug))
                 {
+                    var delayInterval = timeDelayInterval(retryCounter);
                     try
                     {
                         if (retryCounter > 0)
@@ -86,7 +94,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         {
                             string exceptionMessage = $"Task result ${ExecutionContext.Result}";
                             ExecutionContext.Result = null;
-                            Warning($"RetryHelper encountered task failure, will retry (attempt #: {retryCounter + 1}) out of {this.MaxRetries}");
+                            Warning($"RetryHelper encountered task failure, will retry (attempt #: {retryCounter + 1} out of {this.MaxRetries}) after ${delayInterval} ms");
                         }
                     }
                     catch (Exception ex)
@@ -95,9 +103,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         {
                             throw;
                         }
-                        Warning($"RetryHelper encountered exception, will retry (attempt #: {retryCounter} {ex.Message}) ");
+                        Warning($"RetryHelper encountered exception, will retry (attempt #: {retryCounter} {ex.Message}) afer ${delayInterval} ms");
                     }
-                    await Task.Delay(timeDelayInterval(retryCounter));
+                    await Task.Delay(timeDelayInterval(retryCounter), ExecutionContext.CancellationToken);
                     retryCounter++;
                 }
             } while (true);
