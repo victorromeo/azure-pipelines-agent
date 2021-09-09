@@ -1,9 +1,5 @@
 $ErrorActionPreference = 'Stop'
 
-if (<AGENT_VERSION> -NotMatch '^\d\.\d\d\d.\d+$') {
-    Write-Error "AgentVersion '<AGENT_VERSION>' is not valid."
-}
-
 if ($pwd -notlike '*tfsgheus20' ) {
 
     # primary packages
