@@ -97,7 +97,7 @@ async function createAdoPR(directory, release)
     await gitApi.createPullRequest({
         sourceRefName: `refs/heads/${newBranch}`,
         targetRefName: 'refs/heads/master',
-        title: 'Update agent',
+        title: '[TEST; DO NOT MERGE] Update agent',
         description: `Update agent to version ${release}`
     }, 'AzureDevOps', 'AzureDevOps');
 }
@@ -137,7 +137,7 @@ async function createConfigChangePR(repoPath, agentVersion) {
     const pullRequest = {
         sourceRefName: `refs/heads/${newBranch}`,
         targetRefName: 'refs/heads/master',
-        title: 'Update agent',
+        title: '[TEST; DO NOT MERGE] Update agent',
         description: `Update agent publish script to version ${agentVersion}`
     };
     const repo = 'AzureDevOps.ConfigChange';
