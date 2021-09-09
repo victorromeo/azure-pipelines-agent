@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const tl = require('azure-pipelines-task-lib/task');
 const util = require('./util');
+const fetch = require('node-fetch');
 
 const INTEGRATION_DIR = path.join(__dirname, '..', '_layout', 'integrations');
 const GIT = 'git';
@@ -113,7 +114,7 @@ async function createConfigChangePR(repoPath, agentVersion) {
         util.execInForeground(`${GIT} clone --depth 1 ${gitUrl} ${repoPath}`, null, opt.dryrun);
     }
 
-    const sprint = agentVersion.split('.')[1];
+    const sprint = await getCurrentSprint();
     const publishScriptPathInRepo = path.join('tfs', `m${sprint}`, 'PipelinesAgentRelease', agentVersion, 'Publish.ps1');
     const publishScriptPathInSystem = path.join(repoPath, publishScriptPathInRepo);
     fs.mkdirSync(path.dirname(publishScriptPathInSystem), { recursive: true });
@@ -143,6 +144,17 @@ async function createConfigChangePR(repoPath, agentVersion) {
     const repo = 'AzureDevOps.ConfigChange';
     const project = 'AzureDevOps';
     await gitApi.createPullRequest(pullRequest, repo, project);
+}
+
+/**
+ * Queries whatsprintis.it for current sprint version
+ * 
+ * @returns current sprint version
+ */
+async function getCurrentSprint() {
+    const response = await fetch('https://whatsprintis.it/?json');
+    const responseJson = await response.json();
+    return responseJson.sprint;
 }
 
 async function main()
