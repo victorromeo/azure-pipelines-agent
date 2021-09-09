@@ -191,6 +191,10 @@ function commitAndPush(directory, release, branch)
 
 function commitAgentChanges(directory, release)
 {
+    console.log('Fake committing new release notes:');
+    console.log(fs.readFileSync(path.join(__dirname, '..', 'releaseNote.md'), 'utf-8'));
+    return;
+
     var newBranch = `releases/${release}`;
     util.execInForeground(`${GIT} add ${path.join('src', 'agentversion')}`, directory, opt.options.dryrun);
     util.execInForeground(`${GIT} add releaseNote.md`, directory, opt.options.dryrun);
