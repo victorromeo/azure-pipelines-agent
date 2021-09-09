@@ -121,9 +121,9 @@ async function createConfigChangePR(repoPath, agentVersion) {
     const file = path.join(INTEGRATION_DIR, 'Publish.ps1');
 
     if (opt.options.dryrun) {
-        console.log(`Fake copy file from ${file} to ${target}`);
+        console.log(`Fake copy file from ${file} to ${publishScriptPathInSystem}`);
     } else {
-        console.log(`Copy file from ${file} to ${target}`);
+        console.log(`Copy file from ${file} to ${publishScriptPathInSystem}`);
         fs.copyFileSync(file, publishScriptPathInSystem);
     }
 
@@ -138,9 +138,9 @@ async function createConfigChangePR(repoPath, agentVersion) {
         sourceRefName: `refs/heads/${newBranch}`,
         targetRefName: 'refs/heads/master',
         title: 'Update agent',
-        description: `Update agent to version ${agentVersion}`
+        description: `Update agent publish script to version ${agentVersion}`
     };
-    const repo = 'AzureDevOps';
+    const repo = 'AzureDevOps.ConfigChange';
     const project = 'AzureDevOps';
     await gitApi.createPullRequest(pullRequest, repo, project);
 }
@@ -163,7 +163,7 @@ async function main()
         var pathToAdo = path.join(INTEGRATION_DIR, 'AzureDevOps');
         await createAdoPR(pathToAdo, newRelease);
 
-        var pathToAdoConfigChange = path.join(INTEGRATION_DIR, 'AzureDevOps.ConfigChange');
+        const pathToAdoConfigChange = path.join(INTEGRATION_DIR, 'AzureDevOps.ConfigChange');
         await createConfigChangePR(pathToAdoConfigChange, newRelease);
 
         console.log('done.');
