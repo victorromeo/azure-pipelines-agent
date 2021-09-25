@@ -1,0 +1,7 @@
+﻿variables:
+- name: var1
+  value: val1
+- name: var2
+  value: $(Agent.Id)
+steps:
+- script: echo hello

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.TeamFoundation.DistributedTask.Orchestration.Server.Pipelines.Yaml.Contracts
 {
-    internal class Phase : IPhase
+    public class Phase : IPhase
     {
         internal String Condition { get; set; }
 

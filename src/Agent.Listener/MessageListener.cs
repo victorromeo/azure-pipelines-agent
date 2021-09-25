@@ -16,6 +16,7 @@ using System.Text;
 using Microsoft.VisualStudio.Services.OAuth;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Agent.Sdk;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener
 {

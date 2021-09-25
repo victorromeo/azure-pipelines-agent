@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Collections.Generic;
+using Agent.Sdk;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests

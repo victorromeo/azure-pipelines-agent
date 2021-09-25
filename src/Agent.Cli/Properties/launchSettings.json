@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Agent.Cli": {
+      "commandName": "Project"
+    },
+    "Agent.Cli Validate": {
+      "commandName": "Project",
+      "commandLineArgs": "validate -f \"sample.yml\""
+    },
+    "Agent.Cli Run": {
+      "commandName": "Project",
+      "commandLineArgs": "run -f \"sample.yml\""
+    }
+  }
+}

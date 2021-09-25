@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.TeamFoundation.DistributedTask.Orchestration.Server.Pipelines.Yaml.Contracts
 {
-    internal sealed class Process : Phase
+    public sealed class Process : Phase
     {
         internal IList<IPhase> Phases { get; set; }
 
